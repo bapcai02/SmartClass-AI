@@ -16,6 +16,13 @@ import QAPage from '@/pages/QA'
 import LeaderboardPage from '@/pages/Leaderboard'
 import ProfilePage from '@/pages/Profile'
 import CreateClassPage from '@/pages/CreateClass'
+import ClassStudentsPage from '@/pages/ClassStudents'
+import ClassAttendancePage from '@/pages/ClassAttendance'
+import ClassResourcesManagePage from '@/pages/ClassResources'
+import ClassAssignmentsPage from '@/pages/ClassAssignments'
+import ClassExamsPage from '@/pages/ClassExams'
+import ClassGradebookPage from '@/pages/ClassGradebook'
+import ClassAnnouncementsPage from '@/pages/ClassAnnouncements'
 
 function App() {
   return (
@@ -27,6 +34,13 @@ function App() {
         <Route path="/classes" element={<ClassesPage />} />
         <Route path="/classes/new" element={<CreateClassPage />} />
         <Route path="/class/:id" element={<ClassDetailsPage />} />
+        <Route path="/class/:id/students" element={<ClassStudentsPage />} />
+        <Route path="/class/:id/attendance" element={<ClassAttendancePage />} />
+        <Route path="/class/:id/resources" element={<ClassResourcesManagePage />} />
+        <Route path="/class/:id/assignments" element={<ClassAssignmentsPage />} />
+        <Route path="/class/:id/exams" element={<ClassExamsPage />} />
+        <Route path="/class/:id/grades" element={<ClassGradebookPage />} />
+        <Route path="/class/:id/announcements" element={<ClassAnnouncementsPage />} />
         <Route path="/assignments" element={<AssignmentsPage />} />
         <Route path="/assignment/:id" element={<AssignmentDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />

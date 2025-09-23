@@ -1,10 +1,11 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { NavLink, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Edit3, Trash2, UserPlus } from 'lucide-react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { Edit3, Trash2, UserPlus, LayoutDashboard, Users as UsersIcon, CalendarDays, FolderOpen, NotebookTabs, FileBarChart, BarChart3, Megaphone, MessageSquare } from 'lucide-react'
 
 export default function ClassDetailsPage() {
+  const { id } = useParams()
   return (
     <div className="grid gap-6">
       {/* Header */}
@@ -89,143 +90,53 @@ export default function ClassDetailsPage() {
           </CardContent>
         </Card>
       </section>
+      {/* Class navigation moved here: */}
+      <Card>
+        <CardHeader><CardTitle>Class Navigation</CardTitle></CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          {[
+            { to: `/class/${id}`, label: 'Overview', icon: LayoutDashboard },
+            { to: `/class/${id}/students`, label: 'Students', icon: UsersIcon },
+            { to: `/class/${id}/attendance`, label: 'Attendance', icon: CalendarDays },
+            { to: `/class/${id}/resources`, label: 'Resources', icon: FolderOpen },
+            { to: `/class/${id}/assignments`, label: 'Assignments', icon: NotebookTabs },
+            { to: `/class/${id}/exams`, label: 'Exams / Competitions', icon: FileBarChart },
+            { to: `/class/${id}/grades`, label: 'Grades', icon: BarChart3 },
+            { to: `/class/${id}/announcements`, label: 'Announcements', icon: Megaphone },
+            { to: `/class/${id}/discussion`, label: 'Discussion', icon: MessageSquare },
+          ].map((l) => {
+            const Ico = l.icon
+            return (
+              <NavLink key={l.to} to={l.to} className={({isActive})=>`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm ${isActive?'border-brand-blue text-brand-blue':'border-slate-300 text-slate-800 hover:border-slate-400'}`}>
+                <Ico className="h-4 w-4" /> {l.label}
+              </NavLink>
+            )
+          })}
+        </CardContent>
+      </Card>
 
-      <Tabs defaultValue="students">
-        <TabsList>
-          <TabsTrigger value="students">Students</TabsTrigger>
-          <TabsTrigger value="assignments">Assignments</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
-          <TabsTrigger value="announcements">Announcements</TabsTrigger>
-        </TabsList>
-        <TabsContent value="students">
-          <Card>
-            <CardHeader><CardTitle>Students</CardTitle></CardHeader>
-            <CardContent className="overflow-hidden rounded-2xl">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Name</th>
-                    <th className="px-4 py-2 text-left">Email</th>
-                    <th className="px-4 py-2 text-left">Role</th>
-                    <th className="px-4 py-2 text-left">Last Active</th>
-                    <th className="px-4 py-2 text-left">Attendance</th>
-                    <th className="px-4 py-2 text-left">Grade</th>
-                    <th className="px-4 py-2 text-left">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[1,2,3,4,5,6,7,8,9,10].map((i)=> (
-                    <tr key={i} className={`${i % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
-                      <td className="px-4 py-3 font-medium">Student {i}</td>
-                      <td className="px-4 py-3">student{i}@school.edu</td>
-                      <td className="px-4 py-3">Student</td>
-                      <td className="px-4 py-3">Today 10:{10+i}</td>
-                      <td className="px-4 py-3">{90 - i}%</td>
-                      <td className="px-4 py-3">{String.fromCharCode(65 + (i%5))}</td>
-                      <td className="px-4 py-3"><span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">Active</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="assignments">
-          <Card>
-            <CardHeader><CardTitle>Assignments</CardTitle></CardHeader>
-            <CardContent className="overflow-hidden rounded-2xl">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Title</th>
-                    <th className="px-4 py-2 text-left">Subject</th>
-                    <th className="px-4 py-2 text-left">Points</th>
-                    <th className="px-4 py-2 text-left">Submissions</th>
-                    <th className="px-4 py-2 text-left">Avg Score</th>
-                    <th className="px-4 py-2 text-left">Due</th>
-                    <th className="px-4 py-2 text-left">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[1,2,3,4,5,6].map((i)=> (
-                    <tr key={i} className={`${i % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
-                      <td className="px-4 py-3 font-medium">Assignment {i}</td>
-                      <td className="px-4 py-3">Math</td>
-                      <td className="px-4 py-3">100</td>
-                      <td className="px-4 py-3">{20 + i}</td>
-                      <td className="px-4 py-3">{80 + i}%</td>
-                      <td className="px-4 py-3">Due in {i*2} days</td>
-                      <td className="px-4 py-3"><span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">In Progress</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="resources">
-          <Card>
-            <CardHeader><CardTitle>Resources</CardTitle></CardHeader>
-            <CardContent className="overflow-hidden rounded-2xl">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Title</th>
-                    <th className="px-4 py-2 text-left">Type</th>
-                    <th className="px-4 py-2 text-left">Size</th>
-                    <th className="px-4 py-2 text-left">Uploaded By</th>
-                    <th className="px-4 py-2 text-left">Uploaded</th>
-                    <th className="px-4 py-2 text-left">Downloads</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[1,2,3,4,5,6,7].map((i)=> (
-                    <tr key={i} className={`${i % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
-                      <td className="px-4 py-3 font-medium">Resource {i}</td>
-                      <td className="px-4 py-3">PDF</td>
-                      <td className="px-4 py-3">{5 + i} MB</td>
-                      <td className="px-4 py-3">Ms. Johnson</td>
-                      <td className="px-4 py-3">Sep {10+i}, 2025</td>
-                      <td className="px-4 py-3">{10 * i}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="announcements">
-          <Card>
-            <CardHeader><CardTitle>Announcements</CardTitle></CardHeader>
-            <CardContent className="overflow-hidden rounded-2xl">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Title</th>
-                    <th className="px-4 py-2 text-left">Date</th>
-                    <th className="px-4 py-2 text-left">Author</th>
-                    <th className="px-4 py-2 text-left">Audience</th>
-                    <th className="px-4 py-2 text-left">Pinned</th>
-                    <th className="px-4 py-2 text-left">Attachments</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[1,2,3,4,5].map((i)=> (
-                    <tr key={i} className={`${i % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
-                      <td className="px-4 py-3 font-medium">Announcement {i}</td>
-                      <td className="px-4 py-3">Oct {i+3}, 2025</td>
-                      <td className="px-4 py-3">Ms. Johnson</td>
-                      <td className="px-4 py-3">Class</td>
-                      <td className="px-4 py-3">{i%2 ? 'Yes':'No'}</td>
-                      <td className="px-4 py-3">{i} files</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Card>
+        <CardHeader><CardTitle>Class Statistics</CardTitle></CardHeader>
+        <CardContent className="overflow-hidden rounded-2xl">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-4 py-2 text-left">Metric</th>
+                <th className="px-4 py-2 text-left">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Total Students</td><td className="px-4 py-3">28</td></tr>
+              <tr className="bg-slate-50/50 hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Attendance Rate</td><td className="px-4 py-3">94%</td></tr>
+              <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Average Grade</td><td className="px-4 py-3">B+</td></tr>
+              <tr className="bg-slate-50/50 hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Assignments (Open/Closed)</td><td className="px-4 py-3">12 / 4</td></tr>
+              <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Exams (Upcoming/Ongoing/Finished)</td><td className="px-4 py-3">3 / 1 / 6</td></tr>
+              <tr className="bg-slate-50/50 hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Resources</td><td className="px-4 py-3">35</td></tr>
+              <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Announcements</td><td className="px-4 py-3">16</td></tr>
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     </div>
   )
 }
