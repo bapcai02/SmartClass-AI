@@ -7,6 +7,10 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip \
     && rm -rf /var/lib/apt/lists/*
 
+# Install PHP Redis extension
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
 # Install Node.js (LTS) and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get update && apt-get install -y nodejs \
