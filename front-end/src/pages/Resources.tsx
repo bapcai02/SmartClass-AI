@@ -13,9 +13,9 @@ export default function ResourcesPage() {
         <div className="hidden sm:flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-            <input className="w-64 rounded-2xl border bg-white pl-10 pr-3 py-2 text-sm shadow-sm" placeholder="Search resources" />
+            <input className="w-64 rounded-2xl border border-slate-300 bg-white pl-10 pr-3 py-2 text-sm shadow-sm focus:border-brand-blue" placeholder="Search resources" />
           </div>
-          <select className="rounded-2xl border px-3 py-2 text-sm">
+          <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue">
             <option>All</option>
             <option>PDF</option>
             <option>Video</option>

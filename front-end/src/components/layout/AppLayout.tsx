@@ -8,7 +8,7 @@ export function AppLayout() {
       <Navbar />
       <div className="container-px mx-auto flex gap-6 py-8 items-stretch">
         <Sidebar />
-        <main className="min-w-0 flex-1 min-h-[calc(100vh-4rem)] overflow-y-auto md:ml-88 lg:ml-88">
+        <main className="min-w-0 flex-1 min-h-[calc(100vh-4rem)] overflow-y-auto md:ml-80 lg:ml-80">
           <Outlet />
         </main>
       </div>

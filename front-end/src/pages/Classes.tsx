@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 import { classes } from '@/data/dummy'
 import { Link } from 'react-router-dom'
-import { Plus, Users, UserRound } from 'lucide-react'
-import { useState } from 'react'
+import { Plus, Users, UserRound, Search, Filter, Eye, Edit3, Trash2, LayoutGrid, Table } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 function ProgressBar({ value }: { value: number }) {
   return (
@@ -17,8 +17,39 @@ function ProgressBar({ value }: { value: number }) {
   )
 }
 
+type ClassItem = {
+  id: string
+  name: string
+  teacher: string
+  students: number
+  subject: string
+  status: 'active' | 'inactive'
+}
+
+const SUBJECTS = ['Math', 'Biology', 'History', 'Physics', 'Chemistry']
+
 export default function ClassesPage() {
   const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [status, setStatus] = useState<'all'|'active'|'inactive'>('all')
+  const [view, setView] = useState<'grid'|'table'>('grid')
+
+  const dataset: ClassItem[] = useMemo(() => {
+    return classes.map((c, idx) => ({
+      ...c,
+      subject: SUBJECTS[idx % SUBJECTS.length],
+      status: idx % 4 === 0 ? 'inactive' : 'active',
+    })) as ClassItem[]
+  }, [])
+
+  const filtered = useMemo(() => {
+    return dataset.filter((c) => {
+      const q = query.toLowerCase()
+      const matchesQ = !q || c.name.toLowerCase().includes(q) || c.teacher.toLowerCase().includes(q) || c.subject.toLowerCase().includes(q)
+      const matchesS = status === 'all' || c.status === status
+      return matchesQ && matchesS
+    })
+  }, [dataset, query, status])
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
@@ -26,20 +57,36 @@ export default function ClassesPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Classes</h1>
           <p className="text-slate-600">Browse your classes or create a new one</p>
         </div>
+        <div className="hidden md:flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <input value={query} onChange={(e)=>setQuery(e.target.value)} className="w-64 rounded-2xl border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm shadow-sm focus:border-brand-blue" placeholder="Search classes" />
+          </div>
+          <select value={status} onChange={(e)=>setStatus(e.target.value as any)} className="rounded-2xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <div className="inline-flex rounded-2xl bg-slate-100 p-1 text-sm">
+            <button onClick={()=>setView('grid')} className={`rounded-xl px-3 py-1.5 flex items-center gap-1 ${view==='grid'?'bg-white text-slate-900 shadow-sm':'text-slate-600 hover:bg-white/60'}`}><LayoutGrid className="h-4 w-4"/> Grid</button>
+            <button onClick={()=>setView('table')} className={`rounded-xl px-3 py-1.5 flex items-center gap-1 ${view==='table'?'bg-white text-slate-900 shadow-sm':'text-slate-600 hover:bg-white/60'}`}><Table className="h-4 w-4"/> Table</button>
+          </div>
+        </div>
+
         <Modal open={open} onOpenChange={setOpen}>
           <ModalTrigger asChild>
-            <Button className="gap-2"><Plus className="h-4 w-4"/> Create Class</Button>
+            <Button variant="outline" className="gap-2"><Plus className="h-4 w-4"/> Create New Class</Button>
           </ModalTrigger>
           <ModalContent>
             <ModalHeader title="Create a Class" description="Set up a new class to invite students" />
             <div className="grid gap-3">
               <div>
                 <label className="text-sm font-medium">Class name</label>
-                <input className="mt-1 w-full rounded-2xl border px-3 py-2" placeholder="e.g., Algebra I" />
+                <input className="mt-1 w-full rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" placeholder="e.g., Algebra I" />
               </div>
               <div>
                 <label className="text-sm font-medium">Teacher</label>
-                <input className="mt-1 w-full rounded-2xl border px-3 py-2" placeholder="Your name" />
+                <input className="mt-1 w-full rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" placeholder="Your name" />
               </div>
               <div className="flex justify-end">
                 <Button onClick={() => setOpen(false)}>Create</Button>
@@ -49,8 +96,9 @@ export default function ClassesPage() {
         </Modal>
       </div>
 
+      {view==='grid' ? (
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {classes.map((c, idx) => {
+        {filtered.map((c, idx) => {
           const progress = 60 + ((idx * 13) % 35)
           return (
             <Card key={c.id}>
@@ -65,19 +113,71 @@ export default function ClassesPage() {
                   <UserRound className="h-4 w-4" /> {c.teacher}
                   <span className="mx-1">•</span>
                   <Users className="h-4 w-4" /> {c.students} students
+                  <span className={`ml-auto rounded-full px-2 py-0.5 text-xs ${c.status==='active'?'bg-green-100 text-green-700':'bg-slate-200 text-slate-700'}`}>{c.status}</span>
                 </div>
                 <ProgressBar value={progress} />
                 <div className="flex justify-between">
                   <Link to={`/class/${c.id}`}>
                     <Button variant="outline">Open</Button>
                   </Link>
-                  <Button variant="ghost">Manage</Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" className="h-8 px-2"><Eye className="h-4 w-4"/></Button>
+                    <Button variant="outline" className="h-8 px-2"><Edit3 className="h-4 w-4"/></Button>
+                    <Button variant="outline" className="h-8 px-2"><Trash2 className="h-4 w-4"/></Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           )
         })}
       </div>
+      ) : (
+      <Card>
+        <CardHeader>
+          <CardTitle>All Classes</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-hidden rounded-2xl">
+          <div className="m-3 flex items-center justify-between">
+            <div className="inline-flex rounded-2xl bg-slate-100 p-1 text-sm">
+              {(['all','active','inactive'] as const).map((s) => (
+                <button key={s} onClick={()=>setStatus(s)} className={`rounded-xl px-3 py-1.5 ${status===s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:bg-white/60'}`}>{s}</button>
+              ))}
+            </div>
+            <Button variant="outline" className="gap-2"><Filter className="h-4 w-4"/> Filters</Button>
+          </div>
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-4 py-2 text-left">Class Name</th>
+                <th className="px-4 py-2 text-left">Subject</th>
+                <th className="px-4 py-2 text-left">Teacher</th>
+                <th className="px-4 py-2 text-left">Students</th>
+                <th className="px-4 py-2 text-left">Status</th>
+                <th className="px-4 py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c, idx) => (
+                <tr key={c.id} className={`${idx % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
+                  <td className="px-4 py-3 font-medium">{c.name}</td>
+                  <td className="px-4 py-3">{c.subject}</td>
+                  <td className="px-4 py-3">{c.teacher}</td>
+                  <td className="px-4 py-3">{c.students}</td>
+                  <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-medium ${c.status==='active'?'bg-green-100 text-green-700':'bg-slate-200 text-slate-700'}`}>{c.status}</span></td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" className="h-8 px-2"><Eye className="h-4 w-4"/></Button>
+                      <Button variant="outline" className="h-8 px-2"><Edit3 className="h-4 w-4"/></Button>
+                      <Button variant="outline" className="h-8 px-2"><Trash2 className="h-4 w-4"/></Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+      )}
     </div>
   )
 }

@@ -28,7 +28,7 @@ export default function AuthPage() {
               <input
                 type="email"
                 required
-                className="rounded-2xl border border-slate-300 px-3 py-2"
+                className="rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -38,7 +38,7 @@ export default function AuthPage() {
               <input
                 type="password"
                 required
-                className="rounded-2xl border border-slate-300 px-3 py-2"
+                className="rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -46,7 +46,7 @@ export default function AuthPage() {
             <div className="grid gap-1">
               <label className="text-sm font-medium">Role</label>
               <select
-                className="rounded-2xl border border-slate-300 px-3 py-2"
+                className="rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue"
                 value={role}
                 onChange={(e) => setRole(e.target.value as any)}
               >

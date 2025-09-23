@@ -163,7 +163,7 @@ export default function AssignmentsPage() {
               <button
                 onClick={()=>setPage(Math.max(1,page-1))}
                 disabled={page===1}
-                className={`h-9 rounded-full px-3 shadow-sm border bg-white flex items-center gap-1 ${page===1?'opacity-60 cursor-not-allowed':''}`}
+                className={`h-9 rounded-full px-3 shadow-sm border bg-white text-slate-700 flex items-center gap-1 ${page===1?'opacity-60 cursor-not-allowed':''}`}
               >
                 <ChevronLeft className="h-4 w-4"/> Previous
               </button>
@@ -173,7 +173,7 @@ export default function AssignmentsPage() {
                   <button
                     key={`p-${p}-${label??''}`}
                     onClick={()=>setPage(p)}
-                    className={`h-9 min-w-9 rounded-full px-3 text-sm shadow-sm border ${p===page?'bg-brand-blue text-white border-transparent':'bg-white'} `}
+                    className={`h-9 min-w-9 rounded-full px-3 text-sm shadow-sm border ${p===page?'bg-brand-blue text-white border-transparent':'bg-white text-slate-700'} `}
                   >{label ?? p}</button>
                 )
                 if (totalPages <= 6) {
@@ -192,7 +192,7 @@ export default function AssignmentsPage() {
               <button
                 onClick={()=>setPage(Math.min(totalPages,page+1))}
                 disabled={page===totalPages}
-                className={`h-9 rounded-full px-3 shadow-sm border bg-white flex items-center gap-1 ${page===totalPages?'opacity-60 cursor-not-allowed':''}`}
+                className={`h-9 rounded-full px-3 shadow-sm border bg-white text-slate-700 flex items-center gap-1 ${page===totalPages?'opacity-60 cursor-not-allowed':''}`}
               >
                 Next <ChevronRight className="h-4 w-4"/>
               </button>

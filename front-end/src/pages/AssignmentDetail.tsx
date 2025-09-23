@@ -39,7 +39,7 @@ function StudentView() {
           </div>
           <div className="rounded-2xl border p-3">
             <div className="font-medium">2) Explain the distributive property.</div>
-            <textarea className="mt-2 w-full rounded-2xl border px-3 py-2" rows={4} />
+            <textarea className="mt-2 w-full rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" rows={4} />
           </div>
         </div>
         <Button className="justify-self-start">Submit</Button>
@@ -66,11 +66,11 @@ function TeacherView() {
         <div className="grid gap-1 sm:grid-cols-3 sm:items-end sm:gap-3">
           <div>
             <label className="text-sm font-medium">Time Limit (mins)</label>
-            <input type="number" className="mt-1 w-full rounded-2xl border px-3 py-2" defaultValue={30} />
+            <input type="number" className="mt-1 w-full rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" defaultValue={30} />
           </div>
           <div>
             <label className="text-sm font-medium">Attempts</label>
-            <input type="number" className="mt-1 w-full rounded-2xl border px-3 py-2" defaultValue={1} />
+            <input type="number" className="mt-1 w-full rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" defaultValue={1} />
           </div>
           <div>
             <Button className="w-full">Save</Button>

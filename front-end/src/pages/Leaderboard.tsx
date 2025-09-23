@@ -30,7 +30,7 @@ export default function LeaderboardPage() {
           <CardTitle>Top Students</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-hidden rounded-2xl border">
+          <div className="overflow-hidden rounded-2xl">
             <table className="min-w-full text-sm">
               <thead className="bg-slate-50">
                 <tr>
@@ -42,11 +42,11 @@ export default function LeaderboardPage() {
               </thead>
               <tbody>
                 {rest.map((u, idx) => (
-                  <tr key={u.id} className={idx ? 'border-t' : ''}>
-                    <td className="px-4 py-2">{idx + 4}</td>
-                    <td className="px-4 py-2">{u.name}</td>
-                    <td className="px-4 py-2">{u.points}</td>
-                    <td className="px-4 py-2">{u.badges}</td>
+                  <tr key={u.id} className={`${idx % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
+                    <td className="px-4 py-3">{idx + 4}</td>
+                    <td className="px-4 py-3">{u.name}</td>
+                    <td className="px-4 py-3">{u.points}</td>
+                    <td className="px-4 py-3">{u.badges}</td>
                   </tr>
                 ))}
               </tbody>

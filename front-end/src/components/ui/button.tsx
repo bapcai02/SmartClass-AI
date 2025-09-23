@@ -10,13 +10,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-gradient-to-r from-brand-blue to-blue-600 text-white shadow-sm hover:brightness-105',
+          'bg-brand-blue text-white hover:bg-blue-600 shadow-sm',
         outline:
-          'border border-slate-300/70 bg-white/70 backdrop-blur text-slate-900 hover:bg-white',
+          'border border-slate-300 bg-white text-slate-900 hover:bg-slate-50',
         ghost:
-          'bg-transparent hover:bg-slate-100/80 text-slate-900',
+          'bg-transparent hover:bg-slate-100 text-slate-900',
         success:
-          'bg-gradient-to-r from-brand-green to-emerald-600 text-white hover:brightness-105',
+          'bg-brand-green text-white hover:bg-green-600',
       },
       size: {
         sm: 'h-9 px-3',

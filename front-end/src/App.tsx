@@ -15,6 +15,7 @@ import SettingsPage from '@/pages/Settings'
 import QAPage from '@/pages/QA'
 import LeaderboardPage from '@/pages/Leaderboard'
 import ProfilePage from '@/pages/Profile'
+import CreateClassPage from '@/pages/CreateClass'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/classes" element={<ClassesPage />} />
+        <Route path="/classes/new" element={<CreateClassPage />} />
         <Route path="/class/:id" element={<ClassDetailsPage />} />
         <Route path="/assignments" element={<AssignmentsPage />} />
         <Route path="/assignment/:id" element={<AssignmentDetailPage />} />

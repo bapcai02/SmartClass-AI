@@ -18,7 +18,7 @@ const links = [
 export function Sidebar() {
   return (
     <aside className="hidden md:block fixed left-0 top-16 h-[calc(100vh-4rem)] w-80">
-      <div className="h-full overflow-y-auto space-y-3 p-5 rounded-2xl border border-slate-200 bg-white/80 backdrop-blur shadow-sm mx-4">
+      <div className="h-full overflow-y-auto space-y-3 p-5 border border-slate-200 bg-white">
         {links.map((l) => {
           const Icon = l.icon
           return (
@@ -26,7 +26,7 @@ export function Sidebar() {
               key={l.to}
               to={l.to}
               className={({ isActive }) =>
-                `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${isActive ? 'bg-slate-100 text-slate-900 ring-1 ring-slate-200' : 'text-slate-600 hover:bg-slate-50'}`
+                `group relative flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${isActive ? 'bg-slate-100 text-slate-900 ring-1 ring-slate-200' : 'text-slate-600 hover:bg-slate-50'}`
               }
             >
               <Icon className="h-5 w-5" /> {l.label}
