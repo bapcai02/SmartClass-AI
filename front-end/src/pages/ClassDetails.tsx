@@ -1,13 +1,22 @@
-import { NavLink, useParams } from 'react-router-dom'
+import { NavLink, useNavigate, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Edit3, Trash2, UserPlus, LayoutDashboard, Users as UsersIcon, CalendarDays, FolderOpen, NotebookTabs, FileBarChart, BarChart3, Megaphone, MessageSquare } from 'lucide-react'
 // @ts-ignore
 import { useGetClassDetail } from '@/hooks/useClasses'
+// @ts-ignore
+import { useDeleteClass } from '@/hooks/useClasses'
+import { useState } from 'react'
+import ClassForm from '@/components/classes/ClassForm'
+import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 
 export default function ClassDetailsPage() {
   const { id } = useParams()
+  const [open, setOpen] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const deleteMut = useDeleteClass()
+  const navigate = useNavigate()
   const { data, isLoading } = useGetClassDetail(id as any, { include: ['students','timetables'], perPage: { students: 50, } })
   return (
     <div className="grid gap-6">
@@ -22,9 +31,52 @@ export default function ClassDetailsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="gap-2"><Edit3 className="h-4 w-4"/> Edit</Button>
-          <Button variant="outline" className="gap-2 text-red-600"><Trash2 className="h-4 w-4"/> Delete</Button>
-          <Button variant="outline" className="gap-2"><UserPlus className="h-4 w-4"/> Add Student</Button>
+          <Modal open={open} onOpenChange={setOpen}>
+            <ModalTrigger asChild>
+              <Button variant="outline" className="gap-2" onClick={() => setOpen(true)}><Edit3 className="h-4 w-4"/> Edit</Button>
+            </ModalTrigger>
+            <ModalContent>
+              <ModalHeader title={'Edit Class'} />
+              <div className="grid gap-3">
+                {isLoading ? (
+                  <div className="p-3 text-sm text-slate-600">Loading class details...</div>
+                ) : (
+                  <ClassForm
+                    editing={data as any}
+                    onSuccess={() => setOpen(false)}
+                    onCancel={() => setOpen(false)}
+                  />
+                )}
+              </div>
+            </ModalContent>
+          </Modal>
+          <Modal open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <ModalTrigger asChild>
+              <Button variant="outline" className="gap-2 text-red-600" onClick={() => setConfirmOpen(true)}><Trash2 className="h-4 w-4"/> Delete</Button>
+            </ModalTrigger>
+            <ModalContent>
+              <ModalHeader title={'Delete Class'} description={'Are you sure you want to delete this class?'} />
+              <div className="grid gap-3">
+                <div className="text-sm text-slate-700">{data?.name}</div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+                  <Button
+                    variant="outline"
+                    className="bg-red-600 text-white hover:bg-red-700"
+                    onClick={async () => {
+                      if (!id) return
+                      await deleteMut.mutateAsync(Number(id))
+                      setConfirmOpen(false)
+                      navigate('/classes', { replace: true })
+                    }}
+                    disabled={deleteMut.isPending}
+                  >
+                    {deleteMut.isPending ? 'Deleting...' : 'Delete'}
+                  </Button>
+                </div>
+              </div>
+            </ModalContent>
+          </Modal>
         </div>
       </div>
 
