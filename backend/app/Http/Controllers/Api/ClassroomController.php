@@ -57,6 +57,14 @@ class ClassroomController extends Controller
         }
     }
 
+    public function students(int $id): JsonResponse
+    {
+        $perPage = request()->integer('per_page', 15) ?: 15;
+        $search = (string) request()->get('search', '');
+        $paginator = $this->service->paginateStudents($id, $search, $perPage);
+        return response()->json($paginator);
+    }
+
     public function store(StoreClassroomRequest $request): JsonResponse
     {
         $validated = $request->validated();

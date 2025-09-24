@@ -58,6 +58,23 @@ export async function getClassDetail(
   return data
 }
 
+export async function getClassStudents(
+  classId: number | string,
+  params: { page?: number; perPage?: number; search?: string } = {}
+) {
+  const { page = 1, perPage = 10, search } = params
+  const { data } = await api.get('/classes/' + classId + '/students', {
+    params: { page, per_page: perPage, search: search || undefined },
+  })
+  return data as {
+    data: Array<{ id: number; name: string; email: string }>
+    current_page: number
+    per_page: number
+    total: number
+    last_page: number
+  }
+}
+
 export async function createClass(payload: Partial<ClassroomDto>) {
   const { data } = await api.post<ClassroomDto>('/classes', payload)
   return data

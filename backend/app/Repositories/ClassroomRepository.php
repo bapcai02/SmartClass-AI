@@ -161,6 +161,60 @@ class ClassroomRepository
 
         return $classroom;
     }
+
+    public function paginateStudents(int $classId, string $search = '', int $perPage = 15): LengthAwarePaginator
+    {
+        /** @var ClassRoom|null $class */
+        $class = ClassRoom::query()->find($classId);
+        if (! $class) {
+            throw new ModelNotFoundException('Classroom not found.');
+        }
+
+        $base = DB::table('class_students')
+            ->join('users', 'class_students.student_id', '=', 'users.id')
+            ->where('class_students.class_id', $classId)
+            ->select('users.id', 'users.name', 'users.email')
+            ->orderBy('users.name');
+
+        if ($search !== '') {
+            $base->where(function ($q) use ($search) {
+                $q->where('users.name', 'like', "%{$search}%")
+                  ->orWhere('users.email', 'like', "%{$search}%");
+            });
+        }
+
+        // Attendance percent per student in this class
+        $base->addSelect([
+            'attendance_percent' => DB::raw("(
+                SELECT ROUND(100 * SUM(a.status = 'present') / NULLIF(COUNT(*),0))
+                FROM attendances a
+                JOIN timetables tt ON a.timetable_id = tt.id
+                WHERE tt.class_id = class_students.class_id AND a.student_id = users.id
+            )"),
+        ]);
+
+        // Average grade per student in this class (exams)
+        $base->addSelect([
+            'avg_grade' => DB::raw("(
+                SELECT ROUND(AVG(es.grade), 2)
+                FROM exam_submissions es
+                JOIN exams ex ON es.exam_id = ex.id
+                WHERE ex.class_id = class_students.class_id AND es.student_id = users.id
+            )"),
+        ]);
+
+        // Active status by recent attendance within 30 days
+        $base->addSelect([
+            'is_active' => DB::raw("(
+                SELECT CASE WHEN MAX(COALESCE(a.checked_at, a.updated_at)) >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END
+                FROM attendances a
+                JOIN timetables tt ON a.timetable_id = tt.id
+                WHERE tt.class_id = class_students.class_id AND a.student_id = users.id
+            )"),
+        ]);
+
+        return $base->paginate($perPage);
+    }
 }
 
 

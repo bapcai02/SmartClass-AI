@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Search, Filter, ChevronLeft, ChevronRight, Trash2, MessageSquareText, UserPlus } from 'lucide-react'
+// @ts-ignore
+import { useClassStudents } from '@/hooks/useClasses'
 
 type Student = {
   id: string
@@ -13,14 +15,7 @@ type Student = {
   grade: string
 }
 
-const base: Student[] = Array.from({ length: 42 }, (_, i) => ({
-  id: `S${1000 + i}`,
-  name: `Student ${i + 1}`,
-  email: `student${i + 1}@school.edu`,
-  status: i % 7 === 0 ? 'Inactive' : 'Active',
-  attendance: 95 - (i % 10),
-  grade: ['A', 'B+', 'B', 'A-', 'C+'][i % 5],
-}))
+const base: Student[] = []
 
 export default function ClassStudentsPage() {
   const { id } = useParams()
@@ -30,21 +25,19 @@ export default function ClassStudentsPage() {
   const pageSize = 10
   const [selected, setSelected] = useState<Record<string, boolean>>({})
 
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase()
-    return base.filter((s) => {
-      const matchQ = !q || s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)
-      const matchS = status === 'All' ? true : s.status === status
-      return matchQ && matchS
-    })
-  }, [query, status])
+  const { data: api, isLoading } = useClassStudents(id as any, page, pageSize, query)
+  const apiItems = (api?.data || []) as Array<{ id: number; name: string; email: string; attendance_percent?: number | null; avg_grade?: number | null; is_active?: number | boolean }>
+  const total = api?.total || 0
+  const totalPages = api?.last_page || 1
 
-  const total = filtered.length
-  const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const current = useMemo(() => {
-    const start = (page - 1) * pageSize
-    return filtered.slice(start, start + pageSize)
-  }, [filtered, page])
+  const current = useMemo(() => apiItems.map((u) => ({
+    id: String(u.id),
+    name: u.name,
+    email: u.email,
+    status: (u.is_active ? 'Active' : 'Inactive') as const,
+    attendance: typeof u.attendance_percent === 'number' ? Math.max(0, Math.min(100, Math.round(u.attendance_percent))) : 0,
+    grade: typeof u.avg_grade === 'number' ? u.avg_grade.toFixed(2) : '-',
+  })), [apiItems])
 
   const allSelected = current.length > 0 && current.every((s) => selected[s.id])
   const toggleAll = () => {
@@ -53,12 +46,14 @@ export default function ClassStudentsPage() {
     setSelected(next)
   }
 
+  const activeCount = useMemo(() => current.filter(s => s.status === 'Active').length, [current])
+  const inactiveCount = useMemo(() => current.filter(s => s.status === 'Inactive').length, [current])
   const avgGrade = useMemo(() => {
-    const mapping: Record<string, number> = { A: 95, 'A-': 90, 'B+': 87, B: 83, 'C+': 78 }
-    const arr = base.map((s) => mapping[s.grade] ?? 0)
-    const avg = Math.round(arr.reduce((a, b) => a + b, 0) / arr.length)
-    return `${avg}%`
-  }, [])
+    const numeric = apiItems.map(u => typeof u.avg_grade === 'number' ? u.avg_grade : null).filter((v): v is number => v != null)
+    if (numeric.length === 0) return '—'
+    const avg = numeric.reduce((a,b)=>a+b,0)/numeric.length
+    return avg.toFixed(2)
+  }, [apiItems])
 
   return (
     <div className="grid gap-6">
@@ -69,9 +64,9 @@ export default function ClassStudentsPage() {
 
       {/* Top summary */}
       <div className="grid gap-3 sm:grid-cols-4">
-        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Total Students</div><div className="text-2xl font-semibold">{base.length}</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Active</div><div className="text-2xl font-semibold">{base.filter(s=>s.status==='Active').length}</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Inactive</div><div className="text-2xl font-semibold">{base.filter(s=>s.status==='Inactive').length}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Total Students</div><div className="text-2xl font-semibold">{total}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Active</div><div className="text-2xl font-semibold">{activeCount}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Inactive</div><div className="text-2xl font-semibold">{inactiveCount}</div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Average Grade</div><div className="text-2xl font-semibold">{avgGrade}</div></CardContent></Card>
       </div>
 
@@ -112,7 +107,7 @@ export default function ClassStudentsPage() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-4 py-2 text-left"><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
-                <th className="px-4 py-2 text-left">Student ID</th>
+                <th className="px-4 py-2 text-left">#</th>
                 <th className="px-4 py-2 text-left">Name</th>
                 <th className="px-4 py-2 text-left">Email</th>
                 <th className="px-4 py-2 text-left">Status</th>
@@ -121,10 +116,12 @@ export default function ClassStudentsPage() {
               </tr>
             </thead>
             <tbody>
-              {current.map((s, idx) => (
+              {isLoading ? (
+                <tr><td colSpan={7} className="px-4 py-6 text-center text-sm text-slate-600">Loading…</td></tr>
+              ) : current.map((s, idx) => (
                 <tr key={s.id} className={`${idx % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
                   <td className="px-4 py-3"><input type="checkbox" checked={!!selected[s.id]} onChange={()=>setSelected({...selected, [s.id]: !selected[s.id]})} /></td>
-                  <td className="px-4 py-3 font-medium">{s.id}</td>
+                  <td className="px-4 py-3 font-medium">{(page - 1) * pageSize + idx + 1}</td>
                   <td className="px-4 py-3">{s.name}</td>
                   <td className="px-4 py-3">{s.email}</td>
                   <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-medium ${s.status==='Active'?'bg-green-100 text-green-700':'bg-slate-200 text-slate-700'}`}>{s.status}</span></td>

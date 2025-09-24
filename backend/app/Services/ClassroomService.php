@@ -30,6 +30,11 @@ class ClassroomService
         return $this->repository->findDetailById($id, $includes, $limits);
     }
 
+    public function paginateStudents(int $classId, string $search = '', int $perPage = 15)
+    {
+        return $this->repository->paginateStudents($classId, $search, $perPage);
+    }
+
     public function create(array $data)
     {
         return $this->repository->create($data);
