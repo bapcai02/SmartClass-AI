@@ -14,6 +14,7 @@ export type ClassroomDto = {
   resources_count?: number
   attendance_rate?: number | null
   average_grade?: number | null
+  performance_over_time?: Array<{ week: string; score: number }>
 }
 
 export type PaginatedResponse<T> = {

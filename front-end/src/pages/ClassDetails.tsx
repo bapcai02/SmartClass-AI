@@ -81,14 +81,7 @@ export default function ClassDetailsPage() {
           </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={[
-                { w: 'W1', score: 78 },
-                { w: 'W2', score: 81 },
-                { w: 'W3', score: 84 },
-                { w: 'W4', score: 86 },
-                { w: 'W5', score: 88 },
-                { w: 'W6', score: 90 },
-              ]} margin={{ left: 8, right: 8 }}>
+              <LineChart data={(data?.performance_over_time || []).map((p)=>({ w: p.week, score: p.score }))} margin={{ left: 8, right: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="w" />
                 <YAxis domain={[60, 100]} />
@@ -147,32 +140,6 @@ export default function ClassDetailsPage() {
         </CardContent>
       </Card>
 
-      {/* Students (first N) */}
-      {Array.isArray(data?.students) && data!.students!.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle>Students</CardTitle></CardHeader>
-          <CardContent className="grid gap-2">
-            <div className="overflow-hidden rounded-2xl border">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Name</th>
-                    <th className="px-3 py-2 text-left">Email</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data!.students!.map((s) => (
-                    <tr key={s.id} className="border-t">
-                      <td className="px-3 py-2">{s.name}</td>
-                      <td className="px-3 py-2">{s.email || '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

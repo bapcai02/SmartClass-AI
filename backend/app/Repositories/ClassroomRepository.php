@@ -139,6 +139,26 @@ class ClassroomRepository
             ->avg('exam_submissions.grade');
         $classroom->average_grade = $avgGrade ? round((float) $avgGrade, 2) : null;
 
+        // Performance over time (last 6 weeks average grade by week)
+        $series = DB::table('exam_submissions')
+            ->join('exams', 'exam_submissions.exam_id', '=', 'exams.id')
+            ->where('exams.class_id', $id)
+            ->whereNotNull('exam_submissions.grade')
+            ->selectRaw("DATE_FORMAT(COALESCE(exam_submissions.submitted_at, exam_submissions.created_at), '%x-%v') as yw, AVG(grade) as avg_grade")
+            ->groupBy('yw')
+            ->orderBy('yw', 'desc')
+            ->limit(6)
+            ->get()
+            ->reverse()
+            ->values();
+
+        $classroom->performance_over_time = $series->map(function ($row) {
+            return [
+                'week' => $row->yw,
+                'score' => round((float) $row->avg_grade, 2),
+            ];
+        });
+
         return $classroom;
     }
 }
