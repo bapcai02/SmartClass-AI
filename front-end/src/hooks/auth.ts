@@ -40,6 +40,7 @@ export function useLogout() {
     },
     onSuccess: () => {
       localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
       queryClient.clear()
     },
   })
