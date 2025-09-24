@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\ClassroomController;
+use App\Http\Controllers\Api\SubjectController;
+use App\Http\Controllers\Api\UserController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -17,6 +19,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/classes', [ClassroomController::class, 'store']);
     Route::put('/classes/{id}', [ClassroomController::class, 'update']);
     Route::delete('/classes/{id}', [ClassroomController::class, 'destroy']);
+
+    // Lookups
+    Route::get('/subjects', [SubjectController::class, 'index']);
+    Route::get('/users', [UserController::class, 'index']);
 });
 
 

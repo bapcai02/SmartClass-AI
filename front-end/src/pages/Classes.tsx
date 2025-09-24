@@ -7,6 +7,7 @@ import { Plus, Users, UserRound, Search, Filter, Trash2, LayoutGrid, Table } fro
 import { useMemo, useState } from 'react'
 // @ts-ignore - JS module, types provided via d.ts shim
 import { useGetClasses } from '@/hooks/useClasses'
+import ClassForm from '@/components/classes/ClassForm'
 
 function ProgressBar({ value }: { value: number }) {
   return (
@@ -97,17 +98,10 @@ export default function ClassesPage() {
           <ModalContent>
             <ModalHeader title="Create a Class" description="Set up a new class to invite students" />
             <div className="grid gap-3">
-              <div>
-                <label className="text-sm font-medium">Class name</label>
-                <input className="mt-1 w-full rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" placeholder="e.g., Algebra I" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Teacher</label>
-                <input className="mt-1 w-full rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" placeholder="Your name" />
-              </div>
-              <div className="flex justify-end">
-                <Button onClick={() => setOpen(false)}>Create</Button>
-              </div>
+              <ClassForm
+                onSuccess={() => setOpen(false)}
+                onCancel={() => setOpen(false)}
+              />
             </div>
           </ModalContent>
         </Modal>

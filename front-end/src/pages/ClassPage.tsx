@@ -2,6 +2,7 @@ import { useState } from 'react'
 import ClassTable from '@/components/classes/ClassTable'
 import ClassForm from '@/components/classes/ClassForm'
 import { Button } from '@/components/ui/button'
+import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 
 export default function ClassPage() {
   const [page, setPage] = useState<number>(1)
@@ -13,19 +14,22 @@ export default function ClassPage() {
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Classes</h1>
-        <Button onClick={() => { setEditing(null); setShowForm(true) }}>New Class</Button>
+        <Modal open={showForm} onOpenChange={setShowForm}>
+          <ModalTrigger asChild>
+            <Button onClick={() => { setEditing(null); setShowForm(true) }}>Create a Class</Button>
+          </ModalTrigger>
+          <ModalContent>
+            <ModalHeader title={editing ? 'Edit Class' : 'Create a Class'} description={editing ? undefined : 'Set up a new class to invite students'} />
+            <div className="grid gap-3">
+              <ClassForm
+                editing={editing}
+                onSuccess={() => { setShowForm(false); setEditing(null) }}
+                onCancel={() => { setShowForm(false); setEditing(null) }}
+              />
+            </div>
+          </ModalContent>
+        </Modal>
       </div>
-
-      {showForm ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <h2 className="text-lg font-medium mb-3">{editing ? 'Edit Class' : 'Create Class'}</h2>
-          <ClassForm
-            editing={editing}
-            onSuccess={() => { setShowForm(false); setEditing(null) }}
-            onCancel={() => { setShowForm(false); setEditing(null) }}
-          />
-        </div>
-      ) : null}
 
       <ClassTable
         page={page}
