@@ -12,6 +12,7 @@ class ClassroomRepository
     {
         return ClassRoom::query()
             ->with(['teacher:id,name,email', 'subject:id,name'])
+            ->withCount('students')
             ->orderByDesc('id')
             ->paginate($perPage);
     }
@@ -20,7 +21,12 @@ class ClassroomRepository
     {
         /** @var ClassRoom|null $classroom */
         $classroom = ClassRoom::query()
-            ->with(['teacher:id,name,email', 'subject:id,name'])
+            ->with([
+                'teacher:id,name,email',
+                'subject:id,name',
+                'students:id,name',
+            ])
+            ->withCount('students')
             ->find($id);
 
         if (! $classroom) {

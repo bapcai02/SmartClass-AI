@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button'
 import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 import { classes } from '@/data/dummy'
 import { Link } from 'react-router-dom'
-import { Plus, Users, UserRound, Search, Filter, Trash2, LayoutGrid, Table } from 'lucide-react'
+import { Plus, Users, UserRound, Search, Filter, Trash2, LayoutGrid, Table, Edit3 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 // @ts-ignore - JS module, types provided via d.ts shim
 import { useGetClasses } from '@/hooks/useClasses'
+// @ts-ignore - JS module, types provided via d.ts shim
+import { useGetClass } from '@/hooks/useClasses'
 import ClassForm from '@/components/classes/ClassForm'
 
 function ProgressBar({ value }: { value: number }) {
@@ -38,6 +40,9 @@ export default function ClassesPage() {
   const [view, setView] = useState<'grid'|'table'>('grid')
   const [page] = useState(1)
   const [perPage] = useState(12)
+  const [editing, setEditing] = useState<any>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const { data: editingData, isLoading: isLoadingEditing } = useGetClass(editingId as any)
 
   const { data: apiData, isSuccess } = useGetClasses({ page, perPage })
 
@@ -96,12 +101,17 @@ export default function ClassesPage() {
             <Button variant="outline" className="gap-2"><Plus className="h-4 w-4"/> Create New Class</Button>
           </ModalTrigger>
           <ModalContent>
-            <ModalHeader title="Create a Class" description="Set up a new class to invite students" />
+            <ModalHeader title={editingId ? 'Edit Class' : 'Create a Class'} description={editingId ? undefined : 'Set up a new class to invite students'} />
             <div className="grid gap-3">
-              <ClassForm
-                onSuccess={() => setOpen(false)}
-                onCancel={() => setOpen(false)}
-              />
+              {editingId && isLoadingEditing ? (
+                <div className="p-3 text-sm text-slate-600">Loading class details...</div>
+              ) : (
+                <ClassForm
+                  editing={editingId ? (editingData || editing) : null}
+                  onSuccess={() => { setOpen(false); setEditing(null); setEditingId(null) }}
+                  onCancel={() => { setOpen(false); setEditing(null); setEditingId(null) }}
+                />
+              )}
             </div>
           </ModalContent>
         </Modal>
@@ -132,6 +142,7 @@ export default function ClassesPage() {
                     <Button variant="outline">Open</Button>
                   </Link>
                   <div className="flex items-center gap-2">
+                    <Button variant="outline" className="h-8 px-2" onClick={() => { setEditing(c); setEditingId(Number(c.id)); setOpen(true) }}><Edit3 className="h-4 w-4"/></Button>
                     <Button variant="outline" className="h-8 px-2"><Trash2 className="h-4 w-4"/></Button>
                   </div>
                 </div>
@@ -175,6 +186,7 @@ export default function ClassesPage() {
                   <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-medium ${c.status==='active'?'bg-green-100 text-green-700':'bg-slate-200 text-slate-700'}`}>{c.status}</span></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
+                      <Button variant="outline" className="h-8 px-2" onClick={() => { setEditing(c); setEditingId(Number(c.id)); setOpen(true) }}><Edit3 className="h-4 w-4"/></Button>
                       <Button variant="outline" className="h-8 px-2"><Trash2 className="h-4 w-4"/></Button>
                     </div>
                   </td>

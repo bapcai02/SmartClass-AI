@@ -7,43 +7,40 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\LoginRequest;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
-            'role' => ['nullable', 'string', 'max:50'],
-            'avatar_url' => ['nullable', 'string', 'max:2048'],
-            'bio' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'] ?? 'student',
-            'avatar_url' => $validated['avatar_url'] ?? null,
-            'bio' => $validated['bio'] ?? null,
-        ]);
-
-        $token = $user->createToken('API Token')->accessToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+        $validated = $request->validated();
+        try {
+            DB::beginTransaction();
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => $validated['role'] ?? 'student',
+                'avatar_url' => $validated['avatar_url'] ?? null,
+                'bio' => $validated['bio'] ?? null,
+            ]);
+            $token = $user->createToken('API Token')->accessToken;
+            DB::commit();
+            return response()->json([
+                'user' => $user,
+                'token' => $token,
+            ], 201);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Registration failed'], 500);
+        }
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+        $credentials = $request->validated();
 
         if (!Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
@@ -53,7 +50,14 @@ class AuthController extends Controller
 
         /** @var User $user */
         $user = Auth::user();
-        $token = $user->createToken('API Token')->accessToken;
+        try {
+            DB::beginTransaction();
+            $token = $user->createToken('API Token')->accessToken;
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Login failed'], 500);
+        }
 
         return response()->json([
             'user' => $user,
