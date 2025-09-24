@@ -40,6 +40,23 @@ class ClassroomController extends Controller
         }
     }
 
+    public function detail(int $id): JsonResponse
+    {
+        try {
+            $includes = array_filter(explode(',', (string) request()->get('include', '')));
+            $limits = [
+                'students' => request()->integer('per_page_students') ?: null,
+                'assignments' => request()->integer('per_page_assignments') ?: null,
+                'exams' => request()->integer('per_page_exams') ?: null,
+                'resources' => request()->integer('per_page_resources') ?: null,
+            ];
+            $classroom = $this->service->getDetail($id, $includes, $limits);
+            return response()->json($classroom);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Classroom not found'], 404);
+        }
+    }
+
     public function store(StoreClassroomRequest $request): JsonResponse
     {
         $validated = $request->validated();

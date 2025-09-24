@@ -16,6 +16,7 @@ Route::middleware('auth:api')->group(function () {
     // Classrooms
     Route::get('/classes', [ClassroomController::class, 'index']);
     Route::get('/classes/{id}', [ClassroomController::class, 'show']);
+    Route::get('/classes/{id}/detail', [ClassroomController::class, 'detail']);
     Route::post('/classes', [ClassroomController::class, 'store']);
     Route::put('/classes/{id}', [ClassroomController::class, 'update']);
     Route::delete('/classes/{id}', [ClassroomController::class, 'destroy']);

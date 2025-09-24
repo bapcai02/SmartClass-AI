@@ -40,4 +40,14 @@ class ClassRoom extends Model
     {
         return $this->hasMany(Exam::class, 'class_id');
     }
+
+    public function resources()
+    {
+        return $this->hasMany(Resource::class, 'class_id');
+    }
+
+    public function timetables()
+    {
+        return $this->hasMany(Timetable::class, 'class_id');
+    }
 }

@@ -8,7 +8,9 @@ import { useMemo, useState } from 'react'
 // @ts-ignore - JS module, types provided via d.ts shim
 import { useGetClasses } from '@/hooks/useClasses'
 // @ts-ignore - JS module, types provided via d.ts shim
-import { useGetClass } from '@/hooks/useClasses'
+import { useGetClassDetail } from '@/hooks/useClasses'
+// @ts-ignore - JS module, types provided via d.ts shim
+import { useDeleteClass } from '@/hooks/useClasses'
 import ClassForm from '@/components/classes/ClassForm'
 
 function ProgressBar({ value }: { value: number }) {
@@ -42,7 +44,10 @@ export default function ClassesPage() {
   const [perPage] = useState(12)
   const [editing, setEditing] = useState<any>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
-  const { data: editingData, isLoading: isLoadingEditing } = useGetClass(editingId as any)
+  const { data: editingData, isLoading: isLoadingEditing } = useGetClassDetail(editingId as any, { include: ['students'], perPage: { students: 50 } })
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleting, setDeleting] = useState<{ id: number | null; name: string | null }>({ id: null, name: null })
+  const deleteMut = useDeleteClass()
 
   const { data: apiData, isSuccess } = useGetClasses({ page, perPage })
 
@@ -115,6 +120,32 @@ export default function ClassesPage() {
             </div>
           </ModalContent>
         </Modal>
+
+        <Modal open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <ModalContent>
+            <ModalHeader title="Delete Class" description="Are you sure you want to delete this class?" />
+            <div className="grid gap-3">
+              <div className="text-sm text-slate-700">{deleting.name ? `Class: ${deleting.name}` : ''}</div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+                <Button
+                  variant="outline"
+                  className="bg-red-600 text-white hover:bg-red-700"
+                  onClick={async () => {
+                    if (deleting.id) {
+                      await deleteMut.mutateAsync(deleting.id)
+                    }
+                    setConfirmOpen(false)
+                    setDeleting({ id: null, name: null })
+                  }}
+                  disabled={deleteMut.isPending}
+                >
+                  {deleteMut.isPending ? 'Deleting...' : 'Delete'}
+                </Button>
+              </div>
+            </div>
+          </ModalContent>
+        </Modal>
       </div>
 
       {view==='grid' ? (
@@ -143,7 +174,7 @@ export default function ClassesPage() {
                   </Link>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" className="h-8 px-2" onClick={() => { setEditing(c); setEditingId(Number(c.id)); setOpen(true) }}><Edit3 className="h-4 w-4"/></Button>
-                    <Button variant="outline" className="h-8 px-2"><Trash2 className="h-4 w-4"/></Button>
+                    <Button variant="outline" className="h-8 px-2" onClick={() => { setDeleting({ id: Number(c.id), name: c.name }); setConfirmOpen(true) }}><Trash2 className="h-4 w-4"/></Button>
                   </div>
                 </div>
               </CardContent>
@@ -187,7 +218,7 @@ export default function ClassesPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Button variant="outline" className="h-8 px-2" onClick={() => { setEditing(c); setEditingId(Number(c.id)); setOpen(true) }}><Edit3 className="h-4 w-4"/></Button>
-                      <Button variant="outline" className="h-8 px-2"><Trash2 className="h-4 w-4"/></Button>
+                      <Button variant="outline" className="h-8 px-2" onClick={() => { setDeleting({ id: Number(c.id), name: c.name }); setConfirmOpen(true) }}><Trash2 className="h-4 w-4"/></Button>
                     </div>
                   </td>
                 </tr>

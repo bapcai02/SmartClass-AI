@@ -3,16 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Edit3, Trash2, UserPlus, LayoutDashboard, Users as UsersIcon, CalendarDays, FolderOpen, NotebookTabs, FileBarChart, BarChart3, Megaphone, MessageSquare } from 'lucide-react'
+// @ts-ignore
+import { useGetClassDetail } from '@/hooks/useClasses'
 
 export default function ClassDetailsPage() {
   const { id } = useParams()
+  const { data, isLoading } = useGetClassDetail(id as any, { include: ['students','timetables'], perPage: { students: 50, } })
   return (
     <div className="grid gap-6">
       {/* Header */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Algebra I</h1>
-          <p className="text-slate-600">Subject: Math • Teacher: Ms. Johnson • Semester: Fall 2025</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{isLoading ? 'Loading…' : (data?.name || 'Class')}</h1>
+          <p className="text-slate-600">
+            {isLoading ? 'Loading…' : (
+              <>Subject: {data?.subject?.name || '-'} • Teacher: {data?.teacher?.name || '-'}{data?.teacher?.email ? ` (${data.teacher.email})` : ''}</>
+            )}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" className="gap-2"><Edit3 className="h-4 w-4"/> Edit</Button>
@@ -26,19 +33,19 @@ export default function ClassDetailsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-xs text-slate-600">Total Students</div>
-            <div className="text-3xl font-semibold">28</div>
+            <div className="text-3xl font-semibold">{isLoading ? '—' : (data?.students_count ?? '—')}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-xs text-slate-600">Attendance Rate</div>
-            <div className="text-3xl font-semibold">94%</div>
+            <div className="text-3xl font-semibold">{isLoading ? '—' : (data?.attendance_rate != null ? `${data.attendance_rate}%` : '—')}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-xs text-slate-600">Average Grade</div>
-            <div className="text-3xl font-semibold">B+</div>
+            <div className="text-3xl font-semibold">{isLoading ? '—' : (data?.average_grade != null ? data.average_grade : '—')}</div>
           </CardContent>
         </Card>
       </section>
@@ -50,19 +57,21 @@ export default function ClassDetailsPage() {
             <CardTitle>Upcoming Lessons</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
-            {[
-              { title: 'Quadratic Equations', date: 'Mon, Oct 6 • 09:00' },
-              { title: 'Factoring Techniques', date: 'Wed, Oct 8 • 09:00' },
-              { title: 'Graphing Parabolas', date: 'Fri, Oct 10 • 09:00' },
-            ].map((l, i) => (
-              <div key={i} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
-                <div>
-                  <div className="font-medium">{l.title}</div>
-                  <div className="text-sm text-slate-600">{l.date}</div>
+            {isLoading ? (
+              <div className="text-sm text-slate-600">Loading…</div>
+            ) : (
+              (data as any)?.timetables?.length ? (data as any).timetables.map((l: any) => (
+                <div key={l.id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
+                  <div>
+                    <div className="font-medium">{data?.subject?.name || 'Lesson'}</div>
+                    <div className="text-sm text-slate-600">Day {l.day_of_week} • {l.start_time} - {l.end_time} {l.room ? `• ${l.room}` : ''}</div>
+                  </div>
+                  <Button variant="outline">View</Button>
                 </div>
-                <Button variant="outline">View</Button>
-              </div>
-            ))}
+              )) : (
+                <div className="text-sm text-slate-600">No upcoming lessons</div>
+              )
+            )}
           </CardContent>
         </Card>
 
@@ -126,17 +135,44 @@ export default function ClassDetailsPage() {
               </tr>
             </thead>
             <tbody>
-              <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Total Students</td><td className="px-4 py-3">28</td></tr>
+              <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Total Students</td><td className="px-4 py-3">{isLoading ? '—' : (data?.students_count ?? '—')}</td></tr>
               <tr className="bg-slate-50/50 hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Attendance Rate</td><td className="px-4 py-3">94%</td></tr>
               <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Average Grade</td><td className="px-4 py-3">B+</td></tr>
-              <tr className="bg-slate-50/50 hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Assignments (Open/Closed)</td><td className="px-4 py-3">12 / 4</td></tr>
-              <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Exams (Upcoming/Ongoing/Finished)</td><td className="px-4 py-3">3 / 1 / 6</td></tr>
-              <tr className="bg-slate-50/50 hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Resources</td><td className="px-4 py-3">35</td></tr>
+              <tr className="bg-slate-50/50 hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Assignments</td><td className="px-4 py-3">{isLoading ? '—' : (data?.assignments_count ?? '—')}</td></tr>
+              <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Exams</td><td className="px-4 py-3">{isLoading ? '—' : (data?.exams_count ?? '—')}</td></tr>
+              <tr className="bg-slate-50/50 hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Resources</td><td className="px-4 py-3">{isLoading ? '—' : (data?.resources_count ?? '—')}</td></tr>
               <tr className="hover:bg-slate-100/70 transition-colors"><td className="px-4 py-3 font-medium">Announcements</td><td className="px-4 py-3">16</td></tr>
             </tbody>
           </table>
         </CardContent>
       </Card>
+
+      {/* Students (first N) */}
+      {Array.isArray(data?.students) && data!.students!.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Students</CardTitle></CardHeader>
+          <CardContent className="grid gap-2">
+            <div className="overflow-hidden rounded-2xl border">
+              <table className="min-w-full text-sm">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Name</th>
+                    <th className="px-3 py-2 text-left">Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data!.students!.map((s) => (
+                    <tr key={s.id} className="border-t">
+                      <td className="px-3 py-2">{s.name}</td>
+                      <td className="px-3 py-2">{s.email || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

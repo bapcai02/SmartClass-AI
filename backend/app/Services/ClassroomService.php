@@ -25,6 +25,11 @@ class ClassroomService
         return $this->repository->findById($id);
     }
 
+    public function getDetail(int $id, array $includes = [], array $limits = [])
+    {
+        return $this->repository->findDetailById($id, $includes, $limits);
+    }
+
     public function create(array $data)
     {
         return $this->repository->create($data);

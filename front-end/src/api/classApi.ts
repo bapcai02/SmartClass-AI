@@ -9,6 +9,11 @@ export type ClassroomDto = {
   subject?: { id: number; name: string }
   teacher?: { id: number; name: string; email: string }
   students_count?: number
+  assignments_count?: number
+  exams_count?: number
+  resources_count?: number
+  attendance_rate?: number | null
+  average_grade?: number | null
 }
 
 export type PaginatedResponse<T> = {
@@ -32,6 +37,23 @@ export async function getClasses(params: { page?: number; perPage?: number } = {
 
 export async function getClassById(id: number | string) {
   const { data } = await api.get<ClassroomDto>(`/classes/${id}`)
+  return data
+}
+
+export async function getClassDetail(
+  id: number | string,
+  options?: { include?: string[]; perPage?: { students?: number; assignments?: number; exams?: number; resources?: number } }
+) {
+  const params: Record<string, any> = {}
+  if (options?.include?.length) params.include = options.include.join(',')
+  if (options?.perPage?.students) params.per_page_students = options.perPage.students
+  if (options?.perPage?.assignments) params.per_page_assignments = options.perPage.assignments
+  if (options?.perPage?.exams) params.per_page_exams = options.perPage.exams
+  if (options?.perPage?.resources) params.per_page_resources = options.perPage.resources
+  const { data } = await api.get<ClassroomDto & { students?: Array<{ id: number; name: string; email?: string }>; students_count?: number }>(
+    `/classes/${id}/detail`,
+    { params }
+  )
   return data
 }
 
