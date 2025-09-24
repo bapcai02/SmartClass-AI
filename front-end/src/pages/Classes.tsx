@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button'
 import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 import { classes } from '@/data/dummy'
 import { Link } from 'react-router-dom'
-import { Plus, Users, UserRound, Search, Filter, Eye, Edit3, Trash2, LayoutGrid, Table } from 'lucide-react'
+import { Plus, Users, UserRound, Search, Filter, Trash2, LayoutGrid, Table } from 'lucide-react'
 import { useMemo, useState } from 'react'
+// @ts-ignore - JS module, types provided via d.ts shim
+import { useGetClasses } from '@/hooks/useClasses'
 
 function ProgressBar({ value }: { value: number }) {
   return (
@@ -33,14 +35,29 @@ export default function ClassesPage() {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<'all'|'active'|'inactive'>('all')
   const [view, setView] = useState<'grid'|'table'>('grid')
+  const [page] = useState(1)
+  const [perPage] = useState(12)
+
+  const { data: apiData, isSuccess } = useGetClasses({ page, perPage })
 
   const dataset: ClassItem[] = useMemo(() => {
+    if (isSuccess) {
+      const items = (apiData?.data || apiData?.items || []) as any[]
+      return items.map((it: any, idx: number) => ({
+        id: String(it.id),
+        name: it.name,
+        teacher: it.teacher?.name || '—',
+        students: Array.isArray(it.students) ? it.students.length : (it.students_count || 0),
+        subject: it.subject?.name || SUBJECTS[idx % SUBJECTS.length],
+        status: 'active',
+      })) as ClassItem[]
+    }
     return classes.map((c, idx) => ({
       ...c,
       subject: SUBJECTS[idx % SUBJECTS.length],
       status: idx % 4 === 0 ? 'inactive' : 'active',
     })) as ClassItem[]
-  }, [])
+  }, [apiData, isSuccess])
 
   const filtered = useMemo(() => {
     return dataset.filter((c) => {
@@ -121,8 +138,6 @@ export default function ClassesPage() {
                     <Button variant="outline">Open</Button>
                   </Link>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" className="h-8 px-2"><Eye className="h-4 w-4"/></Button>
-                    <Button variant="outline" className="h-8 px-2"><Edit3 className="h-4 w-4"/></Button>
                     <Button variant="outline" className="h-8 px-2"><Trash2 className="h-4 w-4"/></Button>
                   </div>
                 </div>
@@ -166,8 +181,6 @@ export default function ClassesPage() {
                   <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-medium ${c.status==='active'?'bg-green-100 text-green-700':'bg-slate-200 text-slate-700'}`}>{c.status}</span></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" className="h-8 px-2"><Eye className="h-4 w-4"/></Button>
-                      <Button variant="outline" className="h-8 px-2"><Edit3 className="h-4 w-4"/></Button>
                       <Button variant="outline" className="h-8 px-2"><Trash2 className="h-4 w-4"/></Button>
                     </div>
                   </td>
