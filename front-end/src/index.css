@@ -1,6 +1,69 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
+/* Animated background orbs for subtle motion */
+@keyframes float-slow {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  25% {
+    transform: translateY(-12px) translateX(8px) scale(1.02);
+  }
+  50% {
+    transform: translateY(6px) translateX(-6px) scale(0.98);
+  }
+  75% {
+    transform: translateY(-8px) translateX(4px) scale(1.01);
+  }
+  100% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+}
+
+.bg-orbs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-orbs .orb {
+  position: absolute;
+  filter: blur(48px);
+  opacity: 0.5;
+  border-radius: 9999px;
+  animation: float-slow 16s ease-in-out infinite;
+  will-change: transform;
+}
+
+.bg-orbs .orb-1 {
+  width: 420px;
+  height: 420px;
+  left: -120px;
+  top: -80px;
+  background: radial-gradient(circle at 30% 30%, rgba(59,130,246,0.45), rgba(99,102,241,0.35));
+}
+
+.bg-orbs .orb-2 {
+  width: 360px;
+  height: 360px;
+  right: -100px;
+  top: 20%;
+  background: radial-gradient(circle at 70% 40%, rgba(99,102,241,0.4), rgba(56,189,248,0.25));
+  animation-duration: 18s;
+  animation-delay: -4s;
+}
+
+.bg-orbs .orb-3 {
+  width: 500px;
+  height: 500px;
+  left: 10%;
+  bottom: -180px;
+  background: radial-gradient(circle at 50% 60%, rgba(56,189,248,0.35), rgba(59,130,246,0.25));
+  animation-duration: 22s;
+  animation-delay: -8s;
+}
+
 /* App base styles */
 html, body, #root {
   height: 100%;

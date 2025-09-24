@@ -5,12 +5,14 @@ import { BarChart3, CheckCircle2, ClipboardList } from 'lucide-react'
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, BarChart, Bar } from 'recharts'
 import { MetricChip } from '@/components/ui/metric-chip'
 import { Link } from 'react-router-dom'
+import { useUser } from '@/hooks/auth'
 
 export default function DashboardPage() {
+  const { data: user } = useUser()
   return (
     <div className="grid gap-8">
       <div className="rounded-2xl bg-gradient-to-r from-slate-100 to-white border border-slate-200 p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome back, Alex</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{user ? `Welcome, ${user.name}` : 'Welcome back, Alex'}</h1>
         <p className="text-slate-600">Keep up the great work. You’re making steady progress!</p>
       </div>
       <section className="grid gap-3 md:grid-cols-4">

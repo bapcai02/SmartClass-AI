@@ -1,6 +1,8 @@
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
 import AuthPage from '@/pages/Auth'
+import LoginPage from '@/pages/Login'
+import PrivateRoute from '@/components/PrivateRoute'
 import DashboardPage from '@/pages/Dashboard'
 import ClassPage from '@/pages/ClassPage'
 import ClassesPage from '@/pages/Classes'
@@ -27,31 +29,32 @@ import ClassAnnouncementsPage from '@/pages/ClassAnnouncements'
 function App() {
   return (
     <Routes>
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/auth" element={<AuthPage />} />
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/classes" element={<ClassesPage />} />
-        <Route path="/classes/new" element={<CreateClassPage />} />
-        <Route path="/class/:id" element={<ClassDetailsPage />} />
-        <Route path="/class/:id/students" element={<ClassStudentsPage />} />
-        <Route path="/class/:id/attendance" element={<ClassAttendancePage />} />
-        <Route path="/class/:id/resources" element={<ClassResourcesManagePage />} />
-        <Route path="/class/:id/assignments" element={<ClassAssignmentsPage />} />
-        <Route path="/class/:id/exams" element={<ClassExamsPage />} />
-        <Route path="/class/:id/grades" element={<ClassGradebookPage />} />
-        <Route path="/class/:id/announcements" element={<ClassAnnouncementsPage />} />
-        <Route path="/assignments" element={<AssignmentsPage />} />
-        <Route path="/assignment/:id" element={<AssignmentDetailPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/exams" element={<ExamsPage />} />
-        <Route path="/resources" element={<ResourcesPage />} />
-        <Route path="/qa" element={<QAPage />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/profile" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+        <Route path="/classes" element={<PrivateRoute><ClassesPage /></PrivateRoute>} />
+        <Route path="/classes/new" element={<PrivateRoute><CreateClassPage /></PrivateRoute>} />
+        <Route path="/class/:id" element={<PrivateRoute><ClassDetailsPage /></PrivateRoute>} />
+        <Route path="/class/:id/students" element={<PrivateRoute><ClassStudentsPage /></PrivateRoute>} />
+        <Route path="/class/:id/attendance" element={<PrivateRoute><ClassAttendancePage /></PrivateRoute>} />
+        <Route path="/class/:id/resources" element={<PrivateRoute><ClassResourcesManagePage /></PrivateRoute>} />
+        <Route path="/class/:id/assignments" element={<PrivateRoute><ClassAssignmentsPage /></PrivateRoute>} />
+        <Route path="/class/:id/exams" element={<PrivateRoute><ClassExamsPage /></PrivateRoute>} />
+        <Route path="/class/:id/grades" element={<PrivateRoute><ClassGradebookPage /></PrivateRoute>} />
+        <Route path="/class/:id/announcements" element={<PrivateRoute><ClassAnnouncementsPage /></PrivateRoute>} />
+        <Route path="/assignments" element={<PrivateRoute><AssignmentsPage /></PrivateRoute>} />
+        <Route path="/assignment/:id" element={<PrivateRoute><AssignmentDetailPage /></PrivateRoute>} />
+        <Route path="/reports" element={<PrivateRoute><ReportsPage /></PrivateRoute>} />
+        <Route path="/exams" element={<PrivateRoute><ExamsPage /></PrivateRoute>} />
+        <Route path="/resources" element={<PrivateRoute><ResourcesPage /></PrivateRoute>} />
+        <Route path="/qa" element={<PrivateRoute><QAPage /></PrivateRoute>} />
+        <Route path="/leaderboard" element={<PrivateRoute><LeaderboardPage /></PrivateRoute>} />
+        <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+        <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
+        <Route path="/chat" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
+        <Route path="/profile" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
