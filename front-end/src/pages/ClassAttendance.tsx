@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Download, Search } from 'lucide-react'
 import { useClassAttendance } from '@/hooks/useClasses'
+import type { AttendanceResponse } from '@/api/classApi'
+import * as XLSX from 'xlsx'
 
-type Mark = 'P' | 'A' | 'L'
-type Row = { name: string; marks: Record<string, Mark> }
+ 
 
 function generateDates(from: string, to: string) {
   const out: string[] = []
@@ -30,7 +31,8 @@ export default function ClassAttendancePage() {
   
 
   const { data, isLoading } = useClassAttendance(id as any, from, to)
-  const rows: Array<{ name: string; marks: Record<string, 'present'|'absent'|'late'> }> = (data?.rows || []).map(r => ({ name: r.name, marks: r.marks }))
+  const attendance = data as AttendanceResponse | undefined
+  const rows: Array<{ name: string; marks: Record<string, 'present'|'absent'|'late'> }> = (attendance?.rows || []).map((r) => ({ name: r.name, marks: r.marks }))
 
   const dateRange = useMemo(() => generateDates(from, to), [from, to])
   const filteredRows = useMemo(() => {
@@ -39,9 +41,46 @@ export default function ClassAttendancePage() {
   }, [query, rows])
 
   const summary = useMemo(() => {
-    if (data?.summary) return { pct: data.summary.pct, absent: data.summary.absent, late: data.summary.late }
+    if (attendance?.summary) return { pct: attendance.summary.pct, absent: attendance.summary.absent, late: attendance.summary.late }
     return { pct: 0, absent: 0, late: 0 }
-  }, [data])
+  }, [attendance])
+
+  const [format, setFormat] = useState<'csv'|'xlsx'>('csv')
+
+  const buildTabular = () => {
+    const header = ['Student Name', ...dateRange]
+    const body = filteredRows.map((r) => [
+      r.name,
+      ...dateRange.map((d) => {
+        const m = r.marks[d] as ('present'|'absent'|'late') | undefined
+        if (!m) return ''
+        return m === 'present' ? 'P' : m === 'absent' ? 'A' : 'L'
+      })
+    ])
+    return { header, body }
+  }
+
+  const handleExport = () => {
+    const { header, body } = buildTabular()
+    if (format === 'csv') {
+      const rowsCsv = body.map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
+      const csv = [header.join(','), ...rowsCsv].join('\n')
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `class_${id}_attendance_${from}_to_${to}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } else {
+      const ws = XLSX.utils.aoa_to_sheet([header, ...body])
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Attendance')
+      XLSX.writeFile(wb, `class_${id}_attendance_${from}_to_${to}.xlsx`)
+    }
+  }
 
   return (
     <div className="grid gap-6">
@@ -51,7 +90,13 @@ export default function ClassAttendancePage() {
           <h1 className="text-2xl font-semibold tracking-tight">Class Attendance</h1>
           <p className="text-slate-600">Review attendance over time and export reports</p>
         </div>
-        <Button variant="outline" className="gap-2"><Download className="h-4 w-4"/> Export</Button>
+        <div className="flex items-center gap-2">
+          <select value={format} onChange={(e)=>setFormat(e.target.value as 'csv'|'xlsx')} className="rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600">
+            <option value="csv">CSV</option>
+            <option value="xlsx">Excel (.xlsx)</option>
+          </select>
+          <Button variant="outline" className="gap-2" onClick={handleExport}><Download className="h-4 w-4"/> Export</Button>
+        </div>
       </div>
 
       {/* Summary cards */}
@@ -65,14 +110,14 @@ export default function ClassAttendancePage() {
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-          <input value={query} onChange={(e)=>setQuery(e.target.value)} className="w-72 rounded-2xl border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm shadow-sm focus:border-brand-blue" placeholder="Search student" />
+          <input value={query} onChange={(e)=>setQuery(e.target.value)} className="w-72 rounded-2xl border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600" placeholder="Search student" />
         </div>
         {/* removed per request: student select filter */}
         <div className="flex items-center gap-2">
           <label className="text-sm text-slate-600">From</label>
-          <input type="date" value={from} onChange={(e)=>setFrom(e.target.value)} className="rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" />
+          <input type="date" value={from} onChange={(e)=>setFrom(e.target.value)} className="rounded-2xl border border-slate-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600" />
           <label className="text-sm text-slate-600">To</label>
-          <input type="date" value={to} onChange={(e)=>setTo(e.target.value)} className="rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" />
+          <input type="date" value={to} onChange={(e)=>setTo(e.target.value)} className="rounded-2xl border border-slate-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600" />
         </div>
       </div>
 
