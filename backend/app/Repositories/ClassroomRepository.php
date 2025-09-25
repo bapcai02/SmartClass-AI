@@ -98,7 +98,10 @@ class ClassroomRepository
         if (in_array('resources', $includes, true)) {
             $limit = $limits['resources'] ?? 5;
             $query->with(['resources' => function ($q) use ($limit) {
-                $q->latest('id')->limit((int) $limit)->select('id', 'title', 'type', 'url', 'class_id');
+                $q->latest('id')
+                    ->limit((int) $limit)
+                    ->select('id', 'class_id', 'title', 'file_url', 'uploaded_by', 'uploaded_at', 'created_at')
+                    ->with(['uploader:id,name']);
             }]);
         }
 
