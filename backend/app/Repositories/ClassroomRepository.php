@@ -241,6 +241,16 @@ class ClassroomRepository
         return $class->loadCount('students');
     }
 
+    public function createResource(int $classId, array $data)
+    {
+        /** @var ClassRoom|null $class */
+        $class = ClassRoom::query()->find($classId);
+        if (! $class) {
+            throw new ModelNotFoundException('Classroom not found.');
+        }
+        return $class->resources()->create($data);
+    }
+
     public function getAttendance(int $classId, ?string $from = null, ?string $to = null): array
     {
         /** @var ClassRoom|null $class */

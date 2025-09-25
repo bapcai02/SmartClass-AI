@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreClassroomRequest;
 use App\Http\Requests\UpdateClassroomRequest;
-use Illuminate\Validation\Rule;
+use App\Http\Requests\AddClassStudentsRequest;
+use App\Http\Requests\RemoveClassStudentsRequest;
+use App\Http\Requests\UploadResourceRequest;
 
 class ClassroomController extends Controller
 {
@@ -77,12 +81,9 @@ class ClassroomController extends Controller
         }
     }
 
-    public function addStudents(int $id): JsonResponse
+    public function addStudents(AddClassStudentsRequest $request, int $id): JsonResponse
     {
-        $data = request()->validate([
-            'student_ids' => ['required', 'array', 'min:1'],
-            'student_ids.*' => ['integer', 'exists:users,id'],
-        ]);
+        $data = $request->validated();
         try {
             DB::beginTransaction();
             $class = $this->service->addStudents($id, $data['student_ids']);
@@ -96,12 +97,9 @@ class ClassroomController extends Controller
         }
     }
 
-    public function removeStudents(int $id): JsonResponse
+    public function removeStudents(RemoveClassStudentsRequest $request, int $id): JsonResponse
     {
-        $data = request()->validate([
-            'student_ids' => ['required', 'array', 'min:1'],
-            'student_ids.*' => ['integer', 'exists:users,id'],
-        ]);
+        $data = $request->validated();
         try {
             DB::beginTransaction();
             $class = $this->service->removeStudents($id, $data['student_ids']);
@@ -169,6 +167,31 @@ class ClassroomController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             return response()->json(['message' => 'Failed to delete classroom'], 500);
+        }
+    }
+
+    public function uploadResource(UploadResourceRequest $request, int $id): JsonResponse
+    {
+        $data = $request->validated();
+        try {
+            DB::beginTransaction();
+            $storedPath = $request->file('file')->store('resources', 'public');
+            $url = Storage::url($storedPath);
+            $userId = Auth::id();
+            $resource = $this->service->createResource($id, [
+                'title' => $data['title'] ?? $request->file('file')->getClientOriginalName(),
+                'file_url' => $url,
+                'uploaded_by' => $userId,
+                'uploaded_at' => now(),
+            ]);
+            DB::commit();
+            return response()->json($resource, 201);
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Classroom not found'], 404);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to upload resource'], 500);
         }
     }
 }

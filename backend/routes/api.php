@@ -19,6 +19,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/classes/{id}/detail', [ClassroomController::class, 'detail']);
     Route::get('/classes/{id}/attendance', [ClassroomController::class, 'attendance']);
     Route::get('/classes/{id}/students', [ClassroomController::class, 'students']);
+    Route::post('/classes/{id}/resources', [ClassroomController::class, 'uploadResource']);
     Route::post('/classes/{id}/students', [ClassroomController::class, 'addStudents']);
     Route::delete('/classes/{id}/students', [ClassroomController::class, 'removeStudents']);
     Route::post('/classes', [ClassroomController::class, 'store']);

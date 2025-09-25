@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,8 @@ export default function ClassResourcesManagePage() {
   const [tab, setTab] = useState<'All'|'Documents'|'Videos'|'Images'>('All')
   const [page, setPage] = useState(1)
   const [pageSize] = useState(10)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const { data, isLoading } = useGetClassDetail(id as any, { include: ['resources'], perPage: { resources: 200 } })
   const resources: UiResource[] = useMemo(() => {
@@ -61,14 +63,63 @@ export default function ClassResourcesManagePage() {
           <h1 className="text-2xl font-semibold tracking-tight">Class Resources</h1>
           <p className="text-slate-600">Manage course documents, videos, and images</p>
         </div>
-        <Button variant="outline" className="gap-2"><Upload className="h-4 w-4"/> Upload</Button>
+        <div className="inline-flex items-center gap-2">
+          <input ref={fileInputRef} type="file" className="hidden" onChange={(e)=>{
+            const file = e.target.files?.[0]
+            if (!file) return
+            setSelectedFile(file)
+          }} />
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={async () => {
+              if (!selectedFile) {
+                fileInputRef.current?.click()
+                return
+              }
+              const form = new FormData()
+              form.append('file', selectedFile)
+              form.append('title', selectedFile.name)
+              try {
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api'}/classes/${id}/resources`, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}` },
+                  body: form
+                })
+                if (!res.ok) throw new Error('Upload failed')
+                window.location.reload()
+              } catch (err) {
+                console.error(err)
+                alert('Upload failed')
+              } finally {
+                setSelectedFile(null)
+                if (fileInputRef.current) fileInputRef.current.value = ''
+              }
+            }}
+          >
+            <Upload className="h-4 w-4"/> {selectedFile ? 'Upload Selected' : 'Upload'}
+          </Button>
+          {selectedFile && (
+            <span className="text-sm text-slate-700">{selectedFile.name}</span>
+          )}
+        </div>
       </div>
 
       {/* Drag & drop */}
       <Card>
         <CardContent className="p-6">
-          <div className="grid place-items-center rounded-2xl border border-dashed border-slate-300 py-10 text-center text-slate-600">
-            Drag and drop files here, or click Upload
+          <div
+            className="grid place-items-center rounded-2xl border border-dashed border-slate-300 py-10 text-center text-slate-600 hover:bg-slate-50 cursor-pointer"
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e)=>{ e.preventDefault(); e.stopPropagation(); }}
+            onDrop={(e)=>{
+              e.preventDefault(); e.stopPropagation();
+              const file = e.dataTransfer.files?.[0]
+              if (!file) return
+              setSelectedFile(file)
+            }}
+          >
+            {selectedFile ? `Selected: ${selectedFile.name}` : 'Drag and drop files here, or click Upload'}
           </div>
         </CardContent>
       </Card>

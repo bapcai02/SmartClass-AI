@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Menu, Bell, Search, CircleUserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useEffect, useRef, useState } from 'react'
@@ -17,6 +17,7 @@ const links = [
 export function Navbar() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const logout = useLogout()
   const { data: me } = useUser()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -80,17 +81,20 @@ export function Navbar() {
           </div>
         </div>
         <nav className="hidden md:flex items-center gap-1 rounded-2xl bg-slate-100 p-1">
-          {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              className={({ isActive }) =>
-                `rounded-xl px-3 py-2 text-sm ${isActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:bg-white/60'}`
-              }
-            >
-              {l.label}
-            </NavLink>
-          ))}
+          {links.map((l) => {
+            return (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                className={({ isActive }) => {
+                  const active = isActive || (l.to === '/classes' && location.pathname.startsWith('/class/'))
+                  return `rounded-xl px-3 py-2 text-sm ${active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:bg-white/60'}`
+                }}
+              >
+                {l.label}
+              </NavLink>
+            )
+          })}
         </nav>
         <div className="hidden md:flex items-center gap-3">
           <button className="rounded-full p-2 hover:bg-slate-100">

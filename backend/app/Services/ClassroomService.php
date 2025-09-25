@@ -64,6 +64,11 @@ class ClassroomService
     {
         $this->repository->delete($id);
     }
+
+    public function createResource(int $classId, array $data)
+    {
+        return $this->repository->createResource($classId, $data);
+    }
 }
 
 
