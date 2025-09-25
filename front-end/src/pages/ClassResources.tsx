@@ -30,6 +30,9 @@ export default function ClassResourcesManagePage() {
   const [previewText, setPreviewText] = useState<string | null>(null)
   const [previewSheet, setPreviewSheet] = useState<Array<Array<string | number>> | null>(null)
   const docxContainerRef = useRef<HTMLDivElement | null>(null)
+  const [openDelete, setOpenDelete] = useState(false)
+  const [deletingItem, setDeletingItem] = useState<UiResource | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const { data, isLoading } = useGetClassDetail(id as any, { include: ['resources'], perPage: { resources: 200 } })
   const resources: UiResource[] = useMemo(() => {
@@ -254,7 +257,14 @@ export default function ClassResourcesManagePage() {
                       >
                         <Download className="h-4 w-4"/> Download
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-1 text-red-600"><Trash2 className="h-4 w-4"/> Delete</Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1 text-red-600"
+                        onClick={()=>{ setDeletingItem(r); setOpenDelete(true) }}
+                      >
+                        <Trash2 className="h-4 w-4"/> Delete
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -396,6 +406,42 @@ export default function ClassResourcesManagePage() {
             ) : (
               <div className="text-sm text-slate-600">No preview available</div>
             )}
+          </div>
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Confirm Modal */}
+      <Modal open={openDelete} onOpenChange={(v)=>{ setOpenDelete(v); if (!v) { setDeleting(false); setDeletingItem(null) } }}>
+        <ModalContent>
+          <ModalHeader title="Delete Resource" description={deletingItem?.title ? `Are you sure you want to delete "${deletingItem.title}"?` : 'Are you sure you want to delete this resource?'} />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={()=>setOpenDelete(false)}>Cancel</Button>
+            <Button
+              className="bg-red-600 text-white hover:bg-red-700"
+              disabled={deleting}
+              onClick={async ()=>{
+                if (!deletingItem?.id) return
+                try {
+                  setDeleting(true)
+                  const api = ((import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:8081/api')
+                  const res = await fetch(`${api}/classes/${id}/resources/${deletingItem.id}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}` },
+                  })
+                  if (!res.ok) throw new Error('Delete failed')
+                  await qc.invalidateQueries({ queryKey: ['class-detail', id] })
+                  setOpenDelete(false)
+                } catch (e) {
+                  console.error(e)
+                  alert('Delete failed')
+                } finally {
+                  setDeleting(false)
+                  setDeletingItem(null)
+                }
+              }}
+            >
+              {deleting ? 'Deleting…' : 'Delete'}
+            </Button>
           </div>
         </ModalContent>
       </Modal>

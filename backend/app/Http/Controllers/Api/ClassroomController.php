@@ -221,6 +221,32 @@ class ClassroomController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         }
     }
+
+    public function destroyResource(int $id, int $rid): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+            $class = $this->service->get($id);
+            $resource = $class->resources()->where('id', $rid)->firstOrFail();
+            // Optionally delete file from storage if it's a local file
+            if (str_starts_with($resource->file_url, '/storage/')) {
+                $path = str_replace('/storage/', 'public/', $resource->file_url);
+                $filePath = str_replace('public/', '', $path);
+                if (Storage::disk('public')->exists($filePath)) {
+                    Storage::disk('public')->delete($filePath);
+                }
+            }
+            $resource->delete();
+            DB::commit();
+            return response()->json(['message' => 'Deleted']);
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Not found'], 404);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to delete resource'], 500);
+        }
+    }
 }
 
 

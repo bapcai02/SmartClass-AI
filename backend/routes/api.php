@@ -21,6 +21,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/classes/{id}/students', [ClassroomController::class, 'students']);
     Route::post('/classes/{id}/resources', [ClassroomController::class, 'uploadResource']);
     Route::get('/classes/{id}/resources/{rid}/download', [ClassroomController::class, 'downloadResource']);
+    Route::delete('/classes/{id}/resources/{rid}', [ClassroomController::class, 'destroyResource']);
     Route::post('/classes/{id}/students', [ClassroomController::class, 'addStudents']);
     Route::delete('/classes/{id}/students', [ClassroomController::class, 'removeStudents']);
     Route::post('/classes', [ClassroomController::class, 'store']);
