@@ -237,6 +237,61 @@ class ClassroomRepository
         $class->students()->detach($studentIds);
         return $class->loadCount('students');
     }
+
+    public function getAttendance(int $classId, ?string $from = null, ?string $to = null): array
+    {
+        /** @var ClassRoom|null $class */
+        $class = ClassRoom::query()->find($classId);
+        if (! $class) {
+            throw new ModelNotFoundException('Classroom not found.');
+        }
+
+        $query = DB::table('attendances as a')
+            ->join('timetables as tt', 'a.timetable_id', '=', 'tt.id')
+            ->join('users as u', 'a.student_id', '=', 'u.id')
+            ->where('tt.class_id', $classId)
+            ->select(
+                'u.id as student_id',
+                'u.name as student_name',
+                DB::raw("DATE(COALESCE(a.checked_at, a.updated_at, a.created_at)) as date"),
+                'a.status'
+            );
+
+        if ($from) { $query->whereDate(DB::raw("DATE(COALESCE(a.checked_at, a.updated_at, a.created_at))"), '>=', $from); }
+        if ($to) { $query->whereDate(DB::raw("DATE(COALESCE(a.checked_at, a.updated_at, a.created_at))"), '<=', $to); }
+
+        $rows = $query->orderBy('u.name')->orderBy('date')->get();
+
+        $byStudent = [];
+        foreach ($rows as $r) {
+            $sid = (int) $r->student_id;
+            if (!isset($byStudent[$sid])) {
+                $byStudent[$sid] = [
+                    'id' => $sid,
+                    'name' => $r->student_name,
+                    'marks' => [],
+                ];
+            }
+            $byStudent[$sid]['marks'][$r->date] = $r->status; // 'present' | 'absent' | 'late'
+        }
+
+        // Summary
+        $summary = DB::table('attendances as a')
+            ->join('timetables as tt', 'a.timetable_id', '=', 'tt.id')
+            ->where('tt.class_id', $classId)
+            ->when($from, fn($q) => $q->whereDate(DB::raw("DATE(COALESCE(a.checked_at, a.updated_at, a.created_at))"), '>=', $from))
+            ->when($to, fn($q) => $q->whereDate(DB::raw("DATE(COALESCE(a.checked_at, a.updated_at, a.created_at))"), '<=', $to))
+            ->selectRaw("SUM(a.status='present') as present_cnt, SUM(a.status='absent') as absent_cnt, SUM(a.status='late') as late_cnt, COUNT(*) as total_cnt")
+            ->first();
+
+        return [
+            'rows' => array_values($byStudent),
+            'summary' => [
+                'present' => (int) ($summary->present_cnt ?? 0),
+                'absent' => (int) ($summary->absent_cnt ?? 0),
+                'late' => (int) ($summary->late_cnt ?? 0),
+                'pct' => ($summary->total_cnt ?? 0) ? round(((int) $summary->present_cnt) / max(1, (int) $summary->total_cnt) * 100) : 0,
+            ],
+        ];
+    }
 }
-
-

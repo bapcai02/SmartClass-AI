@@ -91,6 +91,18 @@ export async function removeClassStudents(
   return data
 }
 
+export type AttendanceRow = { id: number; name: string; marks: Record<string, 'present' | 'absent' | 'late'> }
+export type AttendanceResponse = { rows: AttendanceRow[]; summary: { present: number; absent: number; late: number; pct: number } }
+
+export async function getClassAttendance(
+  classId: number | string,
+  params: { from?: string; to?: string } = {}
+) {
+  const { from, to } = params
+  const { data } = await api.get<AttendanceResponse>(`/classes/${classId}/attendance`, { params: { from, to } })
+  return data
+}
+
 export async function createClass(payload: Partial<ClassroomDto>) {
   const { data } = await api.post<ClassroomDto>('/classes', payload)
   return data

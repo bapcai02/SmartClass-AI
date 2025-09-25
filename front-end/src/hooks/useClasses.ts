@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createClass, deleteClass, getClassById, getClasses, getClassDetail, getClassStudents, addClassStudents, removeClassStudents, updateClass, type ClassroomDto, type PaginatedResponse } from '@/api/classApi'
+import { createClass, deleteClass, getClassById, getClasses, getClassDetail, getClassStudents, addClassStudents, removeClassStudents, updateClass, getClassAttendance, type ClassroomDto, type PaginatedResponse, type AttendanceResponse } from '@/api/classApi'
 
 export function useGetClasses({ page = 1, perPage = 10 }: { page?: number; perPage?: number } = {}) {
   return useQuery<PaginatedResponse<ClassroomDto>>({
@@ -29,6 +29,15 @@ export function useClassStudents(classId: number | string, page = 1, perPage = 1
   return useQuery({
     queryKey: ['class-students', classId, page, perPage, search],
     queryFn: () => getClassStudents(classId, { page, perPage, search }),
+    enabled: Boolean(classId),
+    keepPreviousData: true,
+  })
+}
+
+export function useClassAttendance(classId: number | string, from?: string, to?: string) {
+  return useQuery<AttendanceResponse>({
+    queryKey: ['class-attendance', classId, from, to],
+    queryFn: () => getClassAttendance(classId, { from, to }),
     enabled: Boolean(classId),
     keepPreviousData: true,
   })

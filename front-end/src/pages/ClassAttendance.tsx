@@ -3,65 +3,45 @@ import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Download, Search } from 'lucide-react'
+import { useClassAttendance } from '@/hooks/useClasses'
 
 type Mark = 'P' | 'A' | 'L'
 type Row = { name: string; marks: Record<string, Mark> }
 
-const STUDENTS = Array.from({ length: 20 }, (_, i) => `Student ${i + 1}`)
-
-function generateDates(days: number) {
+function generateDates(from: string, to: string) {
   const out: string[] = []
-  const d = new Date()
-  for (let i = days - 1; i >= 0; i--) {
-    const x = new Date(d)
-    x.setDate(d.getDate() - i)
-    out.push(x.toISOString().slice(0, 10))
+  const start = new Date(from)
+  const end = new Date(to)
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    out.push(new Date(d).toISOString().slice(0, 10))
   }
   return out
 }
 
-const DATES = generateDates(10)
-
-function randomMark(i: number): Mark {
-  return (['P', 'P', 'P', 'L', 'A'][i % 5] as Mark)
-}
-
-const BASE_ROWS: Row[] = STUDENTS.map((name, idx) => ({
-  name,
-  marks: Object.fromEntries(DATES.map((d, i) => [d, randomMark(i + idx)])),
-}))
-
 export default function ClassAttendancePage() {
   const { id } = useParams()
   const [query, setQuery] = useState('')
-  const [from, setFrom] = useState(DATES[0])
-  const [to, setTo] = useState(DATES[DATES.length - 1])
-  const [student, setStudent] = useState<'All' | string>('All')
+  const today = new Date()
+  const tenDaysAgo = new Date(); tenDaysAgo.setDate(today.getDate() - 9)
+  const defaultFrom = tenDaysAgo.toISOString().slice(0,10)
+  const defaultTo = today.toISOString().slice(0,10)
+  const [from, setFrom] = useState(defaultFrom)
+  const [to, setTo] = useState(defaultTo)
+  
 
-  const dateRange = useMemo(() => DATES.filter((d) => d >= from && d <= to), [from, to])
+  const { data, isLoading } = useClassAttendance(id as any, from, to)
+  const rows: Array<{ name: string; marks: Record<string, 'present'|'absent'|'late'> }> = (data?.rows || []).map(r => ({ name: r.name, marks: r.marks }))
+
+  const dateRange = useMemo(() => generateDates(from, to), [from, to])
   const filteredRows = useMemo(() => {
     const q = query.toLowerCase()
-    return BASE_ROWS.filter((r) => {
-      const matchesName = !q || r.name.toLowerCase().includes(q)
-      const matchesStudent = student === 'All' || r.name === student
-      return matchesName && matchesStudent
-    })
-  }, [query, student])
+    return rows.filter((r) => !q || r.name.toLowerCase().includes(q))
+  }, [query, rows])
 
   const summary = useMemo(() => {
-    let present = 0, absent = 0, late = 0, total = 0
-    filteredRows.forEach((r) => {
-      dateRange.forEach((d) => {
-        total++
-        const m = r.marks[d]
-        if (m === 'P') present++
-        else if (m === 'A') absent++
-        else late++
-      })
-    })
-    const pct = total ? Math.round((present / total) * 100) : 0
-    return { pct, absent, late }
-  }, [filteredRows, dateRange])
+    if (data?.summary) return { pct: data.summary.pct, absent: data.summary.absent, late: data.summary.late }
+    return { pct: 0, absent: 0, late: 0 }
+  }, [data])
 
   return (
     <div className="grid gap-6">
@@ -87,10 +67,7 @@ export default function ClassAttendancePage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input value={query} onChange={(e)=>setQuery(e.target.value)} className="w-72 rounded-2xl border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm shadow-sm focus:border-brand-blue" placeholder="Search student" />
         </div>
-        <select value={student} onChange={(e)=>setStudent(e.target.value as any)} className="rounded-2xl border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue">
-          <option>All</option>
-          {STUDENTS.map((s)=> <option key={s}>{s}</option>)}
-        </select>
+        {/* removed per request: student select filter */}
         <div className="flex items-center gap-2">
           <label className="text-sm text-slate-600">From</label>
           <input type="date" value={from} onChange={(e)=>setFrom(e.target.value)} className="rounded-2xl border border-slate-300 px-3 py-2 focus:border-brand-blue" />
@@ -134,16 +111,18 @@ export default function ClassAttendancePage() {
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((r, idx) => (
+              {isLoading ? (
+                <tr><td colSpan={1 + dateRange.length} className="px-4 py-6 text-center text-sm text-slate-600">Loading…</td></tr>
+              ) : filteredRows.map((r, idx) => (
                 <tr key={r.name} className={`${idx % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
                   <td className="px-4 py-2 font-medium whitespace-nowrap">{r.name}</td>
                   {dateRange.map((d) => {
-                    const m = r.marks[d]
-                    const map: Record<Mark, string> = { P: 'bg-green-100 text-green-700', A: 'bg-red-100 text-red-700', L: 'bg-amber-100 text-amber-700' }
-                    const label: Record<Mark, string> = { P: 'P', A: 'A', L: 'L' }
+                    const m = r.marks[d] as ('present'|'absent'|'late') | undefined
+                    const map: Record<'present'|'absent'|'late', string> = { present: 'bg-green-100 text-green-700', absent: 'bg-red-100 text-red-700', late: 'bg-amber-100 text-amber-700' }
+                    const label: Record<'present'|'absent'|'late', string> = { present: 'P', absent: 'A', late: 'L' }
                     return (
                       <td key={d} className="px-2 py-2 text-center">
-                        <span className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${map[m]}`}>{label[m]}</span>
+                        {m ? <span className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${map[m]}`}>{label[m]}</span> : <span className="text-slate-400">—</span>}
                       </td>
                     )
                   })}

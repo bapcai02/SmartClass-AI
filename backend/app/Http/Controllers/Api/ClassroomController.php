@@ -65,6 +65,18 @@ class ClassroomController extends Controller
         return response()->json($paginator);
     }
 
+    public function attendance(int $id): JsonResponse
+    {
+        $from = request()->get('from');
+        $to = request()->get('to');
+        try {
+            $data = $this->service->getAttendance($id, $from, $to);
+            return response()->json($data);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Classroom not found'], 404);
+        }
+    }
+
     public function addStudents(int $id): JsonResponse
     {
         $data = request()->validate([

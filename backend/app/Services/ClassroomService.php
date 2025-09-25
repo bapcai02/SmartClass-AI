@@ -30,6 +30,11 @@ class ClassroomService
         return $this->repository->findDetailById($id, $includes, $limits);
     }
 
+    public function getAttendance(int $id, ?string $from = null, ?string $to = null)
+    {
+        return $this->repository->getAttendance($id, $from, $to);
+    }
+
     public function paginateStudents(int $classId, string $search = '', int $perPage = 15)
     {
         return $this->repository->paginateStudents($classId, $search, $perPage);
