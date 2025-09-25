@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useLogin } from "@/hooks/auth";
+import { useToast } from "@/components/ui/toast";
 import { useNavigate } from "react-router-dom";
 
 type LoginFormState = {
@@ -18,6 +19,7 @@ const Login: React.FC = () => {
   });
   const navigate = useNavigate();
   const loginMutation = useLogin();
+  const { addToast } = useToast();
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
@@ -32,9 +34,8 @@ const Login: React.FC = () => {
       await loginMutation.mutateAsync({ email: form.email, password: form.password });
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(err);
-      alert("Login failed. Please check your credentials.");
+      addToast({ title: 'Login failed', description: 'Please check your credentials.', variant: 'error' });
     }
   };
 

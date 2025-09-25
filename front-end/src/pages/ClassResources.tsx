@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Download, Eye, Trash2, Upload, Search, Filter, FileText, PlayCircle, Image as ImageIcon } from 'lucide-react'
 import { useGetClassDetail } from '@/hooks/useClasses'
+import { useToast } from '@/components/ui/toast'
+import api from '@/utils/api'
 import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 import { useQueryClient } from '@tanstack/react-query'
 import * as XLSX from 'xlsx'
@@ -22,6 +24,7 @@ export default function ClassResourcesManagePage() {
   const [title, setTitle] = useState('')
   const [openUpload, setOpenUpload] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const qc = useQueryClient()
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewItem, setPreviewItem] = useState<UiResource | null>(null)
@@ -35,6 +38,7 @@ export default function ClassResourcesManagePage() {
   const [deleting, setDeleting] = useState(false)
 
   const { data, isLoading } = useGetClassDetail(id as any, { include: ['resources'], perPage: { resources: 200 } })
+  const { addToast } = useToast()
   const resources: UiResource[] = useMemo(() => {
     const list = (data as any)?.resources || []
     const apiBase = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:8081/api'
@@ -116,7 +120,7 @@ export default function ClassResourcesManagePage() {
                 setPreviewUrl(URL.createObjectURL(file))
               }} />
               {selectedFile && (
-                <div className="rounded-xl border border-slate-200 p-3">
+                <div className="rounded-xl border border-slate-200 p-3 flex items-center justify-center">
                   <div className="text-sm font-medium mb-2">Preview</div>
                   {(() => {
                     const name = selectedFile.name.toLowerCase()
@@ -139,6 +143,17 @@ export default function ClassResourcesManagePage() {
                 placeholder="Title (optional)"
                 className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600"
               />
+              {uploading && (
+                <div className="w-full">
+                  <div className="mb-1 flex items-center justify-between text-xs text-slate-600">
+                    <span>Uploading…</span>
+                    <span>{uploadProgress != null ? `${uploadProgress}%` : ''}</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                    <div className="h-2 bg-blue-600 transition-all" style={{ width: `${Math.max(0, Math.min(100, uploadProgress ?? 0))}%` }} />
+                  </div>
+                </div>
+              )}
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={()=>setOpenUpload(false)}>Cancel</Button>
                 <Button
@@ -151,26 +166,29 @@ export default function ClassResourcesManagePage() {
                     if (title) form.append('title', title)
                     try {
                       setUploading(true)
-                      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api'}/classes/${id}/resources`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}` },
-                        body: form
+                      setUploadProgress(0)
+                      await api.post(`/classes/${id}/resources`, form, {
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                        onUploadProgress: (e) => {
+                          if (e.total) setUploadProgress(Math.round((e.loaded / e.total) * 100))
+                        },
                       })
-                      if (!res.ok) throw new Error('Upload failed')
                       await qc.invalidateQueries({ queryKey: ['class-detail', id] })
                       setOpenUpload(false)
+                      addToast({ title: 'Uploaded', description: title || selectedFile.name, variant: 'success' })
                     } catch (err) {
                       console.error(err)
-                      alert('Upload failed')
+                      addToast({ title: 'Upload failed', description: 'Please try again', variant: 'error' })
                     } finally {
                       setUploading(false)
+                      setUploadProgress(null)
                       setSelectedFile(null)
                       setTitle('')
                       if (fileInputRef.current) fileInputRef.current.value = ''
                     }
                   }}
                 >
-                  {uploading ? 'Uploading…' : 'Upload'}
+                  {uploading ? (uploadProgress != null ? `Uploading… ${uploadProgress}%` : 'Uploading…') : 'Upload'}
                 </Button>
               </div>
             </div>
@@ -251,7 +269,7 @@ export default function ClassResourcesManagePage() {
                             URL.revokeObjectURL(href)
                           } catch (e) {
                             console.error(e)
-                            alert('Download failed')
+                            addToast({ title: 'Download failed', variant: 'error' })
                           }
                         }}
                       >
@@ -298,15 +316,15 @@ export default function ClassResourcesManagePage() {
 
                 // Image
                 if (['png','jpg','jpeg','gif','webp','svg'].includes(ext)) {
-                  return <img src={url} alt="preview" className="max-h-[80vh] w-auto rounded-lg border" />
+                  return <div className="w-full flex items-center justify-center"><img src={url} alt="preview" className="max-h-[80vh] w-auto rounded-lg border" /></div>
                 }
                 // Video
                 if (['mp4','mov','webm'].includes(ext)) {
-                  return <video src={url} controls className="max-h-[80vh] w-auto rounded-lg border" />
+                  return <div className="w-full flex items-center justify-center"><video src={url} controls className="max-h-[80vh] w-auto rounded-lg border" /></div>
                 }
                 // PDF
                 if (ext === 'pdf') {
-                  return <iframe src={url} className="h-[80vh] w-full rounded-lg border" />
+                  return <div className="w-full flex items-center justify-center"><iframe src={url} className="h-[80vh] w-full max-w-5xl rounded-lg border" /></div>
                 }
                 // Office Docs
                 if (ext === 'docx' || ext === 'doc') {
@@ -328,13 +346,13 @@ export default function ClassResourcesManagePage() {
                     }).catch(()=> setPreviewLoading(false))
                   }
                   if (previewLoading) return <div className="text-sm text-slate-600">Loading…</div>
-                  if (previewText === 'rendered-docx') return <div ref={docxContainerRef} className="docx-preview prose max-w-none h-[80vh] overflow-auto rounded-lg border bg-white p-4" />
+                  if (previewText === 'rendered-docx') return <div className="w-full flex items-center justify-center"><div ref={docxContainerRef} className="docx-preview prose max-w-none h-[80vh] overflow-auto rounded-lg border bg-white p-4" /></div>
                   const viewer = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`
-                  return <iframe src={viewer} className="h-[80vh] w-full rounded-lg border" />
+                  return <div className="w-full flex items-center justify-center"><iframe src={viewer} className="h-[80vh] w-full max-w-5xl rounded-lg border" /></div>
                 }
                 if (['ppt','pptx'].includes(ext)) {
                   const viewer = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`
-                  return <iframe src={viewer} className="h-[80vh] w-full rounded-lg border" />
+                  return <div className="w-full flex items-center justify-center"><iframe src={viewer} className="h-[80vh] w-full max-w-5xl rounded-lg border" /></div>
                 }
                 // Text-like: txt, sql, json, md, csv
                 if (['txt','sql','json','md','log','csv'].includes(ext)) {
@@ -348,20 +366,22 @@ export default function ClassResourcesManagePage() {
                   if (ext === 'csv') {
                     const rows = previewText.split(/\r?\n/).slice(0, 200).map(line => line.split(','))
                     return (
-                      <div className="max-h-[70vh] overflow-auto rounded-lg border">
-                        <table className="min-w-full text-sm">
-                          <tbody>
-                            {rows.map((r, i) => (
-                              <tr key={i} className={i%2? 'bg-slate-50/50':''}>
-                                {r.map((c, j) => <td key={j} className="px-3 py-1 whitespace-pre-wrap">{c}</td>)}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div className="w-full flex items-center justify-center">
+                        <div className="max-h-[70vh] w-full max-w-5xl overflow-auto rounded-lg border">
+                          <table className="min-w-full text-sm">
+                            <tbody>
+                              {rows.map((r, i) => (
+                                <tr key={i} className={i%2? 'bg-slate-50/50':''}>
+                                  {r.map((c, j) => <td key={j} className="px-3 py-1 whitespace-pre-wrap">{c}</td>)}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )
                   }
-                  return <pre className="max-h-[80vh] overflow-auto rounded-lg border bg-slate-50 p-3 text-sm"><code>{previewText}</code></pre>
+                  return <div className="w-full flex items-center justify-center"><pre className="max-h-[80vh] w-full max-w-5xl overflow-auto rounded-lg border bg-slate-50 p-3 text-sm"><code>{previewText}</code></pre></div>
                 }
                 // Excel xls/xlsx: render first sheet preview (and offer Office viewer link)
                 if (['xls','xlsx'].includes(ext)) {
@@ -382,29 +402,31 @@ export default function ClassResourcesManagePage() {
                   return (
                     <div className="grid gap-3">
                       <div className="text-sm text-slate-600">Inline preview (first sheet, first 200 rows). <a className="text-blue-600 underline" href={officeViewer} target="_blank" rel="noreferrer">Open in Office viewer</a></div>
-                      <div className="max-h-[80vh] overflow-auto rounded-lg border">
-                        <table className="min-w-full text-sm">
-                          <tbody>
-                            {previewSheet.map((r, i) => (
-                              <tr key={i} className={i%2? 'bg-slate-50/50':''}>
-                                {r.map((c, j) => <td key={j} className="px-3 py-1 whitespace-pre-wrap">{String(c)}</td>)}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div className="w-full flex items-center justify-center">
+                        <div className="max-h-[80vh] w-full max-w-5xl overflow-auto rounded-lg border">
+                          <table className="min-w-full text-sm">
+                            <tbody>
+                              {previewSheet.map((r, i) => (
+                                <tr key={i} className={i%2? 'bg-slate-50/50':''}>
+                                  {r.map((c, j) => <td key={j} className="px-3 py-1 whitespace-pre-wrap">{String(c)}</td>)}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
                   )
                 }
                 // Fallback
                 return (
-                  <div className="text-sm text-slate-700">
-                    No inline preview for this file type. <a className="text-blue-600 underline" href={url} target="_blank" rel="noreferrer">Open</a>
+                  <div className="w-full flex items-center justify-center text-sm text-slate-700">
+                    <span>No inline preview for this file type. </span>&nbsp;<a className="text-blue-600 underline" href={url} target="_blank" rel="noreferrer">Open</a>
                   </div>
                 )
               })()
             ) : (
-              <div className="text-sm text-slate-600">No preview available</div>
+              <div className="w-full flex items-center justify-center text-sm text-slate-600">No preview available</div>
             )}
           </div>
         </ModalContent>
@@ -433,7 +455,7 @@ export default function ClassResourcesManagePage() {
                   setOpenDelete(false)
                 } catch (e) {
                   console.error(e)
-                  alert('Delete failed')
+                  addToast({ title: 'Delete failed', variant: 'error' })
                 } finally {
                   setDeleting(false)
                   setDeletingItem(null)
