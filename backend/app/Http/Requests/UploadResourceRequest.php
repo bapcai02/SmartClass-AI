@@ -14,7 +14,8 @@ class UploadResourceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'max:10240'],
+            // 5GB max (value is in kilobytes)
+            'file' => ['required', 'file', 'max:5120000'],
             'title' => ['nullable', 'string', 'max:255'],
         ];
     }

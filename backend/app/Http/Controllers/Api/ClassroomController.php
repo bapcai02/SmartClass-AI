@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreClassroomRequest;
 use App\Http\Requests\UpdateClassroomRequest;
@@ -192,6 +193,32 @@ class ClassroomController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             return response()->json(['message' => 'Failed to upload resource'], 500);
+        }
+    }
+
+    public function downloadResource(int $id, int $rid)
+    {
+        try {
+            $class = $this->service->get($id);
+            $resource = $class->resources()->where('id', $rid)->firstOrFail();
+            $path = str_starts_with($resource->file_url, '/storage/')
+                ? str_replace('/storage/', 'public/', $resource->file_url)
+                : $resource->file_url;
+            if (str_starts_with($path, 'http')) {
+                return redirect()->away($path);
+            }
+            $filePath = str_replace('public/', '', $path);
+            if (!Storage::disk('public')->exists($filePath)) {
+                return response()->json(['message' => 'File not found'], 404);
+            }
+            $name = ($resource->title ?: 'resource');
+            $mime = \Illuminate\Support\Facades\File::mimeType(Storage::disk('public')->path($filePath)) ?: 'application/octet-stream';
+            $stream = Storage::disk('public')->readStream($filePath);
+            return response()->streamDownload(function() use ($stream) {
+                fpassthru($stream);
+            }, $name, [ 'Content-Type' => $mime ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Not found'], 404);
         }
     }
 }
