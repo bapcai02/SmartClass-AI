@@ -215,6 +215,28 @@ class ClassroomRepository
 
         return $base->paginate($perPage);
     }
+
+    public function attachStudents(int $classId, array $studentIds): ClassRoom
+    {
+        /** @var ClassRoom|null $class */
+        $class = ClassRoom::query()->find($classId);
+        if (! $class) {
+            throw new ModelNotFoundException('Classroom not found.');
+        }
+        $class->students()->syncWithoutDetaching($studentIds);
+        return $class->loadCount('students');
+    }
+
+    public function detachStudents(int $classId, array $studentIds): ClassRoom
+    {
+        /** @var ClassRoom|null $class */
+        $class = ClassRoom::query()->find($classId);
+        if (! $class) {
+            throw new ModelNotFoundException('Classroom not found.');
+        }
+        $class->students()->detach($studentIds);
+        return $class->loadCount('students');
+    }
 }
 
 

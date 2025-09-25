@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Search, Filter, ChevronLeft, ChevronRight, Trash2, MessageSquareText, UserPlus } from 'lucide-react'
 // @ts-ignore
-import { useClassStudents } from '@/hooks/useClasses'
+import { useClassStudents, useAddClassStudents, useRemoveClassStudents } from '@/hooks/useClasses'
+// @ts-ignore
+import { useUserSearch } from '@/hooks/useLookup'
+import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 
 type Student = {
   id: string
@@ -15,8 +18,6 @@ type Student = {
   grade: string
 }
 
-const base: Student[] = []
-
 export default function ClassStudentsPage() {
   const { id } = useParams()
   const [query, setQuery] = useState('')
@@ -24,20 +25,29 @@ export default function ClassStudentsPage() {
   const [page, setPage] = useState(1)
   const pageSize = 10
   const [selected, setSelected] = useState<Record<string, boolean>>({})
+  const [addOpen, setAddOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [picked, setPicked] = useState<number[]>([])
+  const addMut = useAddClassStudents(id as any)
+  const removeMut = useRemoveClassStudents(id as any)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingRemoveIds, setPendingRemoveIds] = useState<number[]>([])
+  const { data: candidates = [] } = useUserSearch(searchTerm, 'student') as any
 
   const { data: api, isLoading } = useClassStudents(id as any, page, pageSize, query)
-  const apiItems = (api?.data || []) as Array<{ id: number; name: string; email: string; attendance_percent?: number | null; avg_grade?: number | null; is_active?: number | boolean }>
-  const total = api?.total || 0
-  const totalPages = api?.last_page || 1
+  const apiItems: Array<{ id: number; name: string; email: string; attendance_percent?: number | null; avg_grade?: number | null; is_active?: number | boolean }> = (api as any)?.data || []
+  const total: number = (api as any)?.total || 0
+  const totalPages: number = (api as any)?.last_page || 1
 
   const current = useMemo(() => apiItems.map((u) => ({
     id: String(u.id),
     name: u.name,
     email: u.email,
-    status: (u.is_active ? 'Active' : 'Inactive') as const,
+    status: (u.is_active ? 'Active' : 'Inactive') as 'Active' | 'Inactive',
     attendance: typeof u.attendance_percent === 'number' ? Math.max(0, Math.min(100, Math.round(u.attendance_percent))) : 0,
     grade: typeof u.avg_grade === 'number' ? u.avg_grade.toFixed(2) : '-',
   })), [apiItems])
+  const existingIds = useMemo(() => new Set(apiItems.map(u => u.id)), [apiItems])
 
   const allSelected = current.length > 0 && current.every((s) => selected[s.id])
   const toggleAll = () => {
@@ -46,8 +56,8 @@ export default function ClassStudentsPage() {
     setSelected(next)
   }
 
-  const activeCount = useMemo(() => current.filter(s => s.status === 'Active').length, [current])
-  const inactiveCount = useMemo(() => current.filter(s => s.status === 'Inactive').length, [current])
+  const activeCount = useMemo(() => current.filter((s) => s.status === 'Active').length, [current])
+  const inactiveCount = useMemo(() => current.filter((s) => s.status === 'Inactive').length, [current])
   const avgGrade = useMemo(() => {
     const numeric = apiItems.map(u => typeof u.avg_grade === 'number' ? u.avg_grade : null).filter((v): v is number => v != null)
     if (numeric.length === 0) return '—'
@@ -84,7 +94,66 @@ export default function ClassStudentsPage() {
           </select>
           <Button variant="outline" className="gap-2"><Filter className="h-4 w-4"/> Filters</Button>
         </div>
-        <Button variant="outline" className="gap-2"><UserPlus className="h-4 w-4"/> Add Student</Button>
+        <Modal open={addOpen} onOpenChange={setAddOpen}>
+          <ModalTrigger asChild>
+            <Button variant="outline" className="gap-2" onClick={() => setAddOpen(true)}><UserPlus className="h-4 w-4"/> Add Student</Button>
+          </ModalTrigger>
+          <ModalContent>
+            <ModalHeader title="Add Students" description="Search and select students to add to this class" />
+            <div className="grid gap-3">
+              <input
+                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                placeholder="Search students by name or email"
+                value={searchTerm}
+                onChange={(e)=>setSearchTerm(e.target.value)}
+              />
+              <div className="max-h-64 overflow-auto rounded-md border border-slate-200">
+                {(candidates || []).map((u: any) => {
+                  const already = existingIds.has(u.id)
+                  const checked = already || picked.includes(u.id)
+                  return (
+                    <label key={u.id} className={`flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 ${already ? 'opacity-60' : ''}`}>
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4"
+                        checked={checked}
+                        disabled={already}
+                        onChange={(e)=>{
+                          setPicked((prev)=>{
+                            if (e.target.checked) return Array.from(new Set([...prev, u.id]))
+                            return prev.filter(id=>id!==u.id)
+                          })
+                        }}
+                      />
+                      <span>{u.name} ({u.email}){already ? ' • Added' : ''}</span>
+                    </label>
+                  )
+                })}
+                {(candidates || []).length===0 && (
+                  <div className="px-3 py-2 text-sm text-slate-500">No results</div>
+                )}
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={()=>{ setAddOpen(false); setPicked([]) }}>Cancel</Button>
+                <Button
+                  variant="outline"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  disabled={picked.length===0 || addMut.isPending}
+                  onClick={async ()=>{
+                    const toAdd = picked.filter(idNum => !existingIds.has(idNum))
+                    if (toAdd.length>0) {
+                      await addMut.mutateAsync(toAdd)
+                    }
+                    setPicked([])
+                    setAddOpen(false)
+                  }}
+                >
+                  {addMut.isPending ? 'Adding...' : 'Add Selected'}
+                </Button>
+              </div>
+            </div>
+          </ModalContent>
+        </Modal>
       </div>
 
       <Card>
@@ -93,11 +162,23 @@ export default function ClassStudentsPage() {
         </CardHeader>
         <CardContent className="overflow-hidden rounded-2xl">
           {/* Bulk actions */}
-          {Object.values(selected).some(Boolean) && (
+                 {Object.values(selected).some(Boolean) && (
             <div className="m-3 flex items-center justify-between rounded-xl border bg-white px-3 py-2 text-sm shadow-sm">
               <div>{Object.values(selected).filter(Boolean).length} Selected</div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" className="gap-1 text-red-600"><Trash2 className="h-4 w-4"/> Remove</Button>
+                <Button
+                  variant="outline"
+                  className="gap-1 text-red-600"
+                  disabled={removeMut.isPending}
+                  onClick={() => {
+                    const ids = Object.entries(selected).filter(([_, v])=>v).map(([k])=>Number(k))
+                    if (ids.length===0) return
+                    setPendingRemoveIds(ids)
+                    setConfirmOpen(true)
+                  }}
+                >
+                  <Trash2 className="h-4 w-4"/> Remove
+                </Button>
                 <Button variant="outline" className="gap-1"><MessageSquareText className="h-4 w-4"/> Send Message</Button>
               </div>
             </div>
@@ -150,6 +231,30 @@ export default function ClassStudentsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Confirm Remove Modal */}
+      <Modal open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <ModalContent>
+          <ModalHeader title="Remove Students" description={`Remove ${pendingRemoveIds.length} selected student(s) from this class?`} />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+            <Button
+              variant="outline"
+              className="text-red-600"
+              disabled={removeMut.isPending}
+              onClick={async ()=>{
+                await removeMut.mutateAsync(pendingRemoveIds)
+                setSelected({})
+                setPendingRemoveIds([])
+                setConfirmOpen(false)
+              }}
+            >
+              {removeMut.isPending ? 'Removing...' : 'Remove'}
+            </Button>
+          </div>
+        </ModalContent>
+      </Modal>
+
     </div>
   )
 }

@@ -35,6 +35,16 @@ class ClassroomService
         return $this->repository->paginateStudents($classId, $search, $perPage);
     }
 
+    public function addStudents(int $classId, array $studentIds)
+    {
+        return $this->repository->attachStudents($classId, $studentIds);
+    }
+
+    public function removeStudents(int $classId, array $studentIds)
+    {
+        return $this->repository->detachStudents($classId, $studentIds);
+    }
+
     public function create(array $data)
     {
         return $this->repository->create($data);

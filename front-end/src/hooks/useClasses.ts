@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createClass, deleteClass, getClassById, getClasses, getClassDetail, getClassStudents, updateClass, type ClassroomDto, type PaginatedResponse } from '@/api/classApi'
+import { createClass, deleteClass, getClassById, getClasses, getClassDetail, getClassStudents, addClassStudents, removeClassStudents, updateClass, type ClassroomDto, type PaginatedResponse } from '@/api/classApi'
 
 export function useGetClasses({ page = 1, perPage = 10 }: { page?: number; perPage?: number } = {}) {
   return useQuery<PaginatedResponse<ClassroomDto>>({
@@ -31,6 +31,28 @@ export function useClassStudents(classId: number | string, page = 1, perPage = 1
     queryFn: () => getClassStudents(classId, { page, perPage, search }),
     enabled: Boolean(classId),
     keepPreviousData: true,
+  })
+}
+
+export function useAddClassStudents(classId: number | string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (studentIds: number[]) => addClassStudents(classId, studentIds),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['class-students', classId] })
+      qc.invalidateQueries({ queryKey: ['class-detail', classId] })
+    },
+  })
+}
+
+export function useRemoveClassStudents(classId: number | string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (studentIds: number[]) => removeClassStudents(classId, studentIds),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['class-students', classId] })
+      qc.invalidateQueries({ queryKey: ['class-detail', classId] })
+    },
   })
 }
 

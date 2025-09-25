@@ -75,6 +75,22 @@ export async function getClassStudents(
   }
 }
 
+export async function addClassStudents(
+  classId: number | string,
+  studentIds: Array<number>
+) {
+  const { data } = await api.post(`/classes/${classId}/students`, { student_ids: studentIds })
+  return data
+}
+
+export async function removeClassStudents(
+  classId: number | string,
+  studentIds: Array<number>
+) {
+  const { data } = await api.delete(`/classes/${classId}/students`, { data: { student_ids: studentIds } })
+  return data
+}
+
 export async function createClass(payload: Partial<ClassroomDto>) {
   const { data } = await api.post<ClassroomDto>('/classes', payload)
   return data

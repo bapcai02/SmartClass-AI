@@ -65,6 +65,44 @@ class ClassroomController extends Controller
         return response()->json($paginator);
     }
 
+    public function addStudents(int $id): JsonResponse
+    {
+        $data = request()->validate([
+            'student_ids' => ['required', 'array', 'min:1'],
+            'student_ids.*' => ['integer', 'exists:users,id'],
+        ]);
+        try {
+            DB::beginTransaction();
+            $class = $this->service->addStudents($id, $data['student_ids']);
+            DB::commit();
+            return response()->json($class);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Classroom not found'], 404);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to add students'], 500);
+        }
+    }
+
+    public function removeStudents(int $id): JsonResponse
+    {
+        $data = request()->validate([
+            'student_ids' => ['required', 'array', 'min:1'],
+            'student_ids.*' => ['integer', 'exists:users,id'],
+        ]);
+        try {
+            DB::beginTransaction();
+            $class = $this->service->removeStudents($id, $data['student_ids']);
+            DB::commit();
+            return response()->json($class);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Classroom not found'], 404);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to remove students'], 500);
+        }
+    }
+
     public function store(StoreClassroomRequest $request): JsonResponse
     {
         $validated = $request->validated();
