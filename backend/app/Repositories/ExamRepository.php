@@ -60,14 +60,14 @@ class ExamRepository
     {
         $exam = $this->findInClass($classId, $examId);
 
-        $students = \DB::table('class_students as cs')
+        $students = \Illuminate\Support\Facades\DB::table('class_students as cs')
             ->join('users as u', 'cs.student_id', '=', 'u.id')
             ->where('cs.class_id', $classId)
             ->select('u.id', 'u.name', 'u.email')
             ->orderBy('u.name')
             ->get();
 
-        $subs = \DB::table('exam_submissions as s')
+        $subs = \Illuminate\Support\Facades\DB::table('exam_submissions as s')
             ->where('s.exam_id', $examId)
             ->select('s.student_id', 's.submitted_at', 's.grade')
             ->get()
@@ -114,6 +114,16 @@ class ExamRepository
             ],
             'rows' => $rows,
         ];
+    }
+
+    public function submit(int $classId, int $examId, int $studentId, array $payload = []): void
+    {
+        $this->findInClass($classId, $examId);
+        // Upsert submission; store timestamp; answers not modeled yet
+        \Illuminate\Support\Facades\DB::table('exam_submissions')->updateOrInsert(
+            [ 'exam_id' => $examId, 'student_id' => $studentId ],
+            [ 'submitted_at' => now(), 'updated_at' => now(), 'created_at' => now() ]
+        );
     }
 }
 

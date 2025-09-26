@@ -48,6 +48,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/classes/{classId}/exams', [ExamController::class, 'store']);
     Route::put('/classes/{classId}/exams/{id}', [ExamController::class, 'update']);
     Route::delete('/classes/{classId}/exams/{id}', [ExamController::class, 'destroy']);
+    Route::post('/classes/{classId}/exams/{id}/submit', [ExamController::class, 'submit']);
 
     // Lookups
     Route::get('/subjects', [SubjectController::class, 'index']);

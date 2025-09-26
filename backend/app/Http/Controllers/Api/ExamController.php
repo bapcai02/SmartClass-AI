@@ -100,6 +100,20 @@ class ExamController extends Controller
             return response()->json(['message' => 'Exam not found'], 404);
         }
     }
+
+    public function submit(int $classId, int $id): JsonResponse
+    {
+        $data = request()->validate([
+            'student_id' => ['required','integer','exists:users,id'],
+            'answers' => ['nullable','array'],
+        ]);
+        try {
+            $this->service->submit($classId, $id, (int) $data['student_id'], $data['answers'] ?? []);
+            return response()->json(['message' => 'Submitted']);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Exam not found'], 404);
+        }
+    }
 }
 
 

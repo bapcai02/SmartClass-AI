@@ -23,6 +23,7 @@ import ClassResourcesManagePage from '@/pages/ClassResources'
 import ClassAssignmentsPage from '@/pages/ClassAssignments'
 import ClassExamsPage from '@/pages/ClassExams'
 import ExamDetailPage from '@/pages/ExamDetail'
+import ExamTakePage from '@/pages/ExamTake'
 import ClassGradebookPage from '@/pages/ClassGradebook'
 import ClassAnnouncementsPage from '@/pages/ClassAnnouncements'
 
@@ -43,6 +44,7 @@ function App() {
         <Route path="/class/:id/assignments" element={<PrivateRoute><ClassAssignmentsPage /></PrivateRoute>} />
         <Route path="/class/:id/exams" element={<PrivateRoute><ClassExamsPage /></PrivateRoute>} />
         <Route path="/class/:id/exam/:eid" element={<PrivateRoute><ExamDetailPage /></PrivateRoute>} />
+        <Route path="/class/:id/exam/:eid/take" element={<PrivateRoute><ExamTakePage /></PrivateRoute>} />
         <Route path="/class/:id/grades" element={<PrivateRoute><ClassGradebookPage /></PrivateRoute>} />
         <Route path="/class/:id/announcements" element={<PrivateRoute><ClassAnnouncementsPage /></PrivateRoute>} />
         <Route path="/assignments" element={<PrivateRoute><AssignmentsPage /></PrivateRoute>} />

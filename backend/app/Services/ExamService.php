@@ -43,6 +43,11 @@ class ExamService
     {
         return $this->repository->getStats($classId, $examId);
     }
+
+    public function submit(int $classId, int $examId, int $studentId, array $payload = []): void
+    {
+        $this->repository->submit($classId, $examId, $studentId, $payload);
+    }
 }
 
 

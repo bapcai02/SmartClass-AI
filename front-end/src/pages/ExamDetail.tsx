@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeftCircle, CalendarClock, Timer, Users } from 'lucide-react'
-import { getClassExam, type ExamDto } from '@/api/exams'
+import { ArrowLeftCircle, CalendarClock, Timer, Users, Play } from 'lucide-react'
+import { getClassExam, getClassExamStats, type ExamDto, type ExamStatsResponse } from '@/api/exams'
 
 export default function ExamDetailPage() {
   const { id, eid } = useParams()
   const [exam, setExam] = useState<ExamDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [stats, setStats] = useState<ExamStatsResponse | null>(null)
 
   useEffect(()=>{ window.scrollTo({ top: 0, behavior: 'smooth' }) }, [])
 
@@ -19,6 +20,10 @@ export default function ExamDetailPage() {
         setLoading(true)
         const data = await getClassExam(id as string, eid as string)
         setExam(data)
+        try {
+          const st = await getClassExamStats(id as string, eid as string)
+          setStats(st)
+        } catch {}
         setError(null)
       } catch (e: any) {
         setError(e?.message || 'Failed to load exam')
@@ -67,8 +72,51 @@ export default function ExamDetailPage() {
                 <div className="flex items-center gap-2 text-slate-700"><Timer className="h-4 w-4"/> <span>End: {exam?.end_time?.replace('T',' ').slice(0,16) || '—'}</span></div>
                 <div className="flex items-center gap-2 text-slate-700"><Users className="h-4 w-4"/> <span>Duration: {duration || '—'}</span></div>
               </div>
+              <div className="flex items-center gap-2">
+                <Link to={`/class/${id}/exam/${eid}/take`}>
+                  <Button className="gap-2 text-black hover:bg-black hover:text-white"><Play className="h-4 w-4"/> Open Exam Screen</Button>
+                </Link>
+              </div>
               {exam?.description && (
                 <div className="rounded-xl border border-slate-200 p-3 text-sm text-slate-700 whitespace-pre-wrap">{exam.description}</div>
+              )}
+
+              {stats && (
+                <div className="grid gap-3">
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Total</div><div className="text-2xl font-semibold">{stats.counts.total}</div></div>
+                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Taking</div><div className="text-2xl font-semibold">{stats.counts.taking}</div></div>
+                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Completed</div><div className="text-2xl font-semibold">{stats.counts.completed}</div></div>
+                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Missed</div><div className="text-2xl font-semibold">{stats.counts.missed}</div></div>
+                  </div>
+
+                  <div className="overflow-x-auto rounded-2xl">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left">Student</th>
+                          <th className="px-4 py-2 text-left">Email</th>
+                          <th className="px-4 py-2 text-left">Status</th>
+                          <th className="px-4 py-2 text-left">Grade</th>
+                          <th className="px-4 py-2 text-left">Submitted</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stats.rows.map((r, idx) => (
+                          <tr key={r.id} className={`${idx % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
+                            <td className="px-4 py-2 whitespace-nowrap font-medium">{r.name}</td>
+                            <td className="px-4 py-2">{r.email}</td>
+                            <td className="px-4 py-2">
+                              <span className={`rounded-full px-2 py-0.5 text-xs ${r.status==='completed'?'bg-green-100 text-green-700':r.status==='taking'?'bg-blue-100 text-blue-700':r.status==='missed'?'bg-red-100 text-red-700':'bg-slate-200 text-slate-700'}`}>{r.status}</span>
+                            </td>
+                            <td className="px-4 py-2">{r.grade != null ? r.grade.toFixed(2) : '—'}</td>
+                            <td className="px-4 py-2">{r.submitted_at ? r.submitted_at.replace('T',' ').slice(0,16) : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
             </>
           )}
