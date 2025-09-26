@@ -118,7 +118,12 @@ class ExamRepository
 
     public function submit(int $classId, int $examId, int $studentId, array $payload = []): void
     {
-        $this->findInClass($classId, $examId);
+        $exam = $this->findInClass($classId, $examId);
+        $now = now();
+        $end = $exam->end_time ? \Carbon\Carbon::parse($exam->end_time) : null;
+        if ($end && $now->greaterThan($end)) {
+            throw new \RuntimeException('Exam has ended. Submissions are closed.');
+        }
         // Upsert submission; store timestamp; answers not modeled yet
         \Illuminate\Support\Facades\DB::table('exam_submissions')->updateOrInsert(
             [ 'exam_id' => $examId, 'student_id' => $studentId ],

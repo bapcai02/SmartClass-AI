@@ -112,6 +112,8 @@ class ExamController extends Controller
             return response()->json(['message' => 'Submitted']);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Exam not found'], 404);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
     }
 }
