@@ -1,32 +1,57 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Download, Upload, Calculator } from 'lucide-react'
+import { getClassGrades, type GradebookItem, type GradebookResponse } from '@/api/classApi'
 
-const STUDENTS = Array.from({ length: 12 }, (_, i) => `Student ${i + 1}`)
-const ITEMS = ['A1', 'A2', 'Quiz', 'Midterm', 'A3', 'Final']
+type Student = { id: number; name: string }
 
 export default function ClassGradebookPage() {
   const { id } = useParams()
-  const [grades, setGrades] = useState<Record<string, Record<string, number>>>(() => {
-    const g: Record<string, Record<string, number>> = {}
-    STUDENTS.forEach((s, i) => {
-      g[s] = {}
-      ITEMS.forEach((it, j) => (g[s][it] = 70 + ((i + j) * 3) % 30))
-    })
-    return g
-  })
+  const [students, setStudents] = useState<Student[]>([])
+  const [items, setItems] = useState<GradebookItem[]>([])
+  const [grades, setGrades] = useState<Record<string, Record<string, number | null>>>({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    async function load() {
+      try {
+        setLoading(true)
+        const data = await getClassGrades(id as string)
+        if (!mounted) return
+        setStudents(data.students)
+        setItems(data.items)
+        setGrades(data.grades)
+        setError(null)
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load gradebook')
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    if (id) load()
+    return () => { mounted = false }
+  }, [id])
 
   const stats = useMemo(() => {
-    const all = STUDENTS.flatMap((s) => ITEMS.map((it) => grades[s][it]))
-    const avg = Math.round(all.reduce((a, b) => a + b, 0) / all.length)
-    return { avg, max: Math.max(...all), min: Math.min(...all) }
-  }, [grades])
+    const values: number[] = []
+    students.forEach((s) => {
+      items.forEach((it) => {
+        const v = grades[String(s.id)]?.[it.key]
+        if (typeof v === 'number') values.push(v)
+      })
+    })
+    if (values.length === 0) return { avg: 0, max: 0, min: 0 }
+    const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length)
+    return { avg, max: Math.max(...values), min: Math.min(...values) }
+  }, [grades, students, items])
 
-  const update = (s: string, it: string, val: string) => {
+  const update = (studentId: number, key: string, val: string) => {
     const v = Math.max(0, Math.min(100, Number(val)))
-    setGrades((old) => ({ ...old, [s]: { ...old[s], [it]: v } }))
+    setGrades((old) => ({ ...old, [studentId]: { ...(old as any)[studentId], [key]: v } }))
   }
 
   return (
@@ -53,25 +78,29 @@ export default function ClassGradebookPage() {
       <Card>
         <CardHeader><CardTitle>Gradebook</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto rounded-2xl">
+          {error && <div className="p-3 text-sm text-red-600">{error}</div>}
+          {loading ? (
+            <div className="p-4 text-sm text-slate-600">Loading…</div>
+          ) : (
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-4 py-2 text-left">Student</th>
-                {ITEMS.map((it) => (
-                  <th key={it} className="px-2 py-2 text-center">{it}</th>
+                {items.map((it) => (
+                  <th key={it.key} className="px-2 py-2 text-center">{it.title}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {STUDENTS.map((s, idx) => (
-                <tr key={s} className={`${idx % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
-                  <td className="px-4 py-2 font-medium whitespace-nowrap">{s}</td>
-                  {ITEMS.map((it) => (
-                    <td key={it} className="px-2 py-2 text-center">
+              {students.map((s, idx) => (
+                <tr key={s.id} className={`${idx % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
+                  <td className="px-4 py-2 font-medium whitespace-nowrap">{s.name}</td>
+                  {items.map((it) => (
+                    <td key={it.key} className="px-2 py-2 text-center">
                       <input
                         type="number"
-                        value={grades[s][it]}
-                        onChange={(e) => update(s, it, e.target.value)}
+                        value={grades[String(s.id)]?.[it.key] ?? ''}
+                        onChange={(e) => update(s.id, it.key, e.target.value)}
                         className="w-16 rounded-xl border border-slate-300 px-2 py-1 text-center focus:border-brand-blue"
                       />
                     </td>
@@ -80,6 +109,7 @@ export default function ClassGradebookPage() {
               ))}
             </tbody>
           </table>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -69,6 +69,11 @@ class ClassroomService
     {
         return $this->repository->createResource($classId, $data);
     }
+
+    public function getGradebook(int $classId)
+    {
+        return $this->repository->getGradebook($classId);
+    }
 }
 
 

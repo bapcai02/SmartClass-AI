@@ -307,4 +307,110 @@ class ClassroomRepository
             ],
         ];
     }
+
+    /**
+     * Build a gradebook matrix for a class with students x items (assignments + exams).
+     * Returns structure: {
+     *   students: [{ id, name }...],
+     *   items: [{ id, type: 'assignment'|'exam', title, max?: number, due_date|date }...],
+     *   grades: { [studentId]: { [itemKey]: number|null } }
+     * }
+     */
+    public function getGradebook(int $classId): array
+    {
+        /** @var ClassRoom|null $class */
+        $class = ClassRoom::query()->find($classId);
+        if (! $class) {
+            throw new ModelNotFoundException('Classroom not found.');
+        }
+
+        // Students
+        $students = DB::table('class_students as cs')
+            ->join('users as u', 'cs.student_id', '=', 'u.id')
+            ->where('cs.class_id', $classId)
+            ->orderBy('u.name')
+            ->select('u.id', 'u.name')
+            ->get();
+
+        // Items: assignments + exams for the class
+        $assignments = DB::table('assignments')
+            ->where('class_id', $classId)
+            ->select('id', DB::raw("'assignment' as type"), 'title', 'due_date')
+            ->get();
+
+        $exams = DB::table('exams')
+            ->where('class_id', $classId)
+            ->select('id', DB::raw("'exam' as type"), 'title', 'date')
+            ->get();
+
+        // Normalize items to a common shape and stable order (by date then title)
+        $items = [];
+        foreach ($assignments as $a) {
+            $items[] = [
+                'id' => (int) $a->id,
+                'type' => 'assignment',
+                'title' => $a->title,
+                'date' => (string) ($a->due_date ?? ''),
+            ];
+        }
+        foreach ($exams as $e) {
+            $items[] = [
+                'id' => (int) $e->id,
+                'type' => 'exam',
+                'title' => $e->title,
+                'date' => (string) ($e->date ?? ''),
+            ];
+        }
+
+        usort($items, function ($l, $r) {
+            $ld = $l['date'] ?: '9999-12-31';
+            $rd = $r['date'] ?: '9999-12-31';
+            if ($ld === $rd) {
+                return strcmp($l['title'], $r['title']);
+            }
+            return strcmp($ld, $rd);
+        });
+
+        // Preload grades for assignments and exams
+        $assignmentGrades = DB::table('assignment_submissions as s')
+            ->join('assignments as a', 's.assignment_id', '=', 'a.id')
+            ->where('a.class_id', $classId)
+            ->whereNotNull('s.grade')
+            ->select('s.student_id', 's.assignment_id', 's.grade')
+            ->get();
+
+        $examGrades = DB::table('exam_submissions as s')
+            ->join('exams as e', 's.exam_id', '=', 'e.id')
+            ->where('e.class_id', $classId)
+            ->whereNotNull('s.grade')
+            ->select('s.student_id', 's.exam_id', 's.grade')
+            ->get();
+
+        // Initialize grades matrix
+        $grades = [];
+        foreach ($students as $s) {
+            $grades[$s->id] = [];
+        }
+
+        foreach ($assignmentGrades as $g) {
+            $grades[$g->student_id]['assignment:'.$g->assignment_id] = (float) $g->grade;
+        }
+        foreach ($examGrades as $g) {
+            $grades[$g->student_id]['exam:'.$g->exam_id] = (float) $g->grade;
+        }
+
+        return [
+            'students' => $students->map(fn($s) => ['id' => (int) $s->id, 'name' => $s->name])->values(),
+            'items' => array_map(function ($it) {
+                return [
+                    'id' => $it['id'],
+                    'type' => $it['type'],
+                    'title' => $it['title'],
+                    'date' => $it['date'],
+                    'key' => $it['type'].':'.$it['id'],
+                ];
+            }, $items),
+            'grades' => $grades,
+        ];
+    }
 }

@@ -103,6 +103,18 @@ export async function getClassAttendance(
   return data
 }
 
+export type GradebookItem = { id: number; type: 'assignment' | 'exam'; title: string; date: string; key: string }
+export type GradebookResponse = {
+  students: Array<{ id: number; name: string }>
+  items: GradebookItem[]
+  grades: Record<string, Record<string, number | null>>
+}
+
+export async function getClassGrades(classId: number | string) {
+  const { data } = await api.get<GradebookResponse>(`/classes/${classId}/grades`)
+  return data
+}
+
 export async function createClass(payload: Partial<ClassroomDto>) {
   const { data } = await api.post<ClassroomDto>('/classes', payload)
   return data

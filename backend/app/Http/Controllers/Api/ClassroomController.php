@@ -247,6 +247,16 @@ class ClassroomController extends Controller
             return response()->json(['message' => 'Failed to delete resource'], 500);
         }
     }
+
+    public function grades(int $id): JsonResponse
+    {
+        try {
+            $data = $this->service->getGradebook($id);
+            return response()->json($data);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Classroom not found'], 404);
+        }
+    }
 }
 
 
