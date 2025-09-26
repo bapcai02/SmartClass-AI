@@ -21,6 +21,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/classes/{id}/detail', [ClassroomController::class, 'detail']);
     Route::get('/classes/{id}/attendance', [ClassroomController::class, 'attendance']);
     Route::get('/classes/{id}/grades', [ClassroomController::class, 'grades']);
+    Route::get('/classes/{id}/leaderboard', [ClassroomController::class, 'leaderboard']);
     Route::get('/classes/{id}/announcements', [ClassroomController::class, 'announcements']);
     Route::post('/classes/{id}/announcements', [ClassroomController::class, 'storeAnnouncement']);
     Route::get('/classes/{id}/students', [ClassroomController::class, 'students']);
@@ -43,6 +44,7 @@ Route::middleware('auth:api')->group(function () {
     // Exams per class
     Route::get('/classes/{classId}/exams', [ExamController::class, 'index']);
     Route::get('/classes/{classId}/exams/{id}', [ExamController::class, 'show']);
+    Route::get('/classes/{classId}/exams/{id}/stats', [ExamController::class, 'stats']);
     Route::post('/classes/{classId}/exams', [ExamController::class, 'store']);
     Route::put('/classes/{classId}/exams/{id}', [ExamController::class, 'update']);
     Route::delete('/classes/{classId}/exams/{id}', [ExamController::class, 'destroy']);

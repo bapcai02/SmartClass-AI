@@ -38,6 +38,11 @@ class ExamService
     {
         $this->repository->delete($classId, $id);
     }
+
+    public function stats(int $classId, int $examId)
+    {
+        return $this->repository->getStats($classId, $examId);
+    }
 }
 
 

@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Eye, Edit3, Trash2, ArrowLeftCircle } from 'lucide-react'
+import { Plus, Eye, Edit3, Trash2, ArrowLeftCircle, Loader2 } from 'lucide-react'
 import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
-import { listClassExams, createClassExam, type ExamDto } from '@/api/exams'
+import { listClassExams, createClassExam, updateClassExam, deleteClassExam, type ExamDto } from '@/api/exams'
 
 type Row = { id: string; title: string; date: string; duration: string; status: 'upcoming'|'ongoing'|'finished' }
 const base: Row[] = Array.from({ length: 8 }, (_, i) => ({
@@ -25,6 +25,15 @@ export default function ClassExamsPage() {
   const [date, setDate] = useState('')
   const [durationMin, setDurationMin] = useState<number>(60)
   const [creating, setCreating] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editExam, setEditExam] = useState<Row | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDate, setEditDate] = useState('')
+  const [editDurationMin, setEditDurationMin] = useState<number>(60)
+  const [saving, setSaving] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     (async () => {
@@ -126,9 +135,24 @@ export default function ClassExamsPage() {
               <CardContent className="flex items-center justify-between">
                 <span className={`rounded-full px-2 py-0.5 text-xs ${r.status==='upcoming'?'bg-amber-100 text-amber-700':r.status==='ongoing'?'bg-blue-100 text-blue-700':'bg-slate-200 text-slate-700'}`}>{r.status}</span>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" className="h-8 px-2"><Eye className="h-4 w-4"/></Button>
-                  <Button variant="outline" className="h-8 px-2"><Edit3 className="h-4 w-4"/></Button>
-                  <Button variant="outline" className="h-8 px-2 text-red-600"><Trash2 className="h-4 w-4"/></Button>
+                  <Link to={`/class/${id}/exam/${r.id}`}><Button variant="outline" className="h-8 px-2"><Eye className="h-4 w-4"/></Button></Link>
+                  <Button
+                    variant="outline"
+                    className="h-8 px-2"
+                    onClick={()=>{
+                      setEditExam(r)
+                      setEditTitle(r.title)
+                      setEditDate(r.date.replace(' ', 'T'))
+                      const parts = r.duration.split(' ')[0]
+                      setEditDurationMin(Number(parts)||60)
+                      setEditOpen(true)
+                    }}
+                  ><Edit3 className="h-4 w-4"/></Button>
+                  <Button
+                    variant="outline"
+                    className="h-8 px-2 text-red-600"
+                    onClick={()=>{ setDeleteId(r.id); setDeleteOpen(true) }}
+                  ><Trash2 className="h-4 w-4"/></Button>
                 </div>
               </CardContent>
             </Card>
@@ -138,15 +162,93 @@ export default function ClassExamsPage() {
         <Card>
           <CardHeader><CardTitle>Leaderboard</CardTitle></CardHeader>
           <CardContent className="grid gap-2">
-            {[{name:'Alice',score:98},{name:'Bob',score:95},{name:'Charlie',score:92}].map((s,i)=>(
-              <div key={s.name} className="flex items-center justify-between rounded-xl border p-3">
+            {[{name:'Alice',score:98},{name:'Bob',score:95},{name:'Charlie',score:92}].map((s,i)=> (
+              <div key={s.name} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
                 <div className="font-medium">{i+1}. {s.name}</div>
-                <div className="text-sm text-slate-600">{s.score}</div>
+                <div className="text-sm text-slate-600">{s.score} pts</div>
               </div>
             ))}
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Modal */}
+      <Modal open={editOpen} onOpenChange={setEditOpen}>
+        <ModalContent>
+          <ModalHeader title="Edit Exam" />
+          <div className="grid gap-3">
+            <label className="text-sm">Title</label>
+            <input value={editTitle} onChange={(e)=>setEditTitle(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
+            <label className="text-sm">Start time</label>
+            <input type="datetime-local" value={editDate} onChange={(e)=>setEditDate(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
+            <label className="text-sm">Duration (minutes)</label>
+            <input type="number" value={editDurationMin} onChange={(e)=>setEditDurationMin(Number(e.target.value)||60)} className="w-32 rounded-md border border-slate-300 px-3 py-2" />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={()=>setEditOpen(false)}>Cancel</Button>
+              <Button
+                className="rounded-xl border border-black px-4 text-black bg-white hover:bg-black hover:text-white shadow-sm disabled:opacity-60"
+                disabled={!editExam || !editTitle || !editDate || saving}
+                onClick={async ()=>{
+                  if (!editExam) return
+                  try {
+                    setSaving(true)
+                    const start = new Date(editDate)
+                    const end = new Date(start.getTime() + editDurationMin*60000)
+                    await updateClassExam(id as string, editExam.id, { title: editTitle, start_time: start.toISOString(), end_time: end.toISOString() })
+                    setEditOpen(false)
+                    const data = await listClassExams(id as string, 1, 50)
+                    const now = new Date()
+                    const mapped: Row[] = (data.data || []).map((e: ExamDto) => {
+                      const start = new Date(e.start_time)
+                      const end = e.end_time ? new Date(e.end_time) : null
+                      const st = isNaN(start.getTime()) ? 'upcoming' : (end && now > end) ? 'finished' : (now >= start && (!end || now <= end)) ? 'ongoing' : 'upcoming'
+                      const dur = end ? Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000)) : editDurationMin
+                      return { id: String(e.id), title: e.title, date: e.start_time.slice(0,16).replace('T',' '), duration: `${dur} mins`, status: st as Row['status'] }
+                    })
+                    setRows(mapped)
+                  } finally { setSaving(false) }
+                }}
+              >
+                {saving ? (<span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/> Saving…</span>) : 'Save'}
+              </Button>
+            </div>
+          </div>
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Confirm */}
+      <Modal open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <ModalContent>
+          <ModalHeader title="Delete Exam" description="This action cannot be undone." />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={()=>setDeleteOpen(false)}>Cancel</Button>
+            <Button
+              className="text-red-600"
+              disabled={!deleteId || deleting}
+              onClick={async ()=>{
+                if (!deleteId) return
+                try {
+                  setDeleting(true)
+                  await deleteClassExam(id as string, deleteId)
+                  setDeleteOpen(false)
+                  const data = await listClassExams(id as string, 1, 50)
+                  const now = new Date()
+                  const mapped: Row[] = (data.data || []).map((e: ExamDto) => {
+                    const start = new Date(e.start_time)
+                    const end = e.end_time ? new Date(e.end_time) : null
+                    const st = isNaN(start.getTime()) ? 'upcoming' : (end && now > end) ? 'finished' : (now >= start && (!end || now <= end)) ? 'ongoing' : 'upcoming'
+                    const dur = end ? Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000)) : 60
+                    return { id: String(e.id), title: e.title, date: e.start_time.slice(0,16).replace('T',' '), duration: `${dur} mins`, status: st as Row['status'] }
+                  })
+                  setRows(mapped)
+                } finally { setDeleting(false); setDeleteId(null) }
+              }}
+            >
+              {deleting ? 'Deleting…' : 'Delete'}
+            </Button>
+          </div>
+        </ModalContent>
+      </Modal>
     </div>
   )
 }

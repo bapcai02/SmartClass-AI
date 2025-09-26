@@ -52,6 +52,69 @@ class ExamRepository
         $exam = $this->findInClass($classId, $id);
         $exam->delete();
     }
+
+    /**
+     * Stats and per-student results for an exam in a class.
+     */
+    public function getStats(int $classId, int $examId): array
+    {
+        $exam = $this->findInClass($classId, $examId);
+
+        $students = \DB::table('class_students as cs')
+            ->join('users as u', 'cs.student_id', '=', 'u.id')
+            ->where('cs.class_id', $classId)
+            ->select('u.id', 'u.name', 'u.email')
+            ->orderBy('u.name')
+            ->get();
+
+        $subs = \DB::table('exam_submissions as s')
+            ->where('s.exam_id', $examId)
+            ->select('s.student_id', 's.submitted_at', 's.grade')
+            ->get()
+            ->keyBy('student_id');
+
+        $now = now();
+        $start = $exam->start_time ? \Carbon\Carbon::parse($exam->start_time) : null;
+        $end = $exam->end_time ? \Carbon\Carbon::parse($exam->end_time) : null;
+
+        $rows = [];
+        $counts = [ 'taking' => 0, 'completed' => 0, 'missed' => 0, 'upcoming' => 0 ];
+        foreach ($students as $stu) {
+            $sub = $subs->get($stu->id);
+            if ($sub) {
+                $status = 'completed';
+                $counts['completed']++;
+            } else if ($start && $now->betweenIncluded($start, $end ?: $start)) {
+                $status = 'taking';
+                $counts['taking']++;
+            } else if ($end && $now->greaterThan($end)) {
+                $status = 'missed';
+                $counts['missed']++;
+            } else {
+                $status = 'upcoming';
+                $counts['upcoming']++;
+            }
+            $rows[] = [
+                'id' => (int) $stu->id,
+                'name' => (string) $stu->name,
+                'email' => (string) $stu->email,
+                'status' => $status,
+                'grade' => $sub? (float) ($sub->grade ?? 0) : null,
+                'submitted_at' => $sub? (string) ($sub->submitted_at ?? '') : null,
+            ];
+        }
+
+        return [
+            'counts' => [
+                'total' => count($rows),
+                'taking' => $counts['taking'],
+                'completed' => $counts['completed'],
+                'missed' => $counts['missed'],
+                'upcoming' => $counts['upcoming'],
+            ],
+            'rows' => $rows,
+        ];
+    }
 }
 
 

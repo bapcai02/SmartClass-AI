@@ -289,6 +289,17 @@ class ClassroomController extends Controller
             return response()->json(['message' => 'Failed to create announcement'], 500);
         }
     }
+
+    public function leaderboard(int $id): JsonResponse
+    {
+        try {
+            $limit = request()->integer('limit', 10) ?: 10;
+            $data = $this->service->getLeaderboard($id, $limit);
+            return response()->json($data);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Classroom not found'], 404);
+        }
+    }
 }
 
 

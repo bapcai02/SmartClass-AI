@@ -75,6 +75,11 @@ class ClassroomService
         return $this->repository->getGradebook($classId);
     }
 
+    public function getLeaderboard(int $classId, int $limit = 10)
+    {
+        return $this->repository->getLeaderboard($classId, $limit);
+    }
+
     public function getAnnouncements(int $classId, int $perPage = 15)
     {
         return $this->repository->getAnnouncements($classId, $perPage);

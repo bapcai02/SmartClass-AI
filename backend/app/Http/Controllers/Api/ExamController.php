@@ -90,6 +90,16 @@ class ExamController extends Controller
             return response()->json(['message' => 'Failed to delete exam'], 500);
         }
     }
+
+    public function stats(int $classId, int $id): JsonResponse
+    {
+        try {
+            $data = $this->service->stats($classId, $id);
+            return response()->json($data);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Exam not found'], 404);
+        }
+    }
 }
 
 

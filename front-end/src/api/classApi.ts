@@ -136,6 +136,12 @@ export async function createClassAnnouncement(
   return data
 }
 
+export type LeaderboardRow = { id: number; name: string; points: number; rank: number | null }
+export async function getClassLeaderboard(classId: number | string, limit = 10) {
+  const { data } = await api.get<LeaderboardRow[]>(`/classes/${classId}/leaderboard`, { params: { limit } })
+  return data
+}
+
 export async function createClass(payload: Partial<ClassroomDto>) {
   const { data } = await api.post<ClassroomDto>('/classes', payload)
   return data

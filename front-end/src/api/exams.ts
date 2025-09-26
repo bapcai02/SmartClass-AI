@@ -20,4 +20,19 @@ export async function createClassExam(classId: number | string, payload: Partial
   return data as ExamDto
 }
 
+export async function getClassExam(classId: number | string, id: number | string) {
+  const { data } = await api.get(`/classes/${classId}/exams/${id}`)
+  return data as ExamDto
+}
+
+export async function updateClassExam(classId: number | string, id: number | string, payload: Partial<ExamDto>) {
+  const { data } = await api.put(`/classes/${classId}/exams/${id}`, payload)
+  return data as ExamDto
+}
+
+export async function deleteClassExam(classId: number | string, id: number | string) {
+  const { data } = await api.delete(`/classes/${classId}/exams/${id}`)
+  return data as { message: string }
+}
+
 

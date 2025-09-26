@@ -309,6 +309,34 @@ class ClassroomRepository
     }
 
     /**
+     * Get leaderboard entries for a class with student names.
+     */
+    public function getLeaderboard(int $classId, int $limit = 10): array
+    {
+        /** @var ClassRoom|null $class */
+        $class = ClassRoom::query()->find($classId);
+        if (! $class) {
+            throw new ModelNotFoundException('Classroom not found.');
+        }
+
+        $rows = DB::table('leaderboard as l')
+            ->join('users as u', 'l.student_id', '=', 'u.id')
+            ->where('l.class_id', $classId)
+            ->orderByRaw('COALESCE(l.rank, 999999) ASC')
+            ->orderByDesc('l.total_points')
+            ->limit($limit)
+            ->select('l.student_id as id', 'u.name', 'l.total_points as points', 'l.rank')
+            ->get();
+
+        return $rows->map(fn($r) => [
+            'id' => (int) $r->id,
+            'name' => (string) $r->name,
+            'points' => (int) $r->points,
+            'rank' => $r->rank !== null ? (int) $r->rank : null,
+        ])->values()->all();
+    }
+
+    /**
      * Paginate announcements for a class with author name.
      */
     public function getAnnouncements(int $classId, int $perPage = 15)
