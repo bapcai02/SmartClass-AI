@@ -3,21 +3,50 @@ import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Eye, Edit3, Trash2, Filter } from 'lucide-react'
+import { useListAssignments, useCreateAssignment } from '@/hooks/useAssignments'
+import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
+import { useToast } from '@/components/ui/toast'
 
 type Row = { id: string; title: string; deadline: string; status: 'open'|'closed'; submissions: number; rate: number }
-const base: Row[] = Array.from({ length: 12 }, (_, i) => ({
-  id: `A${100+i}`,
-  title: `Assignment ${i+1}`,
-  deadline: `2025-10-${String((i%28)+1).padStart(2,'0')}`,
-  status: i % 3 === 0 ? 'closed' : 'open',
-  submissions: 10 + (i*3)%20,
-  rate: 40 + (i*5)%60,
-}))
+// const base: Row[] = Array.from({ length: 12 }, (_, i) => ({
+//   id: `A${100+i}`,
+//   title: `Assignment ${i+1}`,
+//   deadline: `2025-10-${String((i%28)+1).padStart(2,'0')}`,
+//   status: i % 3 === 0 ? 'closed' : 'open',
+//   submissions: 10 + (i*3)%20,
+//   rate: 40 + (i*5)%60,
+// }))
 
 export default function ClassAssignmentsPage() {
   const { id } = useParams()
   const [status, setStatus] = useState<'all'|'open'|'closed'>('all')
-  const rows = useMemo(()=> base.filter(r => status==='all' ? true : r.status===status), [status])
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [due, setDue] = useState('')
+  const createMut = useCreateAssignment(id as any)
+  const { addToast } = useToast()
+  // Fetch first page with a generous page size to match current single-page UI
+  const { data } = useListAssignments(id as any, 1, 50)
+  const rowsAll: Row[] = useMemo(() => {
+    const items = data?.data || []
+    const now = new Date()
+    return items.map(a => {
+      const due = a.due_date
+      const dueDate = new Date(due)
+      const isOpen = isNaN(dueDate.getTime()) ? true : dueDate >= now
+      return {
+        id: String(a.id),
+        title: a.title,
+        deadline: a.due_date,
+        status: isOpen ? 'open' : 'closed',
+        // Placeholders to keep UI unchanged until backend provides these stats
+        submissions: 0,
+        rate: 0,
+      }
+    })
+  }, [data])
+  const rows = useMemo(()=> rowsAll.filter(r => status==='all' ? true : r.status===status), [rowsAll, status])
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
@@ -26,7 +55,40 @@ export default function ClassAssignmentsPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Class Assignments</h1>
           <p className="text-slate-600">Manage and track class assignments</p>
         </div>
-        <Button className="gap-2"><Plus className="h-4 w-4"/> Create New Assignment</Button>
+        <Modal open={open} onOpenChange={(v)=>{ setOpen(v); if (!v) { setTitle(''); setDescription(''); setDue('') } }}>
+          <ModalTrigger asChild>
+            <Button variant="outline" className="gap-2 text-slate-900" onClick={()=>setOpen(true)}><Plus className="h-4 w-4"/> Create New Assignment</Button>
+          </ModalTrigger>
+          <ModalContent>
+            <ModalHeader title="Create Assignment" />
+            <div className="grid gap-3">
+              <label className="text-sm">Title</label>
+              <input value={title} onChange={(e)=>setTitle(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
+              <label className="text-sm">Description</label>
+              <textarea value={description} onChange={(e)=>setDescription(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
+              <label className="text-sm">Due date</label>
+              <input type="datetime-local" value={due} onChange={(e)=>setDue(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={()=>setOpen(false)}>Cancel</Button>
+                <Button
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  disabled={!title || !due || createMut.isPending}
+                  onClick={async ()=>{
+                    try {
+                      await createMut.mutateAsync({ title, description, due_date: due })
+                      setOpen(false)
+                      addToast({ title: 'Created', variant: 'success' })
+                    } catch {
+                      addToast({ title: 'Create failed', variant: 'error' })
+                    }
+                  }}
+                >
+                  {createMut.isPending ? 'Creating…' : 'Create'}
+                </Button>
+              </div>
+            </div>
+          </ModalContent>
+        </Modal>
       </div>
 
       <div className="flex items-center justify-between">

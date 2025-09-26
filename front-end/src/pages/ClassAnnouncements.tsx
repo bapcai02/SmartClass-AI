@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Pin, X } from 'lucide-react'
+import { Plus, Pin, X, Loader2 } from 'lucide-react'
 import { getClassAnnouncements, createClassAnnouncement, type AnnouncementRow } from '@/api/classApi'
 import { useUser } from '@/hooks/auth'
 
@@ -56,7 +56,7 @@ export default function ClassAnnouncementsPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Class Announcements</h1>
           <p className="text-slate-600">Share updates and pin important messages</p>
         </div>
-        <Button className="gap-2 text-black" onClick={()=>setCreateOpen(true)}><Plus className="h-4 w-4"/> New Announcement</Button>
+        <Button className="gap-2 text-black hover:bg-black hover:text-white" onClick={()=>setCreateOpen(true)}><Plus className="h-4 w-4"/> New Announcement</Button>
       </div>
 
       <div className="grid gap-3">
@@ -89,25 +89,44 @@ export default function ClassAnnouncementsPage() {
       </div>
 
       {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b px-4 py-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4">
               <div className="text-base font-semibold">New Announcement</div>
-              <button className="p-1" onClick={()=>!submitting && setCreateOpen(false)}><X className="h-5 w-5"/></button>
+              <button className="rounded p-1 hover:bg-slate-100" onClick={()=>!submitting && setCreateOpen(false)} aria-label="Close"><X className="h-5 w-5"/></button>
             </div>
-            <div className="space-y-3 px-4 py-4">
+            <div className="space-y-4 px-5 py-5">
               <div>
-                <label className="mb-1 block text-sm text-slate-600">Title</label>
-                <input value={title} onChange={(e)=>setTitle(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="Enter title" />
+                <label className="mb-1 block text-sm text-slate-700">Title</label>
+                <input
+                  value={title}
+                  onChange={(e)=>setTitle(e.target.value)}
+                  maxLength={120}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+                  placeholder="Enter a clear, concise title"
+                />
+                <div className="mt-1 text-xs text-slate-500">{title.length}/120</div>
               </div>
               <div>
-                <label className="mb-1 block text-sm text-slate-600">Content</label>
-                <textarea value={content} onChange={(e)=>setContent(e.target.value)} rows={6} className="w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="Write your announcement" />
+                <label className="mb-1 block text-sm text-slate-700">Content</label>
+                <textarea
+                  value={content}
+                  onChange={(e)=>setContent(e.target.value)}
+                  rows={7}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2 leading-relaxed focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+                  placeholder="Write the announcement details..."
+                />
+                {(!title.trim() || !content.trim()) && (
+                  <div className="mt-2 text-xs text-amber-600">Title and content are required.</div>
+                )}
               </div>
             </div>
-            <div className="flex items-center justify-end gap-2 border-t px-4 py-3">
-              <Button variant="outline" onClick={()=>!submitting && setCreateOpen(false)}>Cancel</Button>
-              <Button onClick={async()=>{
+            <div className="flex items-center justify-end gap-2 px-5 py-4">
+              <Button variant="outline" className="rounded-xl" onClick={()=>!submitting && setCreateOpen(false)}>Cancel</Button>
+              <Button
+                className="rounded-xl border border-black px-4 text-black bg-white hover:bg-black hover:text-white shadow-sm disabled:opacity-60"
+                disabled={submitting || !title.trim() || !content.trim()}
+                onClick={async()=>{
                 if (!id || !me?.id || !title.trim() || !content.trim()) return
                 try {
                   setSubmitting(true)
@@ -129,8 +148,9 @@ export default function ClassAnnouncementsPage() {
                 } finally {
                   setSubmitting(false); setLoading(false)
                 }
-              }}>
-                {submitting ? 'Creating…' : 'Create'}
+                }}
+              >
+                {submitting ? (<span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/> Creating…</span>) : 'Create'}
               </Button>
             </div>
           </div>
