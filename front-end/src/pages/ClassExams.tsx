@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Eye, Edit3, Trash2 } from 'lucide-react'
+import { Plus, Eye, Edit3, Trash2, ArrowLeftCircle } from 'lucide-react'
 
 type Row = { id: string; title: string; date: string; duration: string; status: 'upcoming'|'ongoing'|'finished' }
 const base: Row[] = Array.from({ length: 8 }, (_, i) => ({
@@ -15,13 +15,23 @@ const base: Row[] = Array.from({ length: 8 }, (_, i) => ({
 
 export default function ClassExamsPage() {
   const { id } = useParams()
+  useEffect(()=>{ window.scrollTo({ top: 0, behavior: 'smooth' }) }, [])
   const [status, setStatus] = useState<'all'|'upcoming'|'ongoing'|'finished'>('all')
   const rows = useMemo(()=> base.filter(r => status==='all' ? true : r.status===status), [status])
   return (
     <div className="grid gap-6">
+      <div>
+        <Link
+          to={`/class/${id}`}
+          className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
+        >
+          <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
+          Back to Class Detail
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
-          <Link to={`/class/${id}`} className="text-sm text-brand-blue">← Back to Class Detail</Link>
           <h1 className="text-2xl font-semibold tracking-tight">Class Exams</h1>
           <p className="text-slate-600">Manage exams and track results</p>
         </div>

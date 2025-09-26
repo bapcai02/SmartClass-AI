@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Pin, X, Loader2 } from 'lucide-react'
+import { Plus, Pin, X, Loader2, ArrowLeftCircle } from 'lucide-react'
 import { getClassAnnouncements, createClassAnnouncement, type AnnouncementRow } from '@/api/classApi'
 import { useUser } from '@/hooks/auth'
 
@@ -10,6 +10,7 @@ type Row = { id: number; title: string; author: string; date: string; content: s
 
 export default function ClassAnnouncementsPage() {
   const { id } = useParams()
+  useEffect(()=>{ window.scrollTo({ top: 0, behavior: 'smooth' }) }, [])
   const { data: me } = useUser() as any
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [items, setItems] = useState<Row[]>([])
@@ -50,9 +51,18 @@ export default function ClassAnnouncementsPage() {
   const sorted = useMemo(()=> [...items].sort((a,b)=> (b.pinned?1:0) - (a.pinned?1:0)), [items])
   return (
     <div className="grid gap-6">
+      <div>
+        <Link
+          to={`/class/${id}`}
+          className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
+        >
+          <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
+          Back to Class Detail
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
-          <Link to={`/class/${id}`} className="text-sm text-brand-blue">← Back to Class Detail</Link>
           <h1 className="text-2xl font-semibold tracking-tight">Class Announcements</h1>
           <p className="text-slate-600">Share updates and pin important messages</p>
         </div>

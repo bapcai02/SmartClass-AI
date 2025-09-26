@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, Upload, Calculator } from 'lucide-react'
+import { Download, Upload, Calculator, ArrowLeftCircle } from 'lucide-react'
 import { getClassGrades, type GradebookItem, type GradebookResponse } from '@/api/classApi'
 
 type Student = { id: number; name: string }
 
 export default function ClassGradebookPage() {
   const { id } = useParams()
+  useEffect(()=>{ window.scrollTo({ top: 0, behavior: 'smooth' }) }, [])
   const [students, setStudents] = useState<Student[]>([])
   const [items, setItems] = useState<GradebookItem[]>([])
   const [grades, setGrades] = useState<Record<string, Record<string, number | null>>>({})
@@ -56,9 +57,18 @@ export default function ClassGradebookPage() {
 
   return (
     <div className="grid gap-6">
+      <div>
+        <Link
+          to={`/class/${id}`}
+          className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
+        >
+          <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
+          Back to Class Detail
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
-          <Link to={`/class/${id}`} className="text-sm text-brand-blue">← Back to Class Detail</Link>
           <h1 className="text-2xl font-semibold tracking-tight">Class Gradebook</h1>
           <p className="text-slate-600">Edit scores inline and export reports</p>
         </div>

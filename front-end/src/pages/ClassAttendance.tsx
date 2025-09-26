@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, Search } from 'lucide-react'
+import { Download, Search, ArrowLeftCircle } from 'lucide-react'
 import { useClassAttendance } from '@/hooks/useClasses'
 import type { AttendanceResponse } from '@/api/classApi'
 import * as XLSX from 'xlsx'
@@ -21,6 +21,7 @@ function generateDates(from: string, to: string) {
 
 export default function ClassAttendancePage() {
   const { id } = useParams()
+  useEffect(()=>{ window.scrollTo({ top: 0, behavior: 'smooth' }) }, [])
   const [query, setQuery] = useState('')
   const today = new Date()
   const tenDaysAgo = new Date(); tenDaysAgo.setDate(today.getDate() - 9)
@@ -84,9 +85,18 @@ export default function ClassAttendancePage() {
 
   return (
     <div className="grid gap-6">
+      <div>
+        <Link
+          to={`/class/${id}`}
+          className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
+        >
+          <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
+          Back to Class Detail
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
-          <Link to={`/class/${id}`} className="text-sm text-brand-blue">← Back to Class Detail</Link>
           <h1 className="text-2xl font-semibold tracking-tight">Class Attendance</h1>
           <p className="text-slate-600">Review attendance over time and export reports</p>
         </div>

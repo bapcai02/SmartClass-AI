@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Eye, Edit3, Trash2, Filter } from 'lucide-react'
+import { Plus, Eye, Edit3, Trash2, Filter, ArrowLeftCircle } from 'lucide-react'
 import { useListAssignments, useCreateAssignment } from '@/hooks/useAssignments'
 import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
@@ -19,6 +19,7 @@ type Row = { id: string; title: string; deadline: string; status: 'open'|'closed
 
 export default function ClassAssignmentsPage() {
   const { id } = useParams()
+  useEffect(()=>{ window.scrollTo({ top: 0, behavior: 'smooth' }) }, [])
   const [status, setStatus] = useState<'all'|'open'|'closed'>('all')
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
@@ -29,9 +30,9 @@ export default function ClassAssignmentsPage() {
   // Fetch first page with a generous page size to match current single-page UI
   const { data } = useListAssignments(id as any, 1, 50)
   const rowsAll: Row[] = useMemo(() => {
-    const items = data?.data || []
+    const items = (data as any)?.data || []
     const now = new Date()
-    return items.map(a => {
+    return items.map((a: any) => {
       const due = a.due_date
       const dueDate = new Date(due)
       const isOpen = isNaN(dueDate.getTime()) ? true : dueDate >= now
@@ -49,9 +50,18 @@ export default function ClassAssignmentsPage() {
   const rows = useMemo(()=> rowsAll.filter(r => status==='all' ? true : r.status===status), [rowsAll, status])
   return (
     <div className="grid gap-6">
+      <div>
+        <Link
+          to={`/class/${id}`}
+          className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
+        >
+          <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
+          Back to Class Detail
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
-          <Link to={`/class/${id}`} className="text-sm text-brand-blue">← Back to Class Detail</Link>
           <h1 className="text-2xl font-semibold tracking-tight">Class Assignments</h1>
           <p className="text-slate-600">Manage and track class assignments</p>
         </div>

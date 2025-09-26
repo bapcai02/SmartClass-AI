@@ -1,8 +1,8 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, Eye, Trash2, Upload, Search, Filter, FileText, PlayCircle, Image as ImageIcon } from 'lucide-react'
+import { Download, Eye, Trash2, Upload, Search, Filter, FileText, PlayCircle, Image as ImageIcon, ArrowLeftCircle } from 'lucide-react'
 import { useGetClassDetail } from '@/hooks/useClasses'
 import { useToast } from '@/components/ui/toast'
 import api from '@/utils/api'
@@ -15,6 +15,7 @@ type UiResource = { id: number; title: string; type: 'PDF'|'Video'|'Image'|'Othe
 
 export default function ClassResourcesManagePage() {
   const { id } = useParams()
+  useEffect(()=>{ window.scrollTo({ top: 0, behavior: 'smooth' }) }, [])
   const [query, setQuery] = useState('')
   const [tab, setTab] = useState<'All'|'Documents'|'Videos'|'Images'>('All')
   const [page, setPage] = useState(1)
@@ -82,9 +83,18 @@ export default function ClassResourcesManagePage() {
 
   return (
     <div className="grid gap-6">
+      <div>
+        <Link
+          to={`/class/${id}`}
+          className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
+        >
+          <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
+          Back to Class Detail
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
-          <Link to={`/class/${id}`} className="text-sm text-brand-blue">← Back to Class Detail</Link>
           <h1 className="text-2xl font-semibold tracking-tight">Class Resources</h1>
           <p className="text-slate-600">Manage course documents, videos, and images</p>
         </div>

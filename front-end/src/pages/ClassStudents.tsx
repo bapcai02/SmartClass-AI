@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Search, Filter, ChevronLeft, ChevronRight, Trash2, MessageSquareText, UserPlus } from 'lucide-react'
+import { Search, Filter, ChevronLeft, ChevronRight, Trash2, MessageSquareText, UserPlus, ArrowLeftCircle } from 'lucide-react'
 // @ts-ignore
 import { useClassStudents, useAddClassStudents, useRemoveClassStudents } from '@/hooks/useClasses'
 // @ts-ignore
@@ -20,6 +20,7 @@ type Student = {
 
 export default function ClassStudentsPage() {
   const { id } = useParams()
+  useEffect(()=>{ window.scrollTo({ top: 0, behavior: 'smooth' }) }, [])
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<'All' | 'Active' | 'Inactive'>('All')
   const [page, setPage] = useState(1)
@@ -69,7 +70,13 @@ export default function ClassStudentsPage() {
     <div className="grid gap-6">
       {/* Back */}
       <div>
-        <Link to={`/class/${id}`} className="text-sm text-brand-blue">← Back to Class Detail</Link>
+        <Link
+          to={`/class/${id}`}
+          className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
+        >
+          <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
+          Back to Class Detail
+        </Link>
       </div>
 
       {/* Top summary */}
