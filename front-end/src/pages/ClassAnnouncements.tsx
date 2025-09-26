@@ -1,23 +1,47 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Pin } from 'lucide-react'
+import { getClassAnnouncements, type AnnouncementRow } from '@/api/classApi'
 
-type Row = { id: string; title: string; author: string; date: string; content: string; pinned?: boolean }
-const base: Row[] = Array.from({ length: 8 }, (_, i) => ({
-  id: `N${i+1}`,
-  title: `Announcement ${i+1}`,
-  author: ['Ms. Johnson','Mr. Patel','Dr. Lee'][i%3],
-  date: `2025-10-${String((i%28)+1).padStart(2,'0')}`,
-  content: 'Short announcement content goes here. Click to expand for full text.',
-  pinned: i===0,
-}))
+type Row = { id: number; title: string; author: string; date: string; content: string; pinned?: boolean }
 
 export default function ClassAnnouncementsPage() {
   const { id } = useParams()
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-  const sorted = useMemo(()=> [...base].sort((a,b)=> (b.pinned?1:0) - (a.pinned?1:0)), [])
+  const [items, setItems] = useState<Row[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    async function load() {
+      try {
+        setLoading(true)
+        const resp = await getClassAnnouncements(id as string, { perPage: 20 })
+        const data = Array.isArray((resp as any).data) ? (resp as any).data : (resp as any).items
+        const rows: Row[] = (data || []).map((r: AnnouncementRow) => ({
+          id: (r as any).id,
+          title: (r as any).title,
+          author: (r as any).author,
+          date: (r as any).created_at?.slice(0,10) || '',
+          content: (r as any).content,
+        }))
+        if (!mounted) return
+        setItems(rows)
+        setError(null)
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load announcements')
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    if (id) load()
+    return () => { mounted = false }
+  }, [id])
+
+  const sorted = useMemo(()=> [...items].sort((a,b)=> (b.pinned?1:0) - (a.pinned?1:0)), [items])
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
@@ -30,7 +54,8 @@ export default function ClassAnnouncementsPage() {
       </div>
 
       <div className="grid gap-3">
-        {sorted.map((n)=> (
+        {error && <div className="p-2 text-sm text-red-600">{error}</div>}
+        {loading ? <div className="p-3 text-sm text-slate-600">Loading…</div> : sorted.map((n)=> (
           <Card key={n.id}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -40,15 +65,15 @@ export default function ClassAnnouncementsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-sm text-slate-700">
-                {expanded[n.id] ? (
+                {expanded[String(n.id)] ? (
                   <>
-                    {n.content} Full details of the announcement would be shown here...
-                    <button className="ml-2 text-brand-blue" onClick={()=>setExpanded({...expanded,[n.id]:false})}>Collapse</button>
+                    {n.content}
+                    <button className="ml-2 text-brand-blue" onClick={()=>setExpanded({...expanded,[String(n.id)]:false})}>Collapse</button>
                   </>
                 ) : (
                   <>
                     {n.content}
-                    <button className="ml-2 text-brand-blue" onClick={()=>setExpanded({...expanded,[n.id]:true})}>Read more</button>
+                    <button className="ml-2 text-brand-blue" onClick={()=>setExpanded({...expanded,[String(n.id)]:true})}>Read more</button>
                   </>
                 )}
               </div>

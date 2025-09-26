@@ -257,6 +257,38 @@ class ClassroomController extends Controller
             return response()->json(['message' => 'Classroom not found'], 404);
         }
     }
+
+    public function announcements(int $id): JsonResponse
+    {
+        try {
+            $perPage = request()->integer('per_page', 15) ?: 15;
+            $data = $this->service->getAnnouncements($id, $perPage);
+            return response()->json($data);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Classroom not found'], 404);
+        }
+    }
+
+    public function storeAnnouncement(int $id): JsonResponse
+    {
+        $validated = request()->validate([
+            'title' => ['required','string','max:255'],
+            'content' => ['required','string'],
+            'created_by' => ['required','integer','exists:users,id'],
+        ]);
+        try {
+            DB::beginTransaction();
+            $row = $this->service->createAnnouncement($id, $validated);
+            DB::commit();
+            return response()->json($row, 201);
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Classroom not found'], 404);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to create announcement'], 500);
+        }
+    }
 }
 
 

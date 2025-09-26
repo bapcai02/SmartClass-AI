@@ -74,6 +74,16 @@ class ClassroomService
     {
         return $this->repository->getGradebook($classId);
     }
+
+    public function getAnnouncements(int $classId, int $perPage = 15)
+    {
+        return $this->repository->getAnnouncements($classId, $perPage);
+    }
+
+    public function createAnnouncement(int $classId, array $data)
+    {
+        return $this->repository->createAnnouncement($classId, $data);
+    }
 }
 
 

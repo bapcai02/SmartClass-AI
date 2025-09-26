@@ -115,6 +115,27 @@ export async function getClassGrades(classId: number | string) {
   return data
 }
 
+export type AnnouncementRow = { id: number; title: string; content: string; author: string; created_at: string }
+
+export async function getClassAnnouncements(
+  classId: number | string,
+  params: { page?: number; perPage?: number } = {}
+) {
+  const { page = 1, perPage = 10 } = params
+  const { data } = await api.get<PaginatedResponse<AnnouncementRow>>(`/classes/${classId}/announcements`, {
+    params: { page, per_page: perPage },
+  })
+  return data
+}
+
+export async function createClassAnnouncement(
+  classId: number | string,
+  payload: { title: string; content: string; created_by: number }
+) {
+  const { data } = await api.post<AnnouncementRow>(`/classes/${classId}/announcements`, payload)
+  return data
+}
+
 export async function createClass(payload: Partial<ClassroomDto>) {
   const { data } = await api.post<ClassroomDto>('/classes', payload)
   return data

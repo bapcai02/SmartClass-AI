@@ -309,6 +309,52 @@ class ClassroomRepository
     }
 
     /**
+     * Paginate announcements for a class with author name.
+     */
+    public function getAnnouncements(int $classId, int $perPage = 15)
+    {
+        /** @var ClassRoom|null $class */
+        $class = ClassRoom::query()->find($classId);
+        if (! $class) {
+            throw new ModelNotFoundException('Classroom not found.');
+        }
+
+        return DB::table('announcements as a')
+            ->join('users as u', 'a.created_by', '=', 'u.id')
+            ->where('a.class_id', $classId)
+            ->orderByDesc('a.id')
+            ->select('a.id', 'a.title', 'a.content', 'a.created_at', 'u.name as author')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Create a new announcement for a class and return it with author name.
+     */
+    public function createAnnouncement(int $classId, array $data)
+    {
+        /** @var ClassRoom|null $class */
+        $class = ClassRoom::query()->find($classId);
+        if (! $class) {
+            throw new ModelNotFoundException('Classroom not found.');
+        }
+
+        $id = DB::table('announcements')->insertGetId([
+            'class_id' => $classId,
+            'title' => $data['title'],
+            'content' => $data['content'],
+            'created_by' => $data['created_by'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return DB::table('announcements as a')
+            ->join('users as u', 'a.created_by', '=', 'u.id')
+            ->where('a.id', $id)
+            ->select('a.id', 'a.title', 'a.content', 'a.created_at', 'u.name as author')
+            ->first();
+    }
+
+    /**
      * Build a gradebook matrix for a class with students x items (assignments + exams).
      * Returns structure: {
      *   students: [{ id, name }...],
@@ -340,7 +386,7 @@ class ClassroomRepository
 
         $exams = DB::table('exams')
             ->where('class_id', $classId)
-            ->select('id', DB::raw("'exam' as type"), 'title', 'date')
+            ->select('id', DB::raw("'exam' as type"), 'title', DB::raw("start_time as date"))
             ->get();
 
         // Normalize items to a common shape and stable order (by date then title)
