@@ -26,6 +26,7 @@ import ExamDetailPage from '@/pages/ExamDetail'
 import ExamTakePage from '@/pages/ExamTake'
 import ClassGradebookPage from '@/pages/ClassGradebook'
 import ClassAnnouncementsPage from '@/pages/ClassAnnouncements'
+import AllAssignmentsPage from '@/pages/AllAssignments'
 
 function App() {
   return (
@@ -46,7 +47,7 @@ function App() {
         <Route path="/class/:id/exam/:eid" element={<PrivateRoute><ExamDetailPage /></PrivateRoute>} />
         <Route path="/class/:id/grades" element={<PrivateRoute><ClassGradebookPage /></PrivateRoute>} />
         <Route path="/class/:id/announcements" element={<PrivateRoute><ClassAnnouncementsPage /></PrivateRoute>} />
-        <Route path="/assignments" element={<PrivateRoute><AssignmentsPage /></PrivateRoute>} />
+        <Route path="/assignments" element={<PrivateRoute><AllAssignmentsPage /></PrivateRoute>} />
         <Route path="/assignment/:id" element={<PrivateRoute><AssignmentDetailPage /></PrivateRoute>} />
         <Route path="/reports" element={<PrivateRoute><ReportsPage /></PrivateRoute>} />
         <Route path="/exams" element={<PrivateRoute><ExamsPage /></PrivateRoute>} />

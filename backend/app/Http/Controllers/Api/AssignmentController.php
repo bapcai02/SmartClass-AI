@@ -10,7 +10,11 @@ use Illuminate\Validation\Rule;
 
 class AssignmentController extends Controller
 {
-    public function __construct(private AssignmentService $service) {}
+    private AssignmentService $service;
+
+    public function __construct(AssignmentService $service) {
+        $this->service = $service;
+    }
 
     public function index(int $classId): JsonResponse
     {
@@ -71,6 +75,18 @@ class AssignmentController extends Controller
             DB::rollBack();
             return response()->json(['message' => 'Failed to delete assignment'], 500);
         }
+    }
+
+    public function all(): JsonResponse
+    {
+        $perPage = request()->integer('per_page', 15) ?: 15;
+        $filters = request()->only(['search', 'class_id', 'subject_id', 'status', 'created_by', 'date_from', 'date_to']);
+        return response()->json($this->service->getAllAssignments($perPage, $filters));
+    }
+
+    public function stats(): JsonResponse
+    {
+        return response()->json($this->service->getAssignmentStats());
     }
 }
 

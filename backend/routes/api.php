@@ -41,6 +41,10 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/classes/{classId}/assignments/{id}', [AssignmentController::class, 'update']);
     Route::delete('/classes/{classId}/assignments/{id}', [AssignmentController::class, 'destroy']);
 
+    // All assignments
+    Route::get('/assignments', [AssignmentController::class, 'all']);
+    Route::get('/assignments/stats', [AssignmentController::class, 'stats']);
+
     // Exams per class
     Route::get('/classes/{classId}/exams', [ExamController::class, 'index']);
     Route::get('/classes/{classId}/exams/{id}', [ExamController::class, 'show']);
