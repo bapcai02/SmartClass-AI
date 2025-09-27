@@ -35,6 +35,12 @@ import { useQuery } from '@tanstack/react-query'
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [showAll, setShowAll] = useState({
+    classes: false,
+    students: false,
+    attendance: false,
+    activity: false,
+  })
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -291,6 +297,16 @@ export default function ReportsPage() {
         {/* Classes Tab */}
         {activeTab === 'classes' && (
           <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-900">Class Performance</h2>
+              <Button
+                variant="outline"
+                onClick={() => setShowAll(prev => ({ ...prev, classes: !prev.classes }))}
+                className="text-black hover:bg-black hover:text-white"
+              >
+                {showAll.classes ? 'Show Less' : 'Show All'}
+              </Button>
+            </div>
             {classLoading ? (
               <div className="grid gap-4">
                 {[...Array(3)].map((_, i) => (
@@ -299,7 +315,7 @@ export default function ReportsPage() {
               </div>
             ) : (
               <div className="grid gap-4">
-                {classPerformance?.map((classData) => (
+                {(showAll.classes ? classPerformance : classPerformance?.slice(0, 10))?.map((classData) => (
                   <Card key={classData.id} className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -330,6 +346,16 @@ export default function ReportsPage() {
         {/* Students Tab */}
         {activeTab === 'students' && (
           <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-900">Student Performance</h2>
+              <Button
+                variant="outline"
+                onClick={() => setShowAll(prev => ({ ...prev, students: !prev.students }))}
+                className="text-black hover:bg-black hover:text-white"
+              >
+                {showAll.students ? 'Show Less' : 'Show All'}
+              </Button>
+            </div>
             {studentLoading ? (
               <div className="grid gap-4">
                 {[...Array(5)].map((_, i) => (
@@ -338,7 +364,7 @@ export default function ReportsPage() {
               </div>
             ) : (
               <div className="grid gap-4">
-                {studentPerformance?.map((student) => (
+                {(showAll.students ? studentPerformance : studentPerformance?.slice(0, 15))?.map((student) => (
                   <Card key={student.id} className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -367,6 +393,16 @@ export default function ReportsPage() {
         {/* Attendance Tab */}
         {activeTab === 'attendance' && (
           <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-900">Attendance Statistics</h2>
+              <Button
+                variant="outline"
+                onClick={() => setShowAll(prev => ({ ...prev, attendance: !prev.attendance }))}
+                className="text-black hover:bg-black hover:text-white"
+              >
+                {showAll.attendance ? 'Show Less' : 'Show All'}
+              </Button>
+            </div>
             {attendanceLoading ? (
               <div className="grid gap-4">
                 {[...Array(5)].map((_, i) => (
@@ -375,7 +411,7 @@ export default function ReportsPage() {
               </div>
             ) : (
               <div className="grid gap-4">
-                {attendanceStats?.map((attendance, index) => (
+                {(showAll.attendance ? attendanceStats : attendanceStats?.slice(0, 15))?.map((attendance, index) => (
                   <Card key={index} className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -429,6 +465,16 @@ export default function ReportsPage() {
         {/* Activity Tab */}
         {activeTab === 'activity' && (
           <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-900">Recent Activity</h2>
+              <Button
+                variant="outline"
+                onClick={() => setShowAll(prev => ({ ...prev, activity: !prev.activity }))}
+                className="text-black hover:bg-black hover:text-white"
+              >
+                {showAll.activity ? 'Show Less' : 'Show All'}
+              </Button>
+            </div>
             {activityLoading ? (
               <div className="space-y-3">
                 {[...Array(5)].map((_, i) => (
@@ -442,7 +488,7 @@ export default function ReportsPage() {
                   <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
                 </div>
                 <div className="space-y-3">
-                  {recentActivity?.map((activity, index) => (
+                  {(showAll.activity ? recentActivity : recentActivity?.slice(0, 20))?.map((activity, index) => (
                     <div key={index} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
                       <div className={`rounded-full p-2 ${
                         activity.type === 'assignment' 
