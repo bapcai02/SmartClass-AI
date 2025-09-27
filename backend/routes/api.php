@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\QaController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\UserController;
 
@@ -100,6 +101,14 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
     Route::get('/profile/stats', [ProfileController::class, 'stats']);
     Route::get('/profile/activity', [ProfileController::class, 'activity']);
+
+    // Settings
+    Route::get('/settings', [SettingsController::class, 'getSettings']);
+    Route::put('/settings', [SettingsController::class, 'updateSettings']);
+    Route::put('/settings/profile', [SettingsController::class, 'updateProfile']);
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword']);
+    Route::delete('/settings/account', [SettingsController::class, 'deleteAccount']);
+    Route::get('/settings/export', [SettingsController::class, 'exportData']);
 
     // Lookups
     Route::get('/subjects', [SubjectController::class, 'index']);
