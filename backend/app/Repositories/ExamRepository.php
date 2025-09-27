@@ -130,6 +130,85 @@ class ExamRepository
             [ 'submitted_at' => now(), 'updated_at' => now(), 'created_at' => now() ]
         );
     }
+
+    public function getAllExams(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    {
+        $query = Exam::query()
+            ->with(['classRoom.subject', 'creator', 'submissions']);
+
+        // Search by title or description
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by class
+        if (!empty($filters['class_id'])) {
+            $query->where('class_id', $filters['class_id']);
+        }
+
+        // Filter by subject
+        if (!empty($filters['subject_id'])) {
+            $query->whereHas('classRoom.subject', function($q) use ($filters) {
+                $q->where('id', $filters['subject_id']);
+            });
+        }
+
+        // Filter by status
+        if (!empty($filters['status'])) {
+            $now = now();
+            switch ($filters['status']) {
+                case 'upcoming':
+                    $query->where('start_time', '>', $now);
+                    break;
+                case 'ongoing':
+                    $query->where('start_time', '<=', $now)
+                          ->where('end_time', '>=', $now);
+                    break;
+                case 'completed':
+                    $query->where('end_time', '<', $now);
+                    break;
+            }
+        }
+
+        // Filter by creator
+        if (!empty($filters['created_by'])) {
+            $query->where('created_by', $filters['created_by']);
+        }
+
+        // Date range filter
+        if (!empty($filters['date_from'])) {
+            $query->where('start_time', '>=', $filters['date_from']);
+        }
+        if (!empty($filters['date_to'])) {
+            $query->where('end_time', '<=', $filters['date_to']);
+        }
+
+        return $query
+            ->orderByDesc('start_time')
+            ->orderByDesc('id')
+            ->paginate($perPage);
+    }
+
+    public function getExamStats(): array
+    {
+        $now = now();
+        $total = Exam::count();
+        $upcoming = Exam::where('start_time', '>', $now)->count();
+        $ongoing = Exam::where('start_time', '<=', $now)
+                      ->where('end_time', '>=', $now)->count();
+        $completed = Exam::where('end_time', '<', $now)->count();
+
+        return [
+            'total' => $total,
+            'upcoming' => $upcoming,
+            'ongoing' => $ongoing,
+            'completed' => $completed,
+        ];
+    }
 }
 
 

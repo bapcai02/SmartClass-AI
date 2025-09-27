@@ -48,6 +48,16 @@ class ExamService
     {
         $this->repository->submit($classId, $examId, $studentId, $payload);
     }
+
+    public function getAllExams(int $perPage = 15, array $filters = [])
+    {
+        return $this->repository->getAllExams($perPage, $filters);
+    }
+
+    public function getExamStats(): array
+    {
+        return $this->repository->getExamStats();
+    }
 }
 
 

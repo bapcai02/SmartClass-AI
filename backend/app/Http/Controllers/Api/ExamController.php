@@ -116,6 +116,18 @@ class ExamController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
     }
+
+    public function all(): JsonResponse
+    {
+        $perPage = request()->integer('per_page', 15) ?: 15;
+        $filters = request()->only(['search', 'class_id', 'subject_id', 'status', 'created_by', 'date_from', 'date_to']);
+        return response()->json($this->service->getAllExams($perPage, $filters));
+    }
+
+    public function allStats(): JsonResponse
+    {
+        return response()->json($this->service->getExamStats());
+    }
 }
 
 

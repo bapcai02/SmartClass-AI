@@ -47,4 +47,66 @@ export async function deleteClassExam(classId: number | string, id: number | str
   return data as { message: string }
 }
 
+export type Paginated<T> = {
+  data: T[]
+  current_page: number
+  per_page: number
+  total: number
+  last_page: number
+}
+
+export type ExamFilters = {
+  page?: number
+  perPage?: number
+  search?: string
+  class_id?: number
+  subject_id?: number
+  status?: 'upcoming' | 'ongoing' | 'completed'
+  created_by?: number
+  date_from?: string
+  date_to?: string
+}
+
+export type ExamStats = {
+  total: number
+  upcoming: number
+  ongoing: number
+  completed: number
+}
+
+export type ExamWithDetails = ExamDto & {
+  class_room: {
+    id: number
+    name: string
+    subject: {
+      id: number
+      name: string
+    }
+  }
+  creator: {
+    id: number
+    name: string
+    email: string
+  }
+  submissions: Array<{
+    id: number
+    student_id: number
+    grade?: number | null
+    submitted_at?: string | null
+  }>
+}
+
+export async function getAllExams(params: ExamFilters = {}) {
+  const { page = 1, perPage = 15, ...filters } = params
+  const { data } = await api.get<Paginated<ExamWithDetails>>('/exams', { 
+    params: { page, per_page: perPage, ...filters } 
+  })
+  return data
+}
+
+export async function getExamStats() {
+  const { data } = await api.get<ExamStats>('/exams/stats')
+  return data
+}
+
 

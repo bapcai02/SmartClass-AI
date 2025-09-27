@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\ClassroomController;
 use App\Http\Controllers\Api\AssignmentController;
 use App\Http\Controllers\Api\ExamController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\UserController;
 
@@ -53,6 +54,19 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/classes/{classId}/exams/{id}', [ExamController::class, 'update']);
     Route::delete('/classes/{classId}/exams/{id}', [ExamController::class, 'destroy']);
     Route::post('/classes/{classId}/exams/{id}/submit', [ExamController::class, 'submit']);
+
+    // All exams
+    Route::get('/exams', [ExamController::class, 'all']);
+    Route::get('/exams/stats', [ExamController::class, 'allStats']);
+
+    // Reports
+    Route::get('/reports/overall-stats', [ReportController::class, 'overallStats']);
+    Route::get('/reports/class-performance', [ReportController::class, 'classPerformance']);
+    Route::get('/reports/student-performance', [ReportController::class, 'studentPerformance']);
+    Route::get('/reports/attendance-stats', [ReportController::class, 'attendanceStats']);
+    Route::get('/reports/grade-distribution', [ReportController::class, 'gradeDistribution']);
+    Route::get('/reports/recent-activity', [ReportController::class, 'recentActivity']);
+    Route::get('/reports/monthly-stats', [ReportController::class, 'monthlyStats']);
 
     // Lookups
     Route::get('/subjects', [SubjectController::class, 'index']);
