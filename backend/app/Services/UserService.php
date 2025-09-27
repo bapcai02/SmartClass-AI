@@ -18,6 +18,26 @@ class UserService
     {
         return $this->repository->paginate($search, $role, $perPage);
     }
+
+    public function findById(int $id): ?\App\Models\User
+    {
+        return $this->repository->findById($id);
+    }
+
+    public function update(int $id, array $data): ?\App\Models\User
+    {
+        return $this->repository->update($id, $data);
+    }
+
+    public function getUserStats(int $userId): array
+    {
+        return $this->repository->getUserStats($userId);
+    }
+
+    public function getUserActivity(int $userId, int $limit = 10): array
+    {
+        return $this->repository->getUserActivity($userId, $limit);
+    }
 }
 
 

@@ -15,7 +15,7 @@ import ResourcesPage from '@/pages/Resources'
 import SettingsPage from '@/pages/Settings'
 import QAPage from '@/pages/QA'
 import LeaderboardPage from '@/pages/Leaderboard'
-import ProfilePage from '@/pages/Profile'
+import ProfilePage from '@/pages/ProfilePage'
 import CreateClassPage from '@/pages/CreateClass'
 import ClassStudentsPage from '@/pages/ClassStudents'
 import ClassAttendancePage from '@/pages/ClassAttendance'
@@ -60,7 +60,6 @@ function App() {
         <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
         <Route path="/chat" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
-        <Route path="/profile" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
       </Route>
       {/* Fullscreen exam taking route (no layout/menu) */}
       <Route path="/class/:id/exam/:eid/take" element={<PrivateRoute><ExamTakePage /></PrivateRoute>} />

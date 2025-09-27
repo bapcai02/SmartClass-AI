@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ExamController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\QaController;
 use App\Http\Controllers\Api\ResourceController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\UserController;
 
@@ -92,6 +93,13 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/resources', [ResourceController::class, 'store']);
     Route::put('/resources/{id}', [ResourceController::class, 'update']);
     Route::delete('/resources/{id}', [ResourceController::class, 'destroy']);
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
+    Route::get('/profile/stats', [ProfileController::class, 'stats']);
+    Route::get('/profile/activity', [ProfileController::class, 'activity']);
 
     // Lookups
     Route::get('/subjects', [SubjectController::class, 'index']);

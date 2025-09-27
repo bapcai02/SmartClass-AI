@@ -20,14 +20,14 @@ import {
 import { 
   getAllResources, 
   getResourceStats,
-  getClasses,
-  searchSubjects,
   type Resource,
   type ResourceStats,
   type ResourceFilters,
   getFileTypeFromUrl,
   getFileIcon
 } from '@/api/resources'
+import { getClasses } from '@/api/classApi'
+import { searchSubjects } from '@/api/lookup'
 import { useQuery } from '@tanstack/react-query'
 
 export default function AllResourcesPage() {
