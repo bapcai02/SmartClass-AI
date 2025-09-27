@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AssignmentController;
 use App\Http\Controllers\Api\ExamController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\QaController;
+use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\UserController;
 
@@ -81,6 +82,16 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/qa/answers/{id}', [QaController::class, 'updateAnswer']);
     Route::delete('/qa/posts/{id}', [QaController::class, 'destroyPost']);
     Route::delete('/qa/answers/{id}', [QaController::class, 'destroyAnswer']);
+
+    // Resources
+    Route::get('/resources', [ResourceController::class, 'index']);
+    Route::get('/resources/stats', [ResourceController::class, 'stats']);
+    Route::get('/resources/recent', [ResourceController::class, 'recent']);
+    Route::get('/resources/class/{classId}', [ResourceController::class, 'byClass']);
+    Route::get('/resources/{id}', [ResourceController::class, 'show']);
+    Route::post('/resources', [ResourceController::class, 'store']);
+    Route::put('/resources/{id}', [ResourceController::class, 'update']);
+    Route::delete('/resources/{id}', [ResourceController::class, 'destroy']);
 
     // Lookups
     Route::get('/subjects', [SubjectController::class, 'index']);
