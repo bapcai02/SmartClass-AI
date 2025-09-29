@@ -63,7 +63,8 @@ class AiChatController extends Controller
                 'context' => $data['context'] ?? null,
             ];
 
-            // If image uploaded, include base64 inline data
+            // If image uploaded, include base64 inline data and prepare for storage
+            $uploadedImagePath = null;
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
                 $mime = $file->getMimeType() ?: 'image/jpeg';
@@ -72,6 +73,9 @@ class AiChatController extends Controller
                     'mime' => $mime,
                     'data' => $base64,
                 ];
+
+                // Persist the uploaded file to storage/app/public/chat_images
+                $uploadedImagePath = $file->store('public/chat_images');
             }
 
             $response = $this->sendToGemini($apiData);
@@ -97,6 +101,7 @@ class AiChatController extends Controller
                     'message' => $data['message'],
                     'message_type' => 'user',
                     'context' => !empty($data['context']) ? ['context' => $data['context']] : null,
+                    'image_path' => $uploadedImagePath,
                 ]);
 
                 $this->chatService->createConversation([
@@ -163,10 +168,8 @@ class AiChatController extends Controller
             }
         }
 
-        // Add current message, with optional image inlineData
-        $currentParts = [
-            ['text' => $data['message']],
-        ];
+        // Add current message, with optional image inlineData (place image first)
+        $currentParts = [];
         if (!empty($data['image']) && is_array($data['image']) && !empty($data['image']['data'])) {
             $currentParts[] = [
                 'inlineData' => [
@@ -175,6 +178,7 @@ class AiChatController extends Controller
                 ]
             ];
         }
+        $currentParts[] = ['text' => $data['message']];
         $messages[] = [
             'role' => 'user',
             'parts' => $currentParts,
@@ -183,10 +187,10 @@ class AiChatController extends Controller
         $payload = [
             'contents' => $messages,
             'generationConfig' => [
-                'temperature' => 0.7,
+                'temperature' => 0.4,
                 'topK' => 40,
-                'topP' => 0.95,
-                'maxOutputTokens' => 1024,
+                'topP' => 0.9,
+                'maxOutputTokens' => 20048,
             ],
             'safetySettings' => [
                 [
@@ -316,6 +320,7 @@ class AiChatController extends Controller
                     'id' => $conv->id,
                     'message' => $conv->message,
                     'response' => $conv->response,
+                    'image_url' => $conv->image_path ? (\Illuminate\Support\Facades\Storage::url($conv->image_path)) : null,
                     'message_type' => $conv->message_type,
                     'created_at' => $conv->created_at,
                 ];

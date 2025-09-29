@@ -31,6 +31,7 @@ import AllAssignmentsPage from '@/pages/AllAssignments'
 import AllExamsPage from '@/pages/AllExams'
 import AllQaPage from '@/pages/AllQaPage'
 import AllResourcesPage from '@/pages/AllResourcesPage'
+import QuestionBankPage from '@/pages/QuestionBank'
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
         <Route path="/reports" element={<PrivateRoute><ReportsPage /></PrivateRoute>} />
         <Route path="/exams" element={<PrivateRoute><AllExamsPage /></PrivateRoute>} />
         <Route path="/resources" element={<PrivateRoute><AllResourcesPage /></PrivateRoute>} />
+        <Route path="/question-bank" element={<PrivateRoute><QuestionBankPage /></PrivateRoute>} />
         <Route path="/qa" element={<PrivateRoute><AllQaPage /></PrivateRoute>} />
         <Route path="/leaderboard" element={<PrivateRoute><LeaderboardPage /></PrivateRoute>} />
         <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />

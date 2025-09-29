@@ -50,6 +50,7 @@ export type ChatConversation = {
   id: number
   message: string
   response?: string
+  image_url?: string | null
   message_type: 'user' | 'assistant'
   created_at: string
 }

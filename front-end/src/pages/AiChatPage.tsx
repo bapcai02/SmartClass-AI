@@ -188,6 +188,7 @@ export default function AiChatPage() {
             role: 'user',
             content: conv.message,
             timestamp: conv.created_at,
+            imageUrl: conv.image_url || undefined,
           })
         } else if (conv.message_type === 'assistant' && conv.response) {
           sessionMessages.push({

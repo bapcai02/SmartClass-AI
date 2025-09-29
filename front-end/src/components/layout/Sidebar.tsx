@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { LayoutDashboard, NotebookTabs, BarChart3, MessageCircle, User, MessageSquare, Trophy, FileBarChart, FolderOpen, Settings } from 'lucide-react'
+import { LayoutDashboard, NotebookTabs, BarChart3, MessageCircle, User, MessageSquare, Trophy, FileBarChart, FolderOpen, Settings, BookOpen } from 'lucide-react'
 
 const links = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -10,6 +10,7 @@ const links = [
   { to: '/chat', label: 'Chat', icon: MessageCircle },
   { to: '/qa', label: 'Q&A', icon: MessageSquare },
   { to: '/resources', label: 'Resources', icon: FolderOpen },
+  { to: '/question-bank', label: 'Question Bank', icon: BookOpen },
   { to: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { to: '/profile', label: 'Profile', icon: User },
   { to: '/settings', label: 'Settings', icon: Settings },

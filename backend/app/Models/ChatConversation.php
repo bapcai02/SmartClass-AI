@@ -14,6 +14,7 @@ class ChatConversation extends Model
         'user_id',
         'message',
         'response',
+        'image_path',
         'context',
         'conversation_id',
         'message_type',
