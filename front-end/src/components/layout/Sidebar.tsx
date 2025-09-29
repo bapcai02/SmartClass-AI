@@ -13,6 +13,7 @@ const links = [
   { to: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { to: '/profile', label: 'Profile', icon: User },
   { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/ai-chat', label: 'AI Chat', icon: MessageCircle },
 ]
 
 export function Sidebar() {

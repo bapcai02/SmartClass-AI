@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\QaController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SettingsController;
+use App\Http\Controllers\Api\AiChatController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\UserController;
 
@@ -109,6 +110,16 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/settings/password', [SettingsController::class, 'updatePassword']);
     Route::delete('/settings/account', [SettingsController::class, 'deleteAccount']);
     Route::get('/settings/export', [SettingsController::class, 'exportData']);
+
+    // AI Chat
+    Route::post('/ai/chat', [AiChatController::class, 'chat']);
+    Route::get('/ai/suggestions', [AiChatController::class, 'getSuggestions']);
+    Route::get('/ai/context', [AiChatController::class, 'getContext']);
+    Route::get('/ai/sessions', [AiChatController::class, 'getSessions']);
+    Route::get('/ai/sessions/{id}', [AiChatController::class, 'getSession']);
+    Route::post('/ai/sessions', [AiChatController::class, 'createSession']);
+    Route::delete('/ai/sessions/{id}', [AiChatController::class, 'deleteSession']);
+    Route::get('/ai/stats', [AiChatController::class, 'getStats']);
 
     // Lookups
     Route::get('/subjects', [SubjectController::class, 'index']);
