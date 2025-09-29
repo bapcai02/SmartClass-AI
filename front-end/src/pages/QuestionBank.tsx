@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Search, Filter, BookOpen, GraduationCap, FileText, Clock } from 'lucide-react'
 import { getAllExams, type ExamWithDetails, type ExamFilters } from '@/api/exams'
+import { getClasses, type ClassroomDto } from '@/api/classApi'
 import { searchSubjects } from '@/api/lookup'
 
 export default function QuestionBankPage() {
@@ -11,6 +12,8 @@ export default function QuestionBankPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [subjects, setSubjects] = useState<Array<{ id: number; name: string }>>([])
+  const [classes, setClasses] = useState<ClassroomDto[]>([])
+  const [selectedClassId, setSelectedClassId] = useState<number | ''>('')
   const [grade, setGrade] = useState<string>('')
 
   const { data, isLoading, error } = useQuery({
@@ -27,7 +30,17 @@ export default function QuestionBankPage() {
         // no-op
       }
     }
-    loadSubjects()
+    const loadClasses = async () => {
+      try {
+        const res = await getClasses({ perPage: 200 })
+        const list = (res as any).data || (res as any).items || []
+        setClasses(list)
+      } catch (e) {
+        // no-op
+      }
+    }
+    loadSubjects();
+    loadClasses();
   }, [])
 
   const handleSearch = () => {
@@ -42,9 +55,15 @@ export default function QuestionBankPage() {
     setFilters({ page: 1, perPage: 20 })
     setSearchTerm('')
     setGrade('')
+    setSelectedClassId('')
   }
 
   const items = (data?.data as ExamWithDetails[] | undefined) || []
+  const filteredClasses = classes.filter(c => {
+    const bySubject = !filters.subject_id || c.subject_id === filters.subject_id
+    const byGrade = !grade || (c.name && c.name.match(new RegExp(`\\b(${grade}|Lớp ${grade})\\b`, 'i')))
+    return bySubject && byGrade
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -97,6 +116,23 @@ export default function QuestionBankPage() {
                   <option value="">Tất cả</option>
                   {Array.from({ length: 12 }, (_, i) => i + 1).map(g => (
                     <option key={g} value={g}>Lớp {g}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Lớp</label>
+                <select
+                  value={selectedClassId}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : ''
+                    setSelectedClassId(val as any)
+                    handleFilterChange('class_id', val || undefined)
+                  }}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                >
+                  <option value="">Tất cả lớp</option>
+                  {filteredClasses.map(cls => (
+                    <option key={cls.id} value={cls.id}>{cls.name}</option>
                   ))}
                 </select>
               </div>

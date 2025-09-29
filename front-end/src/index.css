@@ -77,6 +77,62 @@ body {
     linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
+/* Simple entrance + float animations */
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 600ms ease forwards; }
+
+/* Study-themed background helpers */
+.hero-bg {
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(800px 400px at 10% 10%, rgba(255,255,255,0.08), transparent 50%),
+    radial-gradient(600px 300px at 90% 20%, rgba(255,255,255,0.06), transparent 50%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 24px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 24px);
+  pointer-events: none;
+}
+
+.edu-icon {
+  position: absolute;
+  backdrop-filter: blur(2px);
+  border-radius: 12px;
+  padding: 6px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* Extra motion for header imagery */
+@keyframes float-sway {
+  0% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-8px) translateX(6px); }
+  100% { transform: translateY(0) translateX(0); }
+}
+.animate-float-sway { animation: float-sway 7s ease-in-out infinite; }
+
+@keyframes gentle-tilt {
+  0% { transform: rotate(-1.5deg) scale(1); }
+  50% { transform: rotate(1.5deg) scale(1.02); }
+  100% { transform: rotate(-1.5deg) scale(1); }
+}
+.animate-gentle-tilt { animation: gentle-tilt 8s ease-in-out infinite; }
+
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
