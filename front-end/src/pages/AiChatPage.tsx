@@ -6,7 +6,6 @@ import {
   Bot, 
   User, 
   Sparkles, 
-  Lightbulb, 
   BookOpen, 
   Calculator, 
   Globe, 
@@ -18,11 +17,11 @@ import {
   ThumbsDown,
   RefreshCw,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Image as ImageIcon
 } from 'lucide-react'
 import { 
   sendMessage, 
-  getSuggestions, 
   getContext,
   getSessions,
   getSession,
@@ -31,22 +30,22 @@ import {
   getChatStats,
   type ChatMessage, 
   type ChatRequest,
-  type Suggestion,
   type Context,
   type ChatSession,
   type ChatConversation,
   type ChatStats
 } from '@/api/aiChat'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export default function AiChatPage() {
+  const queryClient = useQueryClient()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputMessage, setInputMessage] = useState('')
+  const [attachedImage, setAttachedImage] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [isTyping, setIsTyping] = useState(false)
-  const [showSuggestions, setShowSuggestions] = useState(true)
   const [showContext, setShowContext] = useState(false)
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null)
-  const [showSessions, setShowSessions] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -61,11 +60,6 @@ export default function AiChatPage() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
-
-  const { data: suggestions } = useQuery({
-    queryKey: ['ai-suggestions'],
-    queryFn: getSuggestions,
-  })
 
   const { data: context } = useQuery({
     queryKey: ['ai-context'],
@@ -91,6 +85,7 @@ export default function AiChatPage() {
         role: 'user',
         content: inputMessage,
         timestamp: new Date().toISOString(),
+        imageUrl: imagePreviewUrl || undefined,
       }
       setMessages(prev => [...prev, userMessage])
       setInputMessage('')
@@ -109,6 +104,8 @@ export default function AiChatPage() {
         // Update current session ID if provided
         if (data.session_id) {
           setCurrentSessionId(data.session_id)
+          // refresh sessions list so the active thread appears/updates
+          queryClient.invalidateQueries({ queryKey: ['ai-sessions'] })
         }
       } else {
         const errorMessage: ChatMessage = {
@@ -149,7 +146,15 @@ export default function AiChatPage() {
       session_id: currentSessionId || undefined,
     }
 
+    if (attachedImage) {
+      payload.imageFile = attachedImage
+    }
+
     chatMutation.mutate(payload)
+    if (attachedImage) {
+      setAttachedImage(null)
+      setImagePreviewUrl(null)
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -167,6 +172,8 @@ export default function AiChatPage() {
   const clearChat = () => {
     setMessages([])
     setCurrentSessionId(null)
+    setAttachedImage(null)
+    setImagePreviewUrl(null)
   }
 
   const loadSession = async (sessionId: number) => {
@@ -204,6 +211,9 @@ export default function AiChatPage() {
       const data = await createSession({ title: 'New Chat' })
       setCurrentSessionId(data.session.id)
       setMessages([])
+      // focus the input after creating a new chat
+      setTimeout(() => inputRef.current?.focus(), 0)
+      queryClient.invalidateQueries({ queryKey: ['ai-sessions'] })
     } catch (error) {
       console.error('Failed to create session:', error)
     }
@@ -216,6 +226,7 @@ export default function AiChatPage() {
         setCurrentSessionId(null)
         setMessages([])
       }
+      queryClient.invalidateQueries({ queryKey: ['ai-sessions'] })
     } catch (error) {
       console.error('Failed to delete session:', error)
     }
@@ -245,20 +256,48 @@ export default function AiChatPage() {
     }
   }
 
+  const groupSessionsByDate = (items: ChatSession[]) => {
+    const groups: Record<string, ChatSession[]> = { 'Hôm nay': [], 'Hôm qua': [], 'Tuần này': [], 'Cũ hơn': [] }
+    const now = new Date()
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const startOfYesterday = new Date(startOfToday)
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1)
+    const startOfWeek = new Date(startOfToday)
+    const day = startOfWeek.getDay() || 7
+    startOfWeek.setDate(startOfWeek.getDate() - (day - 1))
+
+    items.forEach((s) => {
+      const d = new Date(s.last_message_at || s.id)
+      if (d >= startOfToday) groups['Hôm nay'].push(s)
+      else if (d >= startOfYesterday) groups['Hôm qua'].push(s)
+      else if (d >= startOfWeek) groups['Tuần này'].push(s)
+      else groups['Cũ hơn'].push(s)
+    })
+    return groups
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
       <div className="mx-auto max-w-6xl px-4 py-6">
         {/* Header */}
-        <div className="mb-6 text-center">
-          <div className="flex items-center justify-center gap-3 mb-2">
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
               <Sparkles className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              SmartClass AI
-            </h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                SmartClass AI
+              </h1>
+            </div>
+            <Button
+              onClick={createNewSession}
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
+            >
+              New Chat
+            </Button>
           </div>
-          <p className="text-slate-600">Your intelligent learning companion powered by Gemini</p>
+          <p className="text-slate-600 text-center">Your intelligent learning companion powered by Gemini</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -297,38 +336,7 @@ export default function AiChatPage() {
               </Card>
             )}
 
-            {/* Suggestions Panel */}
-            {suggestions && showSuggestions && (
-              <Card className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-900">Suggestions</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowSuggestions(!showSuggestions)}
-                    className="text-black hover:bg-black hover:text-white"
-                  >
-                    {showSuggestions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </Button>
-                </div>
-                {showSuggestions && (
-                  <div className="space-y-2">
-                    {suggestions.suggestions.slice(0, 5).map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="w-full text-left p-2 rounded-lg hover:bg-slate-100 transition-colors text-sm text-slate-700"
-                      >
-                        <div className="flex items-start gap-2">
-                          <Lightbulb className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                          <span className="line-clamp-2">{suggestion}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </Card>
-            )}
+            {/* Suggestions removed */}
 
             {/* Chat Stats */}
             {chatStats && (
@@ -351,60 +359,61 @@ export default function AiChatPage() {
               </Card>
             )}
 
-            {/* Chat Sessions */}
+            {/* Chat Sessions - always visible like ChatGPT threads */}
             {sessions && (
               <Card className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-900">Chat History</h3>
+                  <h3 className="font-semibold text-slate-900">Luồng chat</h3>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowSessions(!showSessions)}
+                    onClick={createNewSession}
                     className="text-black hover:bg-black hover:text-white"
                   >
-                    {showSessions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    <RefreshCw className="mr-2 h-4 w-4" /> New Chat
                   </Button>
                 </div>
-                {showSessions && (
-                  <div className="space-y-2">
-                    <Button
-                      onClick={createNewSession}
-                      className="w-full justify-start text-black hover:bg-black hover:text-white"
-                    >
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      New Chat
-                    </Button>
-                    {sessions.sessions.map((session) => (
-                      <div
-                        key={session.id}
-                        className={`p-2 rounded-lg cursor-pointer transition-colors ${
-                          currentSessionId === session.id
-                            ? 'bg-indigo-100 border border-indigo-300'
-                            : 'hover:bg-slate-100'
-                        }`}
-                        onClick={() => loadSession(session.id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate">{session.title}</div>
-                            <div className="text-xs text-slate-500">
-                              {session.total_messages} messages
+                <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
+                  {Object.entries(groupSessionsByDate(sessions.sessions)).map(([label, list]) => (
+                    list.length > 0 && (
+                      <div key={label}>
+                        <div className="px-1 pb-1 text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</div>
+                        <div className="space-y-2">
+                          {list.map((session) => (
+                            <div
+                              key={session.id}
+                              className={`p-2 rounded-lg cursor-pointer transition-colors ${
+                                currentSessionId === session.id
+                                  ? 'bg-indigo-100 border border-indigo-300'
+                                  : 'hover:bg-slate-100'
+                              }`}
+                              onClick={() => loadSession(session.id)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-sm truncate">{session.title}</div>
+                                  <div className="text-xs text-slate-500">
+                                    {session.total_messages} messages
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    deleteSessionById(session.id)
+                                  }}
+                                  className="p-1 rounded hover:bg-red-100 text-red-500"
+                                  title="Delete chat"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              deleteSessionById(session.id)
-                            }}
-                            className="p-1 rounded hover:bg-red-100 text-red-500"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
+                          ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    )
+                  ))}
+                </div>
               </Card>
             )}
 
@@ -426,7 +435,7 @@ export default function AiChatPage() {
 
           {/* Chat Area */}
           <div className="lg:col-span-3">
-            <Card className="h-[600px] flex flex-col">
+            <Card className="h-[calc(100vh-160px)] flex flex-col">
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 ? (
@@ -439,20 +448,7 @@ export default function AiChatPage() {
                       I'm here to help you with your studies. Ask me anything about your subjects, 
                       get explanations, solve problems, or just chat about learning!
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
-                      {suggestions?.suggestions.slice(0, 4).map((suggestion, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSuggestionClick(suggestion)}
-                          className="p-3 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-left"
-                        >
-                          <div className="flex items-start gap-2">
-                            {getSubjectIcon(suggestion)}
-                            <span className="text-sm text-slate-700 line-clamp-2">{suggestion}</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+                <div />
                   </div>
                 ) : (
                   messages.map((message) => (
@@ -472,6 +468,11 @@ export default function AiChatPage() {
                             : 'bg-slate-100 text-slate-900'
                         }`}
                       >
+                        {message.imageUrl && (
+                          <div className="mb-2">
+                            <img src={message.imageUrl} alt="attached" className="max-h-48 rounded-lg border" />
+                          </div>
+                        )}
                         <div className="whitespace-pre-wrap">{message.content}</div>
                         <div className="flex items-center justify-between mt-2">
                           <span className={`text-xs ${
@@ -534,7 +535,16 @@ export default function AiChatPage() {
 
               {/* Input Area */}
               <div className="border-t border-slate-200 p-4">
-                <div className="flex gap-3">
+                {imagePreviewUrl && (
+                  <div className="mb-3 flex items-center gap-3">
+                    <img src={imagePreviewUrl} alt="preview" className="h-16 w-16 object-cover rounded-lg border" />
+                    <button
+                      onClick={() => { setAttachedImage(null); setImagePreviewUrl(null) }}
+                      className="text-sm text-red-600 hover:underline"
+                    >Remove image</button>
+                  </div>
+                )}
+                <div className="flex gap-3 items-start">
                   <div className="flex-1 relative">
                     <textarea
                       ref={inputRef}
@@ -546,8 +556,24 @@ export default function AiChatPage() {
                       rows={1}
                       style={{ minHeight: '48px', maxHeight: '120px' }}
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                      Enter to send, Shift+Enter for new line
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-3 text-xs text-slate-400">
+                      <label className="cursor-pointer grid place-items-center p-2 rounded hover:bg-slate-100 text-slate-600" title="Attach image" aria-label="Attach image">
+                        <ImageIcon className="h-4 w-4" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null
+                            if (file) {
+                              setAttachedImage(file)
+                              const url = URL.createObjectURL(file)
+                              setImagePreviewUrl(url)
+                            }
+                          }}
+                        />
+                      </label>
+                      <span>Enter to send, Shift+Enter for new line</span>
                     </div>
                   </div>
                   <Button

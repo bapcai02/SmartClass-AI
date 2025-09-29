@@ -6,6 +6,7 @@ export type ChatMessage = {
   content: string
   timestamp: string
   isTyping?: boolean
+  imageUrl?: string
 }
 
 export type ChatRequest = {
@@ -16,6 +17,7 @@ export type ChatRequest = {
   }>
   context?: string
   session_id?: number
+  imageFile?: File
 }
 
 export type ChatResponse = {
@@ -73,7 +75,28 @@ export type ChatStats = {
 }
 
 export async function sendMessage(payload: ChatRequest) {
-  const { data } = await api.post<ChatResponse>('/ai/chat', payload)
+  if (payload.imageFile) {
+    const form = new FormData()
+    form.append('message', payload.message)
+    if (payload.context) form.append('context', payload.context)
+    if (payload.session_id !== undefined) form.append('session_id', String(payload.session_id))
+    if (payload.conversation_history) {
+      form.append('conversation_history', JSON.stringify(payload.conversation_history))
+    }
+    form.append('image', payload.imageFile)
+
+    const { data } = await api.post<ChatResponse>('/ai/chat', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return data
+  }
+
+  const { data } = await api.post<ChatResponse>('/ai/chat', {
+    message: payload.message,
+    conversation_history: payload.conversation_history,
+    context: payload.context,
+    session_id: payload.session_id,
+  })
   return data
 }
 
