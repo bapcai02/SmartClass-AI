@@ -138,6 +138,53 @@ class AiChatController extends Controller
         }
     }
 
+    public function publicChat(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'message' => ['required', 'string', 'max:2000'],
+            'conversation_history' => ['nullable'],
+            'context' => ['nullable', 'string', 'max:1000'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,gif,webp', 'max:5120'],
+        ]);
+
+        $history = [];
+        if (!empty($data['conversation_history']) && is_string($data['conversation_history'])) {
+            $decoded = json_decode($data['conversation_history'], true);
+            if (is_array($decoded)) $history = $decoded;
+        } elseif (!empty($data['conversation_history']) && is_array($data['conversation_history'])) {
+            $history = $data['conversation_history'];
+        }
+
+        $apiData = [
+            'message' => $data['message'],
+            'conversation_history' => $history,
+            'context' => $data['context'] ?? null,
+        ];
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $mime = $file->getMimeType() ?: 'image/jpeg';
+            $base64 = base64_encode(file_get_contents($file->getRealPath()));
+            $apiData['image'] = [ 'mime' => $mime, 'data' => $base64 ];
+        }
+
+        try {
+            $response = $this->sendToGemini($apiData);
+            return response()->json([
+                'success' => true,
+                'response' => $response,
+                'timestamp' => now()->toISOString(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Public Gemini API Error: '.$e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Đã xảy ra lỗi, vui lòng thử lại.',
+                'timestamp' => now()->toISOString(),
+            ], 500);
+        }
+    }
+
     private function sendToGemini(array $data): string
     {
         if (!$this->geminiApiKey) {
@@ -146,8 +193,8 @@ class AiChatController extends Controller
 
         $messages = [];
         
-        // Add system context
-        $systemPrompt = "You are SmartClass AI, an intelligent educational assistant. You help students and teachers with academic questions, provide explanations, solve problems, and offer learning guidance. Be helpful, accurate, and encouraging. If asked about topics outside education, politely redirect to educational subjects.";
+        // Add system context (force Vietnamese response)
+        $systemPrompt = "Bạn là SmartClass AI, trợ lý học tập thông minh. Luôn trả lời bằng tiếng Việt rõ ràng, tự nhiên. Bạn giúp học sinh và giáo viên với câu hỏi học thuật, đưa ra giải thích, giải bài, gợi ý ôn tập. Tránh chủ đề ngoài giáo dục và hướng người dùng về nội dung học tập.";
         
         if (!empty($data['context'])) {
             $systemPrompt .= "\n\nContext: " . $data['context'];

@@ -5,7 +5,7 @@ export type UserDto = { id: number; name: string; email: string; role?: string }
 
 export async function searchSubjects(term: string, limit = 10) {
   const { data } = await api.get<{ data?: SubjectDto[]; items?: SubjectDto[]; results?: SubjectDto[]; }>(
-    '/subjects',
+    '/public/subjects',
     { params: { search: term || undefined, per_page: limit } }
   )
   return (data?.data || data?.items || (data as any)?.results || []) as SubjectDto[]

@@ -33,6 +33,7 @@ import AllQaPage from '@/pages/AllQaPage'
 import AllResourcesPage from '@/pages/AllResourcesPage'
 import QuestionBankPage from '@/pages/QuestionBank'
 import PublicQuestionBankPage from '@/pages/PublicQuestionBank'
+import PublicExamTakePage from '@/pages/PublicExamTake'
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
       <Route path="/auth" element={<AuthPage />} />
       {/* Public question bank (no layout, no auth) */}
       <Route path="/public/question-bank" element={<PublicQuestionBankPage />} />
+      <Route path="/public/exam/:id/take" element={<PublicExamTakePage />} />
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/public/question-bank" replace />} />
         <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />

@@ -128,6 +128,18 @@ class ExamController extends Controller
     {
         return response()->json($this->service->getExamStats());
     }
+
+    // Public: get exam detail by id (not scoped by class)
+    public function publicShow(int $id): JsonResponse
+    {
+        $exam = \App\Models\Exam::query()
+            ->with(['classRoom.subject', 'submissions'])
+            ->find($id);
+        if (! $exam) {
+            return response()->json(['message' => 'Exam not found'], 404);
+        }
+        return response()->json($exam);
+    }
 }
 
 

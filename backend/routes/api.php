@@ -12,13 +12,20 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\AiChatController;
 use App\Http\Controllers\Api\SubjectController;
+use App\Http\Controllers\Api\PublicExamController;
 use App\Http\Controllers\Api\UserController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Public endpoints (no auth)
-Route::get('/public/question-bank', [ExamController::class, 'all']);
+// Public endpoints (no auth) - now backed by public_* tables
+Route::get('/public/question-bank', [PublicExamController::class, 'index']);
+Route::post('/public/ai/chat', [AiChatController::class, 'publicChat']);
+Route::get('/public/subjects', [PublicExamController::class, 'subjects']);
+Route::get('/public/exams/{id}', [PublicExamController::class, 'show']);
+Route::post('/public/exams/{id}/submit', [PublicExamController::class, 'submit']);
+
+// (Removed /public2/* aliases)
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);

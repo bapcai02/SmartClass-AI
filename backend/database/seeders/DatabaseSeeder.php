@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             SubjectsTableSeeder::class,
             ClassesTableSeeder::class,
             ContentTableSeeder::class,
+            PublicDemoSeeder::class,
         ]);
     }
 }
