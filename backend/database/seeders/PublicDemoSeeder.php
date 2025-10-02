@@ -26,9 +26,8 @@ class PublicDemoSeeder extends Seeder
             foreach ($classes as $c) {
                 DB::table('public_classes')->updateOrInsert(['name' => $c['name']], $c);
             }
-            $classId = DB::table('public_classes')->where('name', 'Lớp 12')->value('id');
 
-            // exams (năm nay)
+            $classId = DB::table('public_classes')->where('name', 'Lớp 12')->value('id');
             $year = date('Y');
             $exams = [
                 ['title' => "Đề thi THPT Quốc gia môn Toán $year", 'public_subject_id' => $subjMap['Toán'], 'public_class_id' => $classId, 'duration_minutes' => 90, 'description' => 'Đề trắc nghiệm 50 câu.'],
@@ -38,7 +37,6 @@ class PublicDemoSeeder extends Seeder
 
             foreach ($exams as $exam) {
                 $examId = DB::table('public_exams')->insertGetId($exam + ['created_at' => now(), 'updated_at' => now()]);
-                // add a few demo questions
                 for ($i = 1; $i <= 5; $i++) {
                     $qId = DB::table('public_questions')->insertGetId([
                         'public_exam_id' => $examId,

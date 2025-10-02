@@ -24,6 +24,7 @@ Route::post('/public/ai/chat', [AiChatController::class, 'publicChat']);
 Route::get('/public/subjects', [PublicExamController::class, 'subjects']);
 Route::get('/public/exams/{id}', [PublicExamController::class, 'show']);
 Route::post('/public/exams/{id}/submit', [PublicExamController::class, 'submit']);
+Route::get('/public/leaderboard', [PublicExamController::class, 'leaderboard']);
 
 // (Removed /public2/* aliases)
 

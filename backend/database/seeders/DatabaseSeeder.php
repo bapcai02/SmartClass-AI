@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             ClassesTableSeeder::class,
             ContentTableSeeder::class,
             PublicDemoSeeder::class,
+            PublicMath50Seeder::class,
+            PublicChem50Seeder::class,
         ]);
     }
 }

@@ -7,6 +7,8 @@ use App\Models\PublicExam;
 use App\Models\PublicSubject;
 use App\Models\PublicSubmission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class PublicExamController extends Controller
 {
@@ -27,6 +29,11 @@ class PublicExamController extends Controller
             })
             ->when($request->filled('class_id'), function ($q) use ($request) {
                 $q->where('public_class_id', $request->get('class_id'));
+            })
+            ->when($request->filled('grade'), function ($q) use ($request) {
+                $q->whereHas('clazz', function ($qq) use ($request) {
+                    $qq->where('grade', (int)$request->get('grade'));
+                });
             });
 
         // Top by attempts if requested, else latest
@@ -88,5 +95,70 @@ class PublicExamController extends Controller
         $exam->increment('attempts');
 
         return response()->json([ 'submission_id' => $submission->id, 'score' => $score ]);
+    }
+
+    public function leaderboard(Request $request)
+    {
+        // Most submissions per user (by name/email)
+        $most = DB::table('public_submissions')
+            ->selectRaw("COALESCE(candidate_name, 'Người dùng') as name, COALESCE(candidate_email,'') as email, COUNT(*) as value")
+            ->groupBy('candidate_name', 'candidate_email')
+            ->orderByDesc('value')
+            ->limit(8)
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'name' => $r->name,
+                    'value' => (int)$r->value,
+                    'note' => 'đề đã làm',
+                    'avatar' => $this->gravatar((string)$r->email),
+                ];
+            });
+
+        // Highest average score (min 1 submission)
+        $score = DB::table('public_submissions')
+            ->selectRaw("COALESCE(candidate_name, 'Người dùng') as name, COALESCE(candidate_email,'') as email, AVG(score) as avg_score, COUNT(*) as cnt")
+            ->groupBy('candidate_name', 'candidate_email')
+            ->orderByDesc('avg_score')
+            ->limit(8)
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'name' => $r->name,
+                    'value' => round((float)$r->avg_score, 2),
+                    'note' => 'điểm TB',
+                    'avatar' => $this->gravatar((string)$r->email),
+                ];
+            });
+
+        // Recent activity in last 7 days by user
+        $since = Carbon::now()->subDays(7);
+        $recent = DB::table('public_submissions')
+            ->where('submitted_at', '>=', $since)
+            ->selectRaw("COALESCE(candidate_name, 'Người dùng') as name, COALESCE(candidate_email,'') as email, COUNT(*) as value")
+            ->groupBy('candidate_name', 'candidate_email')
+            ->orderByDesc('value')
+            ->limit(8)
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'name' => $r->name,
+                    'value' => (int)$r->value,
+                    'note' => 'đề tuần này',
+                    'avatar' => $this->gravatar((string)$r->email),
+                ];
+            });
+
+        return response()->json([
+            'most' => $most,
+            'score' => $score,
+            'recent' => $recent,
+        ]);
+    }
+
+    private function gravatar(string $email): string
+    {
+        $hash = md5(strtolower(trim($email)));
+        return "https://www.gravatar.com/avatar/{$hash}?d=identicon";
     }
 }
