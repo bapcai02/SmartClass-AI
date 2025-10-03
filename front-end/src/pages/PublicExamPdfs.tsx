@@ -83,6 +83,7 @@ export default function PublicExamPdfsPage() {
       </section>
 
       <main className="mx-auto max-w-7xl px-4 py-8">
+        <h2 className="mb-3 text-lg font-semibold text-slate-900">Đề thi mới</h2>
         <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
           <div className="relative sm:col-span-2">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -97,7 +98,7 @@ export default function PublicExamPdfsPage() {
               <option value="">Tất cả khối</option>
               {classes.map(c=> <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-            <button onClick={handleSearch} className="rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm hover:bg-indigo-700">Lọc</button>
+            <button onClick={handleSearch} className="rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2 text-sm hover:bg-slate-50">Áp dụng lọc</button>
           </div>
         </div>
 

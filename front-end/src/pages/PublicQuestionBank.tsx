@@ -192,67 +192,7 @@ export default function PublicQuestionBankPage() {
           </div>
         </div>
 
-        {/* Search */}
-        <Card className="p-4 mb-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-1 gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm đề thi…"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 pl-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                />
-              </div>
-              <Button onClick={handleSearch} className="px-6 text-black hover:bg-black hover:text-white">Tìm</Button>
-              <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="px-4">
-                <Filter className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          {showFilters && (
-            <div className="mt-4 grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Môn học</label>
-                <select
-                  value={subjectId}
-                  onChange={(e) => {
-                    const val = e.target.value ? Number(e.target.value) : ''
-                    setSubjectId(val as any)
-                  }}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                >
-                  <option value="">Tất cả môn</option>
-                  {subjects.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Khối lớp</label>
-                <select
-                  value={grade}
-                  onChange={(e) => {
-                    const val = e.target.value ? Number(e.target.value) : ''
-                    setGrade(val as any)
-                  }}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                >
-                  <option value="">Tất cả khối</option>
-                  {Array.from({length:12}, (_,i)=> i+1).map(g => (
-                    <option key={g} value={g}>Lớp {g}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-end">
-                <Button onClick={handleSearch} className="w-full">Áp dụng lọc</Button>
-              </div>
-            </div>
-          )}
-        </Card>
+        {/* Search moved below to before "Đề thi mới" */}
 
         {/* Featured categories */}
         <div id="featured" className="mb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -461,6 +401,66 @@ export default function PublicQuestionBankPage() {
         </section>
 
         {/* New exams */}
+        <Card className="p-4 mb-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-1 gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm đề thi…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 pl-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                />
+              </div>
+              <Button onClick={handleSearch} className="px-6 text-black hover:bg-black hover:text-white">Tìm</Button>
+              <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="px-4">
+                <Filter className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          {showFilters && (
+            <div className="mt-4 grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Môn học</label>
+                <select
+                  value={subjectId}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : ''
+                    setSubjectId(val as any)
+                  }}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                >
+                  <option value="">Tất cả môn</option>
+                  {subjects.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Khối lớp</label>
+                <select
+                  value={grade}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : ''
+                    setGrade(val as any)
+                  }}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                >
+                  <option value="">Tất cả khối</option>
+                  {Array.from({length:12}, (_,i)=> i+1).map(g => (
+                    <option key={g} value={g}>Lớp {g}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-end">
+                <Button onClick={handleSearch} className="rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2 text-sm hover:bg-slate-50">Áp dụng lọc</Button>
+              </div>
+            </div>
+          )}
+        </Card>
         <h2 className="mb-3 text-lg font-semibold text-slate-900">Đề thi mới</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {items.slice(0, visibleCount).map((exam) => (
