@@ -66,7 +66,7 @@ export default function PublicExamPdfsPage() {
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center justify-between">
           <a href="/public/pdfs" className="flex items-center gap-2 text-slate-800 font-semibold">
             <div className="h-8 w-8 rounded-md bg-indigo-600 grid place-items-center text-white"><FileText className="h-5 w-5"/></div>
-            Thư viện PDF
+            Thư viện đề thi
           </a>
           <div className="hidden sm:flex items-center gap-5 text-sm text-slate-600">
             <a href="/public/question-bank" className="hover:text-slate-900">Làm đề trực tuyến</a>
@@ -77,8 +77,8 @@ export default function PublicExamPdfsPage() {
 
       <section className="bg-gradient-to-r from-indigo-600 to-purple-600">
         <div className="mx-auto max-w-7xl px-4 py-10 text-white">
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight">Thư viện đề thi PDF</h1>
-          <p className="mt-2 text-indigo-100">Tổng hợp đề thi theo môn và khối lớp, xem nhanh trong trình duyệt hoặc tải về.</p>
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight">Thư viện đề thi</h1>
+          <p className="mt-2 text-indigo-100">Tổng hợp đề thi theo môn và khối lớp, xem nhanh hoặc tải về.</p>
         </div>
       </section>
 

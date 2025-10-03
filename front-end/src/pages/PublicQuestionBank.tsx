@@ -546,8 +546,8 @@ export default function PublicQuestionBankPage() {
           </div>
           <div>
             <div className="font-medium text-slate-800 mb-2">Liên hệ</div>
-            <div className="flex items-center gap-2"><Mail className="h-4 w-4"/> support@example.com</div>
-            <div className="flex items-center gap-2 mt-1"><Phone className="h-4 w-4"/> 0123 456 789</div>
+            <div className="flex items-center gap-2"><Mail className="h-4 w-4"/> hadv9x@gmail.com</div>
+            <div className="flex items-center gap-2 mt-1"><Phone className="h-4 w-4"/> 0397368768</div>
             <div className="flex items-center gap-2 mt-1"><Globe className="h-4 w-4"/> www.smartclass.ai</div>
           </div>
         </div>
