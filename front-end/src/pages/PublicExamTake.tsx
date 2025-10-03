@@ -4,7 +4,7 @@ import 'katex/dist/katex.min.css'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Clock, Sparkles, X } from 'lucide-react'
+import { Clock, Sparkles, X, Image as ImageIcon } from 'lucide-react'
 import api from '@/utils/api'
 
 type PublicChoice = { id: number; label: string; content: string; is_correct?: boolean }
@@ -34,8 +34,9 @@ export default function PublicExamTakePage() {
   const [aiA, setAiA] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [showAi, setShowAi] = useState(false)
-  type ChatMessage = { role: 'user' | 'assistant'; content: string }
+  type ChatMessage = { role: 'user' | 'assistant'; content: string; imageUrl?: string }
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [aiImage, setAiImage] = useState<File | null>(null)
   const [answers, setAnswers] = useState<Record<number, string | null>>({})
   const questionRefs = useRef<Record<number, HTMLDivElement | null>>({})
 
@@ -129,9 +130,22 @@ export default function PublicExamTakePage() {
     try {
       setAiLoading(true)
       setAiA('')
-      setMessages(prev => [...prev, { role: 'user', content: msg }])
+      const optimistic: ChatMessage = { role: 'user', content: msg || (aiImage ? '[Ảnh]' : '') }
+      if (aiImage) {
+        try { optimistic.imageUrl = URL.createObjectURL(aiImage) } catch {}
+      }
+      setMessages(prev => [...prev, optimistic])
+      // Clear composer and preview immediately so they don't stay above the reply
+      setAiQ('')
+      setAiImage(null)
       const form = new FormData()
-      form.append('message', msg)
+      form.append('message', msg || 'Phân tích nội dung ảnh (đề/bài tập). Nêu rõ dữ kiện, yêu cầu; giải từng bước bằng tiếng Việt; dùng LaTeX cho công thức; nếu nhiều câu thì đánh số và trả lời lần lượt.')
+      // Note: use the original File reference captured before clearing
+      if (optimistic.imageUrl) {
+        // If we had an image, it was present in the optimistic message;
+        // Use the last selected file from the event (kept in closure) if available
+      }
+      if (aiImage) form.append('image', aiImage)
       const { data } = await api.post('/public/ai/chat', form, { headers: { 'Content-Type': 'multipart/form-data' } })
       const resp = data?.response || data?.error || 'Không có phản hồi'
       setAiA(resp)
@@ -188,41 +202,56 @@ export default function PublicExamTakePage() {
         {showAi && (
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/30" onClick={() => setShowAi(false)}></div>
-            <div className="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl border-r border-slate-200 flex flex-col">
+            <div className="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl border-r border-slate-200 flex flex-col min-h-0">
               <div className="flex items-center justify-between p-3 border-b border-slate-200">
                 <div className="font-semibold text-slate-900">Trợ lý AI</div>
                 <button aria-label="Đóng" className="p-2 rounded hover:bg-slate-100" onClick={() => setShowAi(false)}>
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <div className="p-3 space-y-3 flex-1 overflow-y-auto">
+              <div className="p-3 space-y-3 flex-1 flex flex-col min-h-0">
                 <div className="text-xs text-slate-500">Hỏi AI về cách tiếp cận, mẹo làm bài, gợi ý ôn tập…</div>
-                <div className="grid gap-2 max-h-64 overflow-y-auto border border-slate-100 rounded-md p-2 bg-slate-50">
+                <div className="flex-1 overflow-y-auto border border-slate-100 rounded-md p-2 bg-slate-50 flex flex-col gap-2 min-h-0">
                   {messages?.length ? messages.map((m, idx) => (
                     <div key={idx} className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${m.role==='user' ? 'self-end bg-indigo-600 text-white ml-auto' : 'self-start bg-slate-100 text-slate-800'}`}>
-                      {m.content}
+                      {m.imageUrl ? (
+                        <div className="mb-2">
+                          <img src={m.imageUrl} alt="attached" className={`max-h-48 rounded ${m.role==='user' ? 'ring-1 ring-indigo-300' : 'ring-1 ring-slate-200'}`} />
+                        </div>
+                      ) : null}
+                      <div className="whitespace-pre-wrap">{m.content}</div>
                     </div>
                   )) : (
                     <div className="text-xs text-slate-500">Chưa có tin nhắn.</div>
                   )}
                 </div>
-                <textarea
-                  value={aiQ}
-                  onChange={(e)=>setAiQ(e.target.value)}
-                  placeholder="Ví dụ: Chiến lược làm bài ĐGNL phần lập luận logic"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y min-h-[64px]"
-                />
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-slate-500">Nhấn Enter để gửi, Shift+Enter để xuống dòng</div>
-                  <Button className="px-4 bg-indigo-600 text-white hover:bg-indigo-700" disabled={aiLoading || !aiQ.trim()} onClick={()=> aiQ.trim() && askPublicAi(aiQ.trim())}>
-                    {aiLoading ? 'Đang hỏi…' : 'Hỏi AI'}
+                {aiImage ? (
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 overflow-hidden rounded border">
+                      <img src={URL.createObjectURL(aiImage)} alt="preview" className="h-full w-full object-cover" />
+                    </div>
+                    <div className="text-xs text-slate-600 truncate max-w-[60%]">{aiImage.name}</div>
+                    <button className="ml-auto grid place-items-center h-8 w-8 rounded-full text-red-600 hover:bg-red-50 border border-red-200" aria-label="Xóa ảnh" title="Xóa ảnh" onClick={()=> setAiImage(null)}>
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : null}
+                <div className="flex items-end gap-2">
+                  <label className="cursor-pointer grid place-items-center p-2 rounded text-slate-600 hover:bg-slate-100" title="Đính kèm ảnh" aria-label="Đính kèm ảnh">
+                    <ImageIcon className="h-5 w-5" />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e)=> setAiImage(e.target.files?.[0] || null)} />
+                  </label>
+                  <textarea
+                    value={aiQ}
+                    onChange={(e)=>setAiQ(e.target.value)}
+                    onKeyDown={(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); if (aiQ.trim() || aiImage) askPublicAi(aiQ.trim()) }} }
+                    placeholder="Đặt câu hỏi cho AI (có thể đính kèm ảnh đề/bài tập)"
+                    className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-y min-h-[48px]"
+                  />
+                  <Button className="px-4 bg-indigo-600 text-white hover:bg-indigo-700" disabled={aiLoading || (!aiQ.trim() && !aiImage)} onClick={()=> askPublicAi(aiQ.trim())}>
+                    {aiLoading ? 'Đang hỏi…' : 'Gửi'}
                   </Button>
                 </div>
-                {!!aiA && (
-                  <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700 whitespace-pre-wrap">
-                    {aiA}
-                  </div>
-                )}
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Search, Filter, BookOpen, GraduationCap, FileText, Star, Layers3, BrainCircuit, Target, Mail, Phone, Globe, Image as ImageIcon, Send, Calculator, Atom, FlaskConical, Dna, Landmark, Globe2 } from 'lucide-react'
+import { Search, Filter, BookOpen, GraduationCap, FileText, Star, Layers3, BrainCircuit, Target, Mail, Phone, Globe, Image as ImageIcon, Send, Calculator, Atom, FlaskConical, Dna, Landmark, Globe2, X } from 'lucide-react'
 import api from '@/utils/api'
 import { useMemo } from 'react'
 
@@ -50,8 +50,9 @@ export default function PublicQuestionBankPage() {
   const [composer, setComposer] = useState('')
   const [sending, setSending] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const chatRef = useRef<HTMLDivElement | null>(null)
 
-  type ChatMessage = { role: 'user' | 'assistant'; content: string }
+  type ChatMessage = { role: 'user' | 'assistant'; content: string; imageUrl?: string }
 
   useEffect(() => {
     load()
@@ -62,6 +63,13 @@ export default function PublicQuestionBankPage() {
       } catch {}
     })()
   }, [])
+
+  useEffect(() => {
+    // Always keep the chat scrolled to the latest message
+    try {
+      if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight
+    } catch {}
+  }, [messages, sending])
 
   const load = async (params: Record<string, any> = {}) => {
     const { data } = await api.get('/public/question-bank', { params })
@@ -82,11 +90,19 @@ export default function PublicQuestionBankPage() {
     const text = composer.trim()
     if (!text && !imageFile) return
     setSending(true)
-    setMessages(prev => [...prev, { role: 'user', content: text || '[Ảnh]' }])
+    // Optimistic message with image preview if available
+    const optimistic: ChatMessage = { role: 'user', content: text || (imageFile ? '[Ảnh]' : '') }
+    if (imageFile) {
+      try { optimistic.imageUrl = URL.createObjectURL(imageFile) } catch {}
+    }
+    setMessages(prev => [...prev, optimistic])
+    // Clear composer and local preview immediately after queueing
+    setComposer('')
+    setImageFile(null)
     try {
       const form = new FormData()
       if (text) form.append('message', text)
-      else form.append('message', 'Giải thích nội dung ảnh giúp tôi bằng tiếng Việt')
+      else form.append('message', 'Phân tích nội dung ảnh (đề/bài tập). Nêu rõ dữ kiện, yêu cầu; giải theo từng bước chi tiết bằng tiếng Việt; dùng LaTeX cho công thức; nếu có nhiều câu, đánh số và trả lời lần lượt.')
       if (imageFile) form.append('image', imageFile)
       const { data } = await api.post('/public/ai/chat', form, { headers: { 'Content-Type': 'multipart/form-data' } })
       const resp = (data?.response || data?.error || 'Không có phản hồi') as string
@@ -95,8 +111,6 @@ export default function PublicQuestionBankPage() {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Lỗi ủy quyền hoặc kết nối. Vui lòng thử lại.' }])
     } finally {
       setSending(false)
-      setComposer('')
-      setImageFile(null)
     }
   }
 
@@ -307,20 +321,70 @@ export default function PublicQuestionBankPage() {
             <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 px-4 py-3 text-white shadow-inner">
               <div className="flex items-center gap-2 font-semibold tracking-tight"><BrainCircuit className="h-5 w-5"/> Trò chuyện với AI</div>
             </div>
-            <div className="h-[24vh] overflow-y-auto px-4 pb-4 bg-gradient-to-b from-white to-slate-50">
+            <div ref={chatRef} className="px-4 pb-4 bg-gradient-to-b from-white to-slate-50 overflow-y-auto resize-y min-h-[24vh] max-h-[60vh]">
+              {messages.length === 0 ? (
+                <div className="flex items-center justify-center text-sm text-slate-500" style={{ minHeight: '20vh' }}>
+                  Chưa có tin nhắn. Hãy nhập câu hỏi để bắt đầu.
+                </div>
+              ) : (
+                <div className="grid gap-2">
+                  {messages.map((m, idx) => (
+                    <div key={idx} className={`max-w-[90%] md:max-w-[75%] rounded-2xl px-3 py-2 text-sm shadow-sm ${m.role==='user' ? 'self-end bg-indigo-600 text-white ml-auto' : 'self-start bg-white text-slate-900 border border-slate-200'}`}>
+                      {m.imageUrl ? (
+                        <div className="mb-2">
+                          <img src={m.imageUrl} alt="attached" className={`max-h-56 rounded ${m.role==='user' ? 'ring-1 ring-indigo-300' : 'ring-1 ring-slate-200'}`} />
+                        </div>
+                      ) : null}
+                      <div className="whitespace-pre-wrap break-words leading-relaxed">{m.content}</div>
+                    </div>
+                  ))}
+                  {sending && (
+                    <div className="self-start bg-slate-100 text-slate-600 rounded-2xl px-3 py-2 text-sm inline-flex items-center gap-2">
+                      <span className="h-2 w-2 bg-slate-400 rounded-full animate-bounce" />
+                      <span className="h-2 w-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                      <span className="h-2 w-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="border-t border-slate-200/70 bg-white/80 backdrop-blur px-4 py-3">
+              {imageFile ? (
+                <div className="mb-2 flex items-center gap-3">
+                  <div className="h-12 w-12 overflow-hidden rounded border">
+                    <img
+                      src={URL.createObjectURL(imageFile)}
+                      alt="preview"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="text-xs text-slate-600 truncate max-w-[60%]">{imageFile.name}</div>
+                  <button
+                    className="ml-auto grid place-items-center h-8 w-8 rounded-full text-red-600 hover:bg-red-50 border border-red-200"
+                    aria-label="Xóa ảnh"
+                    title="Xóa ảnh"
+                    onClick={()=> setImageFile(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : null}
               <div className="relative flex items-end gap-2">
-                <label className="absolute left-3 bottom-3 cursor-pointer text-slate-500 hover:text-slate-700">
-                  <input type="file" accept="image/*" className="hidden" onChange={(e)=> setImageFile(e.target.files?.[0] || null)} />
+                <label className="cursor-pointer grid place-items-center p-2 rounded text-slate-600 hover:bg-slate-100" title="Đính kèm ảnh" aria-label="Đính kèm ảnh">
                   <ImageIcon className="h-5 w-5" />
+                  <input type="file" accept="image/*" className="hidden" onChange={(e)=> setImageFile(e.target.files?.[0] || null)} />
                 </label>
                 <textarea
                   value={composer}
                   onChange={(e)=> setComposer(e.target.value)}
-                  onKeyDown={(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat() } }}
+                  onKeyDown={(e)=>{
+                    if(e.key==='Enter' && !e.shiftKey){
+                      e.preventDefault()
+                      if (composer.trim() || imageFile) sendChat()
+                    }
+                  }}
                   placeholder="Nhập câu hỏi hoặc gửi ảnh bài tập vào đây…"
-                  className="w-full rounded-2xl border border-slate-300 bg-white/90 backdrop-blur pl-10 pr-12 py-3 text-slate-900 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none shadow-sm"
+                  className="w-full rounded-2xl border border-slate-300 bg-white/90 backdrop-blur px-3 pr-12 py-3 text-slate-900 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none shadow-sm"
                   rows={1}
                 />
                 <Button

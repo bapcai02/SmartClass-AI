@@ -146,13 +146,28 @@ class GeneratePublicExamFromGemini extends Command
 
     private function buildPrompt(string $subject, string $class, int $num): string
     {
+        $blueprint = $this->subjectBlueprint($subject);
+        $duration = 90;
         return <<<PROMPT
-You are a Vietnamese exam generator. Create a multiple-choice exam for subject "$subject" and level "$class" with $num questions. Return STRICT JSON only, no markdown, following this schema:
+Bạn là chuyên gia ra đề thi chuẩn Kỳ thi Tốt nghiệp THPT quốc gia (Việt Nam). Hãy tạo đề trắc nghiệm môn "$subject" cho "$class" với $num câu, thời lượng {$duration} phút, đúng chuẩn cấu trúc đề đại học.
+
+YÊU CẦU CHUNG
+- Ngôn ngữ: tiếng Việt, dùng LaTeX cho công thức (giữa $...$ hoặc $$...$$). Không thêm markdown.
+- Mỗi câu có 4 lựa chọn A,B,C,D và chỉ 1 đáp án đúng.
+- Mức độ: phân bổ theo 4 mức: "Nhận biết", "Thông hiểu", "Vận dụng", "Vận dụng cao". Tỉ lệ tổng quát: 30%/30%/25%/15% (xấp xỉ).
+- Phân bố chuyên đề theo blueprint bên dưới; tránh lặp ý; độ phủ nội dung hợp lý.
+- Không kèm lời giải hoặc giải thích. Trả về JSON THUẦN theo schema.
+
+BLUEPRINT MÔN
+{$blueprint}
+
+JSON SCHEMA (chỉ JSON, không thêm văn bản khác):
 {
-  "description": string,
+  "description": string,             // Mô tả ngắn gọn đề (môn, lớp, cấu trúc, thời lượng)
   "questions": [
     {
-      "content": string,
+      "content": string,            // Nội dung câu hỏi (có thể chứa LaTeX)
+      "difficulty": string,         // "Nhận biết" | "Thông hiểu" | "Vận dụng" | "Vận dụng cao"
       "choices": [
         { "label": "A", "content": string, "is_correct": boolean },
         { "label": "B", "content": string, "is_correct": boolean },
@@ -162,8 +177,51 @@ You are a Vietnamese exam generator. Create a multiple-choice exam for subject "
     }
   ]
 }
-Ensure exactly one choice has is_correct=true per question. Language: Vietnamese.
+Ràng buộc: đúng $num câu; mỗi câu đúng 1 đáp án; tỉ lệ mức độ xấp xỉ yêu cầu; bám sát blueprint theo môn.
 PROMPT;
+    }
+
+    private function subjectBlueprint(string $subject): string
+    {
+        $s = mb_strtolower($subject);
+        if (str_contains($s, 'toán')) {
+            return <<<TXT
+Toán 12 (gợi ý phân bổ chuyên đề, tỉ lệ tham khảo)
+- Hàm số, cực trị, tiệm cận (~15%)
+- Mũ – Logarit (~10%)
+- Nguyên hàm – Tích phân – Ứng dụng (~15%)
+- Số phức (~10%)
+- Hình học không gian (khối đa diện, thể tích) (~10%)
+- Hình học tọa độ Oxyz (mặt phẳng, đường thẳng, mặt cầu) (~15%)
+- Xác suất – Tổ hợp – Nhị thức Newton (~10%)
+- Cấp số cộng/nhân, Bất đẳng thức – Min/Max (~15%)
+TXT;
+        }
+        if (str_contains($s, 'vật') || str_contains($s, 'ly') || str_contains($s, 'lý')) {
+            return <<<TXT
+Vật lý 12 (gợi ý phân bổ)
+- Dao động cơ, Sóng cơ (~20%)
+- Dòng điện xoay chiều (~15%)
+- Sóng điện từ, Truyền tải thông tin (~5%)
+- Quang học: Giao thoa, Khúc xạ, Thấu kính, Quang cụ (~20%)
+- Hạt nhân nguyên tử, Phóng xạ, Phản ứng hạt nhân (~10%)
+- Điện tích – Điện trường – Từ trường cơ bản (~10%)
+- Các chuyên đề nâng cao/ứng dụng thực tiễn (~20%)
+TXT;
+        }
+        if (str_contains($s, 'hóa')) {
+            return <<<TXT
+Hóa học 12 (gợi ý phân bổ)
+- Este – Lipit – Cacbohidrat – Amin – Peptit – Protein (~25%)
+- Polime và vật liệu polime (~5%)
+- Kim loại kiềm, kiềm thổ, nhôm và hợp chất (~10%)
+- Sắt và kim loại chuyển tiếp, ăn mòn – điện phân (~15%)
+- Nhận biết – Điều chế – Bài toán hỗn hợp vô cơ (~25%)
+- Cân bằng hóa học, Nhiệt hóa học, Động học (nâng cao) (~10%)
+- Hóa học hữu cơ tổng hợp – xác định CT (nâng cao) (~10%)
+TXT;
+        }
+        return "Phân bổ theo chuẩn đề THPT quốc gia cho môn {$subject}.";
     }
 
     /**
