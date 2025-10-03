@@ -126,7 +126,7 @@ export default function PublicQuestionBankPage() {
           <nav className="hidden sm:flex items-center gap-5 text-sm text-slate-600">
             <a href="#explore" className="hover:text-slate-900">Đề thi</a>
             <a href="#featured" className="hover:text-slate-900">Kỳ thi nổi bật</a>
-            <a href="/public/pdfs" className="hover:text-slate-900">Đề PDF</a>
+            <a href="/public/pdfs" className="hover:text-slate-900">Thư viện PDF</a>
             <a href="#contact" className="hover:text-slate-900">Liên hệ</a>
           </nav>
           <div className="flex items-center gap-2"/>
