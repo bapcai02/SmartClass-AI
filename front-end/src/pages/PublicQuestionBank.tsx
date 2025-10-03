@@ -49,6 +49,8 @@ export default function PublicQuestionBankPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'most' | 'az'>('newest')
   const [visibleCount, setVisibleCount] = useState(6)
   const [loadingList, setLoadingList] = useState(false)
+  const [quickView, setQuickView] = useState<PublicExam | null>(null)
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [composer, setComposer] = useState('')
   const [sending, setSending] = useState(false)
@@ -145,6 +147,41 @@ export default function PublicQuestionBankPage() {
     } finally {
       setSending(false)
     }
+  }
+
+  function copyExamLink(id: number) {
+    const url = `${window.location.origin}/public/exam/${id}/take`
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        setToast({ msg: 'Đã sao chép liên kết đề thi', type: 'success' })
+        setTimeout(() => setToast(null), 2000)
+      })
+      .catch(() => {
+        setToast({ msg: 'Sao chép thất bại. Vui lòng thử lại.', type: 'error' })
+        setTimeout(() => setToast(null), 2000)
+      })
+  }
+
+  function isNewExam(exam: PublicExam) {
+    try { return (Date.now() - new Date(exam.start_time).getTime()) < 7*24*60*60*1000 } catch { return false }
+  }
+
+  function isHotExam(exam: PublicExam) {
+    const attempts = exam.attempts ?? (exam.submissions ? exam.submissions.length : 0)
+    return (attempts || 0) >= 50
+  }
+
+  function Badges({ exam }: { exam: PublicExam }) {
+    const hot = isHotExam(exam)
+    const fresh = isNewExam(exam)
+    const attempts = exam.attempts ?? (exam.submissions ? exam.submissions.length : 0)
+    return (
+      <div className="flex items-center gap-1">
+        {fresh && <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[11px]">Mới</span>}
+        {hot && <span className="inline-flex items-center rounded-full bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 text-[11px]">Hot</span>}
+        <span className="inline-flex items-center rounded-full bg-slate-50 text-slate-700 border border-slate-200 px-2 py-0.5 text-[11px]">{attempts} lượt làm</span>
+      </div>
+    )
   }
 
   return (
@@ -386,9 +423,10 @@ export default function PublicQuestionBankPage() {
               <Card key={`top-${exam.id}`} className="p-5 border-slate-200 shadow-sm hover:shadow-lg transition-transform hover:-translate-y-0.5">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="mb-2 flex items-center gap-3">
-                      <a href={`/public/exam/${exam.id}/take`} className="text-base font-semibold text-slate-900 hover:text-indigo-600 cursor-pointer">{exam.title}</a>
-                    </div>
+                  <div className="mb-2 flex items-center gap-3">
+                    <a href={`/public/exam/${exam.id}/take`} className="text-base font-semibold text-slate-900 hover:text-indigo-600 cursor-pointer">{exam.title}</a>
+                    <Badges exam={exam} />
+                  </div>
                     {exam.description && (
                       <p className="mb-3 text-slate-600">{exam.description}</p>
                     )}
@@ -422,11 +460,20 @@ export default function PublicQuestionBankPage() {
                         <span className="font-medium">Số lượt làm:</span>
                         <span>{exam.attempts ?? 0}</span>
                       </div>
+                      {(() => { const d = (exam as any)?.download_count ?? (exam as any)?.downloads; return (typeof d === 'number' && d >= 0) ? (
+                        <div className="flex items-center gap-2 text-slate-700">
+                          <FileText className="h-4 w-4" />
+                          <span className="font-medium">Lượt tải:</span>
+                          <span>{d}</span>
+                        </div>
+                      ) : null })()}
                     </div>
                   </div>
-                  <div className="ml-4">
-                    <a href={`/public/exam/${exam.id}/take`} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">Làm bài</a>
-                  </div>
+                <div className="ml-4 flex flex-col gap-2">
+                  <a href={`/public/exam/${exam.id}/take`} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">Làm bài</a>
+                  <button onClick={()=> copyExamLink(exam.id)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">Sao chép liên kết</button>
+                  <button onClick={()=> setQuickView(exam)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">Xem nhanh</button>
+                </div>
                 </div>
               </Card>
             ))}
@@ -533,6 +580,7 @@ export default function PublicQuestionBankPage() {
                 <div className="flex-1">
                     <div className="mb-2 flex items-center gap-3">
                     <h3 className="text-lg font-semibold text-slate-900 hover:text-indigo-600 cursor-pointer">{exam.title}</h3>
+                    <Badges exam={exam} />
                   </div>
                   {exam.description && (
                     <p className="mb-3 text-slate-600">{exam.description}</p>
@@ -562,10 +610,19 @@ export default function PublicQuestionBankPage() {
                       <span className="font-medium">Thời lượng:</span>
                       <span>{exam.duration_minutes ? `${exam.duration_minutes} phút` : formatDuration(exam.start_time, exam.end_time)}</span>
                     </div>
+                    {(() => { const d = (exam as any)?.download_count ?? (exam as any)?.downloads; return (typeof d === 'number' && d >= 0) ? (
+                      <div className="flex items-center gap-2 text-slate-700">
+                        <FileText className="h-4 w-4" />
+                        <span className="font-medium">Lượt tải:</span>
+                        <span>{d}</span>
+                      </div>
+                    ) : null })()}
                   </div>
                 </div>
-                <div className="ml-4">
+                <div className="ml-4 flex flex-col gap-2">
                   <a href={`/public/exam/${exam.id}/take`} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">Làm bài</a>
+                  <button onClick={()=> copyExamLink(exam.id)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">Sao chép liên kết</button>
+                  <button onClick={()=> setQuickView(exam)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">Xem nhanh</button>
                 </div>
               </div>
             </Card>
@@ -582,7 +639,7 @@ export default function PublicQuestionBankPage() {
           )}
         </div>
         {!loadingList && items.length > visibleCount && (
-          <div className="text-center">
+          <div className="text-center mt-7">
             <Button variant="outline" onClick={() => setVisibleCount(c => c + 10)}>Xem thêm</Button>
           </div>
         )}
@@ -593,6 +650,38 @@ export default function PublicQuestionBankPage() {
           <LeaderboardLive />
         </section>
       </main>
+
+      {toast && (
+        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-full px-4 py-2 shadow-lg border ${toast.type==='success' ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-rose-600 text-white border-rose-500'}`}>
+          {toast.msg}
+        </div>
+      )}
+
+      {quickView && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={()=> setQuickView(null)} />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <div className="font-semibold text-slate-900 truncate pr-3">{quickView.title}</div>
+              <button onClick={()=> setQuickView(null)} className="rounded-md border px-3 py-1.5 hover:bg-slate-50">Đóng</button>
+            </div>
+            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+              <div className="flex items-center gap-2 text-slate-700"><BookOpen className="h-4 w-4"/><span className="font-medium">Môn:</span><span>{quickView.subject?.name || quickView.class_room?.subject?.name || 'Không rõ'}</span></div>
+              <div className="flex items-center gap-2 text-slate-700"><GraduationCap className="h-4 w-4"/><span className="font-medium">Lớp:</span><span>{quickView.clazz?.name || quickView.class_room?.name || 'Không rõ'}</span></div>
+              <div className="flex items-center gap-2 text-slate-700"><FileText className="h-4 w-4"/><span className="font-medium">Số câu hỏi:</span><span>{(quickView as any)?.questions_count ?? 'Không rõ'}</span></div>
+              <div className="flex items-center gap-2 text-slate-700"><Star className="h-4 w-4"/><span className="font-medium">Lượt làm:</span><span>{quickView.attempts ?? (quickView.submissions ? quickView.submissions.length : 0)}</span></div>
+              <div className="flex items-center gap-2 text-slate-700"><span className="font-medium">Thời lượng:</span><span>{quickView.duration_minutes ? `${quickView.duration_minutes} phút` : formatDuration(quickView.start_time, quickView.end_time)}</span></div>
+              {(() => { const y = new Date(quickView.start_time).getFullYear(); return Number.isFinite(y) ? (
+                <div className="flex items-center gap-2 text-slate-700"><span className="font-medium">Năm:</span><span>{y}</span></div>
+              ) : null })()}
+            </div>
+            <div className="px-4 pb-4 flex gap-2">
+              <a href={`/public/exam/${quickView.id}/take`} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">Mở đề</a>
+              <button onClick={()=> copyExamLink(quickView.id)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">Sao chép liên kết</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer id="contact" className="mt-10 border-t border-slate-200/70 bg-gradient-to-b from-white to-slate-50">
@@ -631,10 +720,17 @@ export default function PublicQuestionBankPage() {
 function FeaturedPdfs() {
   const [items, setItems] = useState<Array<{ id:number; title:string; pdf_url:string; subject?:{name:string}; clazz?:{name:string}; file_size_bytes?:number }>>([])
   const [active, setActive] = useState<typeof items[number] | null>(null)
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
   const toPublicUrl = (pdfUrl: string) => {
     if (!pdfUrl) return '#'
     if (/^https?:\/\//i.test(pdfUrl)) return pdfUrl
     return `/storage/${pdfUrl.replace(/^\/?storage\//i, '')}`
+  }
+  const copyPdfLink = (url: string) => {
+    const link = toPublicUrl(url)
+    navigator.clipboard.writeText(`${window.location.origin}${link.startsWith('/') ? '' : '/'}${link}`)
+      .then(()=> { setToast({ msg: 'Đã sao chép liên kết PDF', type: 'success' }); setTimeout(()=> setToast(null), 2000) })
+      .catch(()=> { setToast({ msg: 'Sao chép thất bại. Thử lại.', type: 'error' }); setTimeout(()=> setToast(null), 2000) })
   }
   useEffect(()=>{ (async()=>{ try { const { data } = await api.get('/public/exam-pdfs'); setItems((data?.data||[]).slice(0,6)) } catch {} })() }, [])
   if (!items?.length) return (
@@ -644,13 +740,22 @@ function FeaturedPdfs() {
   )
   return (
     <>
+      {toast && (
+        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 rounded-full px-4 py-2 shadow-lg border ${toast.type==='success' ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-rose-600 text-white border-rose-500'}`}>
+          {toast.msg}
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {items.map(it => (
-          <button key={it.id} onClick={()=> setActive(it)} className="text-left block rounded-lg border border-slate-200 bg-white p-4 hover:shadow-md transition">
+          <div key={it.id} className="text-left rounded-lg border border-slate-200 bg-white p-4 hover:shadow-md transition">
             <div className="font-medium line-clamp-2">{it.title}</div>
             <div className="text-xs text-slate-600 mt-1">{it.subject?.name || 'Môn?'} · {it.clazz?.name || 'Khối?'}</div>
             <div className="text-xs text-slate-500 mt-1">{it.file_size_bytes ? `${(it.file_size_bytes/1024/1024).toFixed(2)} MB` : ''}</div>
-          </button>
+            <div className="mt-3 flex gap-2">
+              <button onClick={()=> setActive(it)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">Xem nhanh</button>
+              <button onClick={()=> copyPdfLink(it.pdf_url)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">Sao chép liên kết</button>
+            </div>
+          </div>
         ))}
       </div>
       {active && (
@@ -661,6 +766,7 @@ function FeaturedPdfs() {
               <div className="font-medium text-slate-900 truncate pr-3">{active.title}</div>
               <div className="flex items-center gap-2">
                 <a href={toPublicUrl(active.pdf_url)} target="_blank" rel="noreferrer" className="text-sm rounded-md border px-3 py-1.5 hover:bg-slate-50">Mở tab mới</a>
+                <button onClick={()=> copyPdfLink(active.pdf_url)} className="text-sm rounded-md border px-3 py-1.5 hover:bg-slate-50">Sao chép liên kết</button>
                 <button onClick={()=> setActive(null)} className="rounded-md border px-3 py-1.5 hover:bg-slate-50">Đóng</button>
               </div>
             </div>
