@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Search, Filter, BookOpen, GraduationCap, FileText, Star, Layers3, BrainCircuit, Target, Mail, Phone, Globe, Image as ImageIcon, Send, Calculator, Atom, FlaskConical, Dna, Landmark, Globe2 } from 'lucide-react'
 import api from '@/utils/api'
+import { useMemo } from 'react'
 
 type PublicExam = {
   id: number
@@ -44,22 +45,12 @@ export default function PublicQuestionBankPage() {
   const [subjectId, setSubjectId] = useState<number | ''>('')
   const [subjects, setSubjects] = useState<Array<{ id: number; name: string }>>([])
   const [grade, setGrade] = useState<number | ''>('')
-  const [visibleCount, setVisibleCount] = useState(10)
+  const [visibleCount, setVisibleCount] = useState(6)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [composer, setComposer] = useState('')
   const [sending, setSending] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
-  // chat moved inline above Top đề thi
-  const subjectTabs = [
-    { key: 'toan', label: 'Toán', icon: Calculator },
-    { key: 'ly', label: 'Vật lý', icon: Atom },
-    { key: 'hoa', label: 'Hóa học', icon: FlaskConical },
-    { key: 'sinh', label: 'Sinh học', icon: Dna },
-    { key: 'su', label: 'Lịch sử', icon: Landmark },
-    { key: 'dia', label: 'Địa lý', icon: Globe2 },
-  ] as const
-  const [activeTab, setActiveTab] = useState<(typeof subjectTabs)[number]['key']>('toan')
-  
+
   type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
   useEffect(() => {
@@ -121,6 +112,7 @@ export default function PublicQuestionBankPage() {
           <nav className="hidden sm:flex items-center gap-5 text-sm text-slate-600">
             <a href="#explore" className="hover:text-slate-900">Đề thi</a>
             <a href="#featured" className="hover:text-slate-900">Kỳ thi nổi bật</a>
+            <a href="/public/pdfs" className="hover:text-slate-900">Đề PDF</a>
             <a href="#contact" className="hover:text-slate-900">Liên hệ</a>
           </nav>
           <div className="flex items-center gap-2"/>
@@ -300,41 +292,22 @@ export default function PublicQuestionBankPage() {
             })}
         </div>
 
+        {/* Featured PDF Exams */}
+        <section className="mb-8">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">Đề PDF nổi bật</h2>
+            <a href="/public/pdfs" className="text-sm text-indigo-600 hover:text-indigo-700">Xem tất cả</a>
+          </div>
+          <FeaturedPdfs />
+        </section>
+
         {/* Trò chuyện với AI (phong cách giống modal trước) */}
         <section className="mb-10">
           <div className="overflow-hidden rounded-3xl bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-[0_20px_40px_-20px_rgba(2,6,23,0.2)] ring-1 ring-slate-200/70 min-h-[30vh]">
             <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 px-4 py-3 text-white shadow-inner">
               <div className="flex items-center gap-2 font-semibold tracking-tight"><BrainCircuit className="h-5 w-5"/> Trò chuyện với AI</div>
             </div>
-            <div className="px-4 pt-4">
-              <div className="mb-3 flex flex-wrap gap-2">
-                {subjectTabs.map(t => {
-                  const Icon = t.icon as any
-                  return (
-                    <button
-                      key={t.key}
-                      onClick={() => setActiveTab(t.key)}
-                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm border transition-shadow ${activeTab===t.key ? 'bg-indigo-600 text-white border-indigo-600 shadow' : 'border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm'}`}
-                    >
-                      <Icon className="h-4 w-4" /> {t.label}
-                    </button>
-                  )
-                })}
-              </div>
-              
-            </div>
             <div className="h-[24vh] overflow-y-auto px-4 pb-4 bg-gradient-to-b from-white to-slate-50">
-              <div className="grid gap-2">
-                {messages.length === 0 ? (
-                  <div className="text-sm text-slate-500">Hãy nhập câu hỏi của bạn ở bên dưới để bắt đầu trò chuyện.</div>
-                ) : (
-                  messages.map((m, idx) => (
-                    <div key={idx} className={`${m.role==='user' ? 'ml-auto' : 'mr-auto'}`}>
-                      <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow ${m.role==='user' ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white' : 'bg-white/90 text-slate-800 border border-slate-200 backdrop-blur'}`}>{m.content}</div>
-                    </div>
-                  ))
-                )}
-              </div>
             </div>
             <div className="border-t border-slate-200/70 bg-white/80 backdrop-blur px-4 py-3">
               <div className="relative flex items-end gap-2">
@@ -425,7 +398,7 @@ export default function PublicQuestionBankPage() {
 
         {/* New exams */}
         <h2 className="mb-3 text-lg font-semibold text-slate-900">Đề thi mới</h2>
-        <div className="grid gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           {items.slice(0, visibleCount).map((exam) => (
             <Card key={exam.id} className="p-5 border-slate-200 shadow-sm hover:shadow-lg transition-transform hover:-translate-y-0.5">
               <div className="flex items-start justify-between">
@@ -517,6 +490,53 @@ export default function PublicQuestionBankPage() {
         <div className="border-t border-slate-200/70 py-4 text-center text-xs text-slate-500">© {new Date().getFullYear()} SmartClass. Đã đăng ký bản quyền.</div>
       </footer>
     </div>
+  )
+}
+
+function FeaturedPdfs() {
+  const [items, setItems] = useState<Array<{ id:number; title:string; pdf_url:string; subject?:{name:string}; clazz?:{name:string}; file_size_bytes?:number }>>([])
+  const [active, setActive] = useState<typeof items[number] | null>(null)
+  const toPublicUrl = (pdfUrl: string) => {
+    if (!pdfUrl) return '#'
+    if (/^https?:\/\//i.test(pdfUrl)) return pdfUrl
+    return `/storage/${pdfUrl.replace(/^\/?storage\//i, '')}`
+  }
+  useEffect(()=>{ (async()=>{ try { const { data } = await api.get('/public/exam-pdfs'); setItems((data?.data||[]).slice(0,6)) } catch {} })() }, [])
+  if (!items?.length) return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {Array.from({length:6}).map((_,i)=> <div key={i} className="h-24 rounded-lg border border-slate-200 bg-white animate-pulse" />)}
+    </div>
+  )
+  return (
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {items.map(it => (
+          <button key={it.id} onClick={()=> setActive(it)} className="text-left block rounded-lg border border-slate-200 bg-white p-4 hover:shadow-md transition">
+            <div className="font-medium line-clamp-2">{it.title}</div>
+            <div className="text-xs text-slate-600 mt-1">{it.subject?.name || 'Môn?'} · {it.clazz?.name || 'Khối?'}</div>
+            <div className="text-xs text-slate-500 mt-1">{it.file_size_bytes ? `${(it.file_size_bytes/1024/1024).toFixed(2)} MB` : ''}</div>
+          </button>
+        ))}
+      </div>
+      {active && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={()=> setActive(null)} />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-5xl h-[85vh] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 py-2 border-b">
+              <div className="font-medium text-slate-900 truncate pr-3">{active.title}</div>
+              <div className="flex items-center gap-2">
+                <a href={toPublicUrl(active.pdf_url)} target="_blank" rel="noreferrer" className="text-sm rounded-md border px-3 py-1.5 hover:bg-slate-50">Mở tab mới</a>
+                <button onClick={()=> setActive(null)} className="rounded-md border px-3 py-1.5 hover:bg-slate-50">Đóng</button>
+              </div>
+            </div>
+            <div className="flex-1 bg-slate-50 overflow-auto">
+              {/* Lightweight fallback: use iframe for featured modal to keep bundle small on homepage */}
+              <iframe title="PDF Preview" src={toPublicUrl(active.pdf_url)} className="w-full h-full" />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

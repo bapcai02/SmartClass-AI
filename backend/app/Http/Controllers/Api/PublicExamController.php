@@ -62,7 +62,30 @@ class PublicExamController extends Controller
     public function show($id)
     {
         $exam = PublicExam::with(['subject','clazz','questions.choices'])->findOrFail($id);
-        return response()->json($exam);
+        // Do not leak correct answers in public payload
+        $payload = [
+            'id' => $exam->id,
+            'title' => $exam->title,
+            'description' => $exam->description,
+            'duration_minutes' => (int)($exam->duration_minutes ?? 0),
+            'subject' => $exam->subject ? ['id' => $exam->subject->id, 'name' => $exam->subject->name] : null,
+            'clazz' => $exam->clazz ? ['id' => $exam->clazz->id, 'name' => $exam->clazz->name] : null,
+            'questions' => $exam->questions->map(function ($q) {
+                return [
+                    'id' => $q->id,
+                    'content' => $q->content,
+                    'choices' => $q->choices->map(function ($c) {
+                        return [
+                            'id' => $c->id,
+                            'label' => $c->label,
+                            'content' => $c->content,
+                            // is_correct intentionally omitted
+                        ];
+                    })->values(),
+                ];
+            })->values(),
+        ];
+        return response()->json($payload);
     }
 
     public function submit(Request $request, $id)
@@ -75,7 +98,7 @@ class PublicExamController extends Controller
             $correct = optional($q->choices->firstWhere('is_correct', true))->label;
             $user = $answers[$q->id] ?? null;
             if ($user && $correct && strtoupper($user) === strtoupper($correct)) {
-                $score += 1; // 1 điểm mỗi câu (demo)
+                $score += 1;
             }
         }
 

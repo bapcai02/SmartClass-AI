@@ -358,5 +358,3 @@ export default function PublicExamTakePage() {
     </div>
   )
 }
-
-

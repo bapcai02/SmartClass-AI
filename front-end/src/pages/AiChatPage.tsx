@@ -30,10 +30,7 @@ import {
   getChatStats,
   type ChatMessage, 
   type ChatRequest,
-  type Context,
   type ChatSession,
-  type ChatConversation,
-  type ChatStats
 } from '@/api/aiChat'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 

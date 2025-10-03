@@ -10,6 +10,7 @@ const links = [
   { to: '/classes', label: 'Classes' },
   { to: '/assignments', label: 'Assignments' },
   { to: '/reports', label: 'Reports' },
+  { to: '/public/pdfs', label: 'PDF Exams' },
   { to: '/chat', label: 'Chat' },
   { to: '/profile', label: 'Profile' },
 ]

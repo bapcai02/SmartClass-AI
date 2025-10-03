@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\AiChatController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\PublicExamController;
+use App\Http\Controllers\Api\PublicExamPdfController;
 use App\Http\Controllers\Api\UserController;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -25,6 +26,7 @@ Route::get('/public/subjects', [PublicExamController::class, 'subjects']);
 Route::get('/public/exams/{id}', [PublicExamController::class, 'show']);
 Route::post('/public/exams/{id}/submit', [PublicExamController::class, 'submit']);
 Route::get('/public/leaderboard', [PublicExamController::class, 'leaderboard']);
+Route::get('/public/exam-pdfs', [PublicExamPdfController::class, 'index']);
 
 // (Removed /public2/* aliases)
 
