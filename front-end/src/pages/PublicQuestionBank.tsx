@@ -45,7 +45,10 @@ export default function PublicQuestionBankPage() {
   const [subjectId, setSubjectId] = useState<number | ''>('')
   const [subjects, setSubjects] = useState<Array<{ id: number; name: string }>>([])
   const [grade, setGrade] = useState<number | ''>('')
+  const [year, setYear] = useState<number | ''>('')
+  const [sortBy, setSortBy] = useState<'newest' | 'most' | 'az'>('newest')
   const [visibleCount, setVisibleCount] = useState(6)
+  const [loadingList, setLoadingList] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [composer, setComposer] = useState('')
   const [sending, setSending] = useState(false)
@@ -72,10 +75,28 @@ export default function PublicQuestionBankPage() {
   }, [messages, sending])
 
   const load = async (params: Record<string, any> = {}) => {
-    const { data } = await api.get('/public/question-bank', { params })
-    const items = (data?.data as PublicExam[]) || []
-    setItems(items)
-    try { } catch {}
+    setLoadingList(true)
+    try {
+      const { data } = await api.get('/public/question-bank', { params })
+      let list = (data?.data as PublicExam[]) || []
+      // Client-side year filter (simple heuristic: match year in title)
+      if (year) {
+        const re = new RegExp(String(year))
+        list = list.filter(e => re.test(String(e.title || '')))
+      }
+      // Sorting
+      if (sortBy === 'az') {
+        list = list.slice().sort((a,b)=> String(a.title||'').localeCompare(String(b.title||'')))
+      } else if (sortBy === 'most') {
+        list = list.slice().sort((a,b)=> (b.submissions?.length||0) - (a.submissions?.length||0))
+      } else {
+        // newest by start_time desc as fallback
+        list = list.slice().sort((a,b)=> new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
+      }
+      setItems(list)
+    } finally {
+      setLoadingList(false)
+    }
   }
 
   const handleSearch = () => {
@@ -83,7 +104,19 @@ export default function PublicQuestionBankPage() {
       search: searchTerm || undefined,
       subject_id: subjectId || undefined,
       grade: grade || undefined,
+      year: year || undefined,
+      sort: sortBy || undefined,
     })
+  }
+
+  const clearFilters = () => {
+    setSearchTerm('')
+    setSubjectId('')
+    setGrade('')
+    setYear('')
+    setSortBy('newest')
+    setVisibleCount(6)
+    load({})
   }
 
   async function sendChat() {
@@ -422,7 +455,7 @@ export default function PublicQuestionBankPage() {
             </div>
           </div>
           {showFilters && (
-            <div className="mt-4 grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">Môn học</label>
                 <select
@@ -455,15 +488,46 @@ export default function PublicQuestionBankPage() {
                   ))}
                 </select>
               </div>
-              <div className="flex items-end">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Năm</label>
+                <select
+                  value={year}
+                  onChange={(e)=> setYear(e.target.value? Number(e.target.value) : '')}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                >
+                  <option value="">Tất cả năm</option>
+                  {[2025,2024,2023,2022].map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Sắp xếp</label>
+                <select
+                  value={sortBy}
+                  onChange={(e)=> setSortBy(e.target.value as any)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                >
+                  <option value="newest">Mới nhất</option>
+                  <option value="most">Tải nhiều</option>
+                  <option value="az">A → Z</option>
+                </select>
+              </div>
+              <div className="flex items-end gap-2">
                 <Button onClick={handleSearch} className="rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2 text-sm hover:bg-slate-50">Áp dụng lọc</Button>
+                <Button variant="outline" onClick={clearFilters} className="rounded-lg border border-slate-300 bg-white text-slate-700 px-4 py-2 text-sm hover:bg-slate-50">Xóa lọc</Button>
               </div>
             </div>
           )}
         </Card>
         <h2 className="mb-3 text-lg font-semibold text-slate-900">Đề thi mới</h2>
+        <div className="mb-3 text-sm text-slate-600">{loadingList ? 'Đang lọc…' : `Có ${items.length} đề phù hợp`}</div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {items.slice(0, visibleCount).map((exam) => (
+          {loadingList ? (
+            Array.from({length:6}).map((_,i)=> (
+              <div key={`skeleton-${i}`} className="h-36 rounded-lg border border-slate-200 bg-white animate-pulse" />
+            ))
+          ) : items.slice(0, visibleCount).map((exam) => (
             <Card key={exam.id} className="p-5 border-slate-200 shadow-sm hover:shadow-lg transition-transform hover:-translate-y-0.5">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -506,16 +570,23 @@ export default function PublicQuestionBankPage() {
               </div>
             </Card>
           ))}
-          {items.length > visibleCount && (
-            <div className="text-center">
-              <Button variant="outline" onClick={() => setVisibleCount(c => c + 10)}>Xem thêm</Button>
+          {!loadingList && items.length === 0 && (
+            <div className="text-center py-12 text-slate-600 col-span-full">
+              Không có đề phù hợp. Gợi ý thử:
+              <div className="mt-2 flex flex-wrap justify-center gap-2 text-sm">
+                {['Toán 2024','Vật lý Lớp 12','Hóa học Hữu cơ','Tiếng Anh THPT','Sinh học Di truyền'].map((s,i)=> (
+                  <button key={`sug-${i}`} onClick={()=> { setSearchTerm(s); setShowFilters(false); handleSearch(); }} className="rounded-full border px-3 py-1 hover:bg-slate-50">{s}</button>
+                ))}
+              </div>
             </div>
           )}
-          {items.length === 0 && (
-            <div className="text-center py-12 text-slate-600">Không có đề phù hợp</div>
-          )}
         </div>
-
+        {!loadingList && items.length > visibleCount && (
+          <div className="text-center">
+            <Button variant="outline" onClick={() => setVisibleCount(c => c + 10)}>Xem thêm</Button>
+          </div>
+        )}
+        
         {/* Top người thi (dữ liệu thật) */}
         <section className="mt-10">
           <h2 className="mb-3 text-lg font-semibold text-slate-900">Top người thi</h2>
