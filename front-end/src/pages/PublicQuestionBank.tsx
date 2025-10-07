@@ -718,7 +718,7 @@ export default function PublicQuestionBankPage() {
 }
 
 function FeaturedPdfs() {
-  const [items, setItems] = useState<Array<{ id:number; title:string; pdf_url:string; subject?:{name:string}; clazz?:{name:string}; file_size_bytes?:number }>>([])
+  const [items, setItems] = useState<Array<{ id:number; title:string; pdf_url:string; subject?:{name:string}; clazz?:{name:string}; file_size_bytes?:number; download_count?:number; view_count?:number }>>([])
   const [active, setActive] = useState<typeof items[number] | null>(null)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
   const toPublicUrl = (pdfUrl: string) => {
@@ -733,6 +733,21 @@ function FeaturedPdfs() {
       .catch(()=> { setToast({ msg: 'Sao chép thất bại. Thử lại.', type: 'error' }); setTimeout(()=> setToast(null), 2000) })
   }
   useEffect(()=>{ (async()=>{ try { const { data } = await api.get('/public/exam-pdfs'); setItems((data?.data||[]).slice(0,6)) } catch {} })() }, [])
+  const incrementView = async (id: number) => {
+    try {
+      await api.get(`/public/exam-pdfs/${id}/view`)
+    } catch {}
+    // Optimistically update count locally
+    setItems(prev => prev.map(it => it.id === id ? { ...it, view_count: (it.view_count || 0) + 1 } as any : it))
+  }
+  const downloadViaApi = (item: { id: number; pdf_url: string }) => {
+    // Optimistically update count locally
+    setItems(prev => prev.map(it => it.id === item.id ? { ...it, download_count: (it.download_count || 0) + 1 } as any : it))
+    api.get(`/public/exam-pdfs/${item.id}/download`).finally(() => {
+      const url = toPublicUrl(item.pdf_url)
+      window.open(url, '_blank')
+    })
+  }
   if (!items?.length) return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {Array.from({length:6}).map((_,i)=> <div key={i} className="h-24 rounded-lg border border-slate-200 bg-white animate-pulse" />)}
@@ -750,10 +765,21 @@ function FeaturedPdfs() {
           <div key={it.id} className="text-left rounded-lg border border-slate-200 bg-white p-4 hover:shadow-md transition">
             <div className="font-medium line-clamp-2">{it.title}</div>
             <div className="text-xs text-slate-600 mt-1">{it.subject?.name || 'Môn?'} · {it.clazz?.name || 'Khối?'}</div>
-            <div className="text-xs text-slate-500 mt-1">{it.file_size_bytes ? `${(it.file_size_bytes/1024/1024).toFixed(2)} MB` : ''}</div>
+            <div className="text-xs text-slate-500 mt-1">
+              {it.file_size_bytes ? `${(it.file_size_bytes/1024/1024).toFixed(2)} MB` : ''}
+              {(typeof it.view_count === 'number' || typeof it.download_count === 'number') && (
+                <>
+                  {it.file_size_bytes ? ' · ' : ''}
+                  <span>{(it.view_count ?? 0)} lượt xem</span>
+                  {' · '}
+                  <span>{(it.download_count ?? 0)} lượt tải</span>
+                </>
+              )}
+            </div>
             <div className="mt-3 flex gap-2">
-              <button onClick={()=> setActive(it)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">Xem nhanh</button>
+              <button onClick={()=> { setActive(it); incrementView(it.id) }} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">Xem nhanh</button>
               <button onClick={()=> copyPdfLink(it.pdf_url)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">Sao chép liên kết</button>
+              <button onClick={()=> downloadViaApi(it)} className="inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">Tải về</button>
             </div>
           </div>
         ))}

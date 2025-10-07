@@ -29,11 +29,66 @@ class PublicExamPdfController extends Controller
                 'pdf_url' => $publicUrl,
                 'file_size_bytes' => (int)($e->file_size_bytes ?? 0),
                 'num_pages' => (int)($e->num_pages ?? 0),
+                'download_count' => (int)($e->download_count ?? 0),
+                'view_count' => (int)($e->view_count ?? 0),
                 'subject' => $e->subject ? ['id' => $e->subject->id, 'name' => $e->subject->name] : null,
                 'clazz' => $e->clazz ? ['id' => $e->clazz->id, 'name' => $e->clazz->name] : null,
             ];
         });
 
         return response()->json(['data' => $data]);
+    }
+
+    public function download(Request $request, $id)
+    {
+        $pdf = PublicExamPdf::findOrFail($id);
+        $pdf->increment('download_count');
+
+        // If this is an AJAX/JSON request, just return 204 after incrementing
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->noContent();
+        }
+
+        $path = $pdf->pdf_url;
+        if (!$path) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+
+        if (preg_match('/^https?:\/\//i', (string) $path)) {
+            return redirect()->away($path);
+        }
+
+        if (!Storage::exists($path)) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+
+        return Storage::download($path);
+    }
+
+    public function view(Request $request, $id)
+    {
+        $pdf = PublicExamPdf::findOrFail($id);
+        $pdf->increment('view_count');
+
+        // If this is an AJAX/JSON request, just return 204 after incrementing
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->noContent();
+        }
+
+        $path = $pdf->pdf_url;
+        if (!$path) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+
+        if (preg_match('/^https?:\/\//i', (string) $path)) {
+            return redirect()->away($path);
+        }
+
+        if (!Storage::exists($path)) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+
+        // Use Storage::url to allow browser to render inline
+        return redirect()->to(url(Storage::url($path)));
     }
 }

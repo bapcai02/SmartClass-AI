@@ -9,6 +9,8 @@ type Item = {
   pdf_url: string
   file_size_bytes?: number
   num_pages?: number
+  download_count?: number
+  view_count?: number
   subject?: { id: number; name: string }
   clazz?: { id: number; name: string }
 }
@@ -58,6 +60,18 @@ export default function PublicExamPdfsPage() {
     if (/^https?:\/\//i.test(pdfUrl)) return pdfUrl
     // storage-relative path from backend
     return `/storage/${pdfUrl.replace(/^\/?storage\//i, '')}`
+  }
+
+  const downloadViaApi = async (item: Item) => {
+    try { await api.get(`/public/exam-pdfs/${item.id}/download`) } catch {}
+    // open public URL directly to avoid any auth redirect
+    const url = toPublicUrl(item.pdf_url)
+    window.open(url, '_blank')
+  }
+
+  const openPreviewViaApi = (id: number) => {
+    // increment view count then open inline viewer
+    window.open(`/api/public/exam-pdfs/${id}/view`, '_blank')
   }
 
   return (
@@ -113,7 +127,7 @@ export default function PublicExamPdfsPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {items.map(it => (
-              <button key={it.id} onClick={()=> setActive(it)} className="text-left block rounded-lg border border-slate-200 bg-white p-4 hover:shadow-md transition">
+            <div key={it.id} className="text-left rounded-lg border border-slate-200 bg-white p-4 hover:shadow-md transition">
                 <div className="font-medium mb-1 line-clamp-2">{it.title}</div>
                 <div className="text-sm text-slate-600">
                   {(it.subject?.name || 'Môn?')} · {(it.clazz?.name || 'Khối?')}
@@ -121,7 +135,16 @@ export default function PublicExamPdfsPage() {
                 <div className="text-xs text-slate-500 mt-1">
                   {(it.num_pages ? `${it.num_pages} trang` : '')} {(it.file_size_bytes ? `· ${(it.file_size_bytes/1024/1024).toFixed(2)} MB` : '')}
                 </div>
-              </button>
+              <div className="mt-3 flex gap-2">
+                <button onClick={()=> { setActive(it); openPreviewViaApi(it.id) }} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">Xem nhanh</button>
+                <button onClick={()=> downloadViaApi(it)} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">Tải về</button>
+                <span className="ml-auto text-xs text-slate-600">
+                  {typeof it.view_count === 'number' ? `${it.view_count} lượt xem` : ''}
+                  {typeof it.view_count === 'number' && typeof it.download_count === 'number' ? ' · ' : ''}
+                  {typeof it.download_count === 'number' ? `${it.download_count} lượt tải` : ''}
+                </span>
+              </div>
+            </div>
             ))}
           </div>
         )}

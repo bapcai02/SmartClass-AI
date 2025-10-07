@@ -27,6 +27,8 @@ Route::get('/public/exams/{id}', [PublicExamController::class, 'show']);
 Route::post('/public/exams/{id}/submit', [PublicExamController::class, 'submit']);
 Route::get('/public/leaderboard', [PublicExamController::class, 'leaderboard']);
 Route::get('/public/exam-pdfs', [PublicExamPdfController::class, 'index']);
+Route::get('/public/exam-pdfs/{id}/download', [PublicExamPdfController::class, 'download']);
+Route::get('/public/exam-pdfs/{id}/view', [PublicExamPdfController::class, 'view']);
 
 // (Removed /public2/* aliases)
 
