@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import type React from 'react'
 import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 import { useAuthStore } from '@/store/auth'
 import { Upload, Sparkles, ChevronLeft, ChevronRight, Filter } from 'lucide-react'
@@ -155,7 +156,7 @@ export default function ExamsPage() {
                 <ChevronLeft className="h-4 w-4"/> Previous
               </button>
               {(() => {
-                const items: JSX.Element[] = []
+                const items: React.ReactElement[] = []
                 const makeBtn = (p:number) => (
                   <button key={`p-${p}`} onClick={()=>setPage(p)} className={`h-9 min-w-9 rounded-full px-3 text-sm shadow-sm border ${p===page?'bg-brand-blue text-white border-transparent':'bg-white'}`}>{p}</button>
                 )

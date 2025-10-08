@@ -7,13 +7,6 @@ import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/
 import { listClassExams, createClassExam, updateClassExam, deleteClassExam, type ExamDto } from '@/api/exams'
 
 type Row = { id: string; title: string; date: string; duration: string; status: 'upcoming'|'ongoing'|'finished' }
-const base: Row[] = Array.from({ length: 8 }, (_, i) => ({
-  id: `E${100+i}`,
-  title: `Exam ${i+1}`,
-  date: `2025-11-${String((i%28)+1).padStart(2,'0')}`,
-  duration: `${60 + (i*15)%120} mins`,
-  status: (['upcoming','ongoing','finished'] as const)[i%3],
-}))
 
 export default function ClassExamsPage() {
   const { id } = useParams()

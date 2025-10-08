@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, User, BookOpen, Users, Clock, FileText, Search, Filter, BarChart3, AlertCircle, CheckCircle, Calendar as CalendarIcon, TrendingUp } from 'lucide-react'
-import { getAllAssignments, getAssignmentStats, type AssignmentWithDetails, type AssignmentFilters, type AssignmentStats } from '@/api/assignments'
-import { getClasses } from '@/api/classApi'
+import { Calendar, User, BookOpen, Users, Clock, FileText, Search, Filter, BarChart3, AlertCircle, Calendar as CalendarIcon, TrendingUp } from 'lucide-react'
+import { getAllAssignments, getAssignmentStats, type AssignmentFilters, } from '@/api/assignments'
+import { getClasses, type ClassroomDto } from '@/api/classApi'
 import { searchSubjects } from '@/api/lookup'
 import { useQuery } from '@tanstack/react-query'
 
@@ -256,7 +256,9 @@ export default function AllAssignmentsPage() {
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
                   >
                     <option value="">All Classes</option>
-                    {classesData?.data?.map((cls) => (
+                    {(
+                      (classesData as any)?.data || (classesData as any)?.items || []
+                    ).map((cls: ClassroomDto) => (
                       <option key={cls.id} value={cls.id}>
                         {cls.name}
                       </option>

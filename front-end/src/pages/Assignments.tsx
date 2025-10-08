@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useMemo, useState } from 'react'
+import type React from 'react'
 import { Eye, Edit3, Send, Filter, ChevronLeft, ChevronRight, Copy, Printer, Trash2, MoreHorizontal } from 'lucide-react'
 
 type Assignment = {
@@ -168,7 +169,7 @@ export default function AssignmentsPage() {
                 <ChevronLeft className="h-4 w-4"/> Previous
               </button>
               {(() => {
-                const items: JSX.Element[] = []
+                const items: React.ReactElement[] = []
                 const makeBtn = (p:number,label?:string) => (
                   <button
                     key={`p-${p}-${label??''}`}

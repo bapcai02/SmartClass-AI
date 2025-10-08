@@ -1,4 +1,3 @@
-import React from 'react'
 import { useGetClasses, useDeleteClass } from '@/hooks/useClasses'
 import { Button } from '@/components/ui/button'
 
@@ -46,7 +45,6 @@ export default function ClassTable({ page, perPage, onPageChange, onEdit }: Prop
               <td className="px-3 py-2 text-right">
                 <Button variant="outline" className="mr-2" onClick={() => onEdit?.(c)}>Edit</Button>
                 <Button
-                  variant="destructive"
                   onClick={() => {
                     if (confirm('Delete this class?')) del.mutate(c.id)
                   }}

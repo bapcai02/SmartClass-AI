@@ -1,12 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { listAssignments, getAssignment, createAssignment, updateAssignment, deleteAssignment, type AssignmentDto, type Paginated } from '@/api/assignments'
+import { listAssignments, createAssignment, updateAssignment, deleteAssignment, type AssignmentDto, type Paginated } from '@/api/assignments'
 
 export function useListAssignments(classId: number | string, page = 1, perPage = 10) {
   return useQuery<Paginated<AssignmentDto>>({
     queryKey: ['assignments', classId, page, perPage],
     queryFn: () => listAssignments(classId, { page, perPage }),
     enabled: Boolean(classId),
-    keepPreviousData: true,
   })
 }
 

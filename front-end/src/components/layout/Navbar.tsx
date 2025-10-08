@@ -1,5 +1,5 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, Bell, Search, CircleUserRound } from 'lucide-react'
+import { Menu, Bell, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useEffect, useRef, useState } from 'react'
 import { useLogout } from '@/hooks/auth'

@@ -5,7 +5,6 @@ export function useGetClasses({ page = 1, perPage = 10 }: { page?: number; perPa
   return useQuery<PaginatedResponse<ClassroomDto>>({
     queryKey: ['classes', page, perPage],
     queryFn: () => getClasses({ page, perPage }),
-    keepPreviousData: true,
   })
 }
 
@@ -30,7 +29,6 @@ export function useClassStudents(classId: number | string, page = 1, perPage = 1
     queryKey: ['class-students', classId, page, perPage, search],
     queryFn: () => getClassStudents(classId, { page, perPage, search }),
     enabled: Boolean(classId),
-    keepPreviousData: true,
   })
 }
 
@@ -39,7 +37,6 @@ export function useClassAttendance(classId: number | string, from?: string, to?:
     queryKey: ['class-attendance', classId, from, to],
     queryFn: () => getClassAttendance(classId, { from, to }),
     enabled: Boolean(classId),
-    keepPreviousData: true,
   })
 }
 

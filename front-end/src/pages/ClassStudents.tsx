@@ -9,15 +9,6 @@ import { useClassStudents, useAddClassStudents, useRemoveClassStudents } from '@
 import { useUserSearch } from '@/hooks/useLookup'
 import { Modal, ModalContent, ModalHeader, ModalTrigger } from '@/components/ui/modal'
 
-type Student = {
-  id: string
-  name: string
-  email: string
-  status: 'Active' | 'Inactive'
-  attendance: number
-  grade: string
-}
-
 export default function ClassStudentsPage() {
   const { id } = useParams()
   useEffect(()=>{ window.scrollTo({ top: 0, behavior: 'smooth' }) }, [])

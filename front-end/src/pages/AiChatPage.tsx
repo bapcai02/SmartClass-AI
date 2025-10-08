@@ -6,11 +6,6 @@ import {
   Bot, 
   User, 
   Sparkles, 
-  BookOpen, 
-  Calculator, 
-  Globe, 
-  Microscope,
-  History,
   Trash2,
   Copy,
   ThumbsUp,
@@ -161,11 +156,6 @@ export default function AiChatPage() {
     }
   }
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setInputMessage(suggestion)
-    inputRef.current?.focus()
-  }
-
   const clearChat = () => {
     setMessages([])
     setCurrentSessionId(null)
@@ -178,7 +168,7 @@ export default function AiChatPage() {
       const data = await getSession(sessionId)
       const sessionMessages: ChatMessage[] = []
       
-      data.conversations.forEach((conv, index) => {
+      data.conversations.forEach((conv) => {
         if (conv.message_type === 'user') {
           sessionMessages.push({
             id: `user-${conv.id}`,
@@ -239,19 +229,6 @@ export default function AiChatPage() {
       hour: '2-digit',
       minute: '2-digit',
     })
-  }
-
-  const getSubjectIcon = (content: string) => {
-    const lowerContent = content.toLowerCase()
-    if (lowerContent.includes('math') || lowerContent.includes('algebra') || lowerContent.includes('calculus')) {
-      return <Calculator className="h-4 w-4" />
-    } else if (lowerContent.includes('science') || lowerContent.includes('biology') || lowerContent.includes('chemistry')) {
-      return <Microscope className="h-4 w-4" />
-    } else if (lowerContent.includes('history') || lowerContent.includes('social') || lowerContent.includes('geography')) {
-      return <Globe className="h-4 w-4" />
-    } else {
-      return <BookOpen className="h-4 w-4" />
-    }
   }
 
   const groupSessionsByDate = (items: ChatSession[]) => {

@@ -3,7 +3,6 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Search, Filter, BookOpen, GraduationCap, FileText, Star, Layers3, BrainCircuit, Target, Mail, Phone, Globe, Image as ImageIcon, Send, Calculator, Atom, FlaskConical, Dna, Landmark, Globe2, X } from 'lucide-react'
 import api from '@/utils/api'
-import { useMemo } from 'react'
 
 type PublicExam = {
   id: number

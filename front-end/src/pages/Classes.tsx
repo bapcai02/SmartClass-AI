@@ -53,7 +53,10 @@ export default function ClassesPage() {
 
   const dataset: ClassItem[] = useMemo(() => {
     if (isSuccess) {
-      const items = (apiData?.data || apiData?.items || []) as any[]
+      const raw = apiData as unknown
+      const items = Array.isArray((raw as any)?.data)
+        ? (raw as any).data
+        : (Array.isArray((raw as any)?.items) ? (raw as any).items : [])
       return items.map((it: any, idx: number) => ({
         id: String(it.id),
         name: it.name,

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Download, Upload, Calculator, ArrowLeftCircle } from 'lucide-react'
-import { getClassGrades, type GradebookItem, type GradebookResponse } from '@/api/classApi'
+import { getClassGrades, type GradebookItem } from '@/api/classApi'
 
 type Student = { id: number; name: string }
 

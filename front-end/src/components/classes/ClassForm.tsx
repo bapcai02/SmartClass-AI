@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useCreateClass, useUpdateClass } from '@/hooks/useClasses'
 import { useSubjectSearch, useUserSearch } from '@/hooks/useLookup'
@@ -50,7 +50,7 @@ export default function ClassForm({ editing, onSuccess, onCancel }: { editing?: 
     }
   }, [editing])
 
-  const { register, handleSubmit, formState: { errors, isSubmitted }, setValue, trigger } = useForm<FormState>({
+  const { handleSubmit, formState: { errors, isSubmitted }, setValue, trigger } = useForm<FormState>({
     resolver: zodResolver(schema),
     mode: 'onChange',
     defaultValues: initialState,

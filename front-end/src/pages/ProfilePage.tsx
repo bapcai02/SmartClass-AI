@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { 
-  User, 
   Mail, 
   Calendar, 
   BookOpen, 
@@ -20,8 +19,6 @@ import {
   Settings,
   BarChart3,
   Clock,
-  CheckCircle,
-  AlertCircle
 } from 'lucide-react'
 import { 
   getProfile, 
@@ -29,9 +26,6 @@ import {
   updatePassword,
   getProfileStats,
   getProfileActivity,
-  type User as UserType,
-  type UserStats,
-  type UserActivity
 } from '@/api/profile'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 

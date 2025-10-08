@@ -10,7 +10,6 @@ import {
   Calendar,
   User,
   BookOpen,
-  BarChart3,
   File,
   Image,
   Video,
@@ -20,8 +19,6 @@ import {
 import { 
   getAllResources, 
   getResourceStats,
-  type Resource,
-  type ResourceStats,
   type ResourceFilters,
   getFileTypeFromUrl,
   getFileIcon
@@ -46,9 +43,9 @@ export default function AllResourcesPage() {
     queryFn: getResourceStats,
   })
 
-  const { data: classes } = useQuery({
+  const { data: classesResp } = useQuery({
     queryKey: ['classes'],
-    queryFn: getClasses,
+    queryFn: () => getClasses(),
   })
 
   const { data: subjects } = useQuery({
@@ -249,7 +246,9 @@ export default function AllResourcesPage() {
                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
                   >
                     <option value="">All Classes</option>
-                    {classes?.map((cls) => (
+                    {(
+                      (classesResp as any)?.data || (classesResp as any)?.items || []
+                    ).map((cls: any) => (
                       <option key={cls.id} value={cls.id}>
                         {cls.name}
                       </option>

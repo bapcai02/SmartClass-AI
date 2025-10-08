@@ -4,12 +4,9 @@ import { Button } from '@/components/ui/button'
 import { 
   MessageCircle, 
   HelpCircle, 
-  Edit3, 
   Trash2, 
-  Plus, 
   User, 
   Calendar,
-  BarChart3,
   MessageSquare,
   Clock,
   TrendingUp
@@ -20,9 +17,6 @@ import {
   getQaStats,
   deleteQaPost,
   deleteQaAnswer,
-  type QaPost,
-  type QaAnswer,
-  type QaStats
 } from '@/api/qa'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 

@@ -6,7 +6,6 @@ import {
   Users, 
   BookOpen, 
   GraduationCap, 
-  TrendingUp, 
   Calendar,
   FileText,
   Clock,
@@ -22,14 +21,7 @@ import {
   getAttendanceStats, 
   getGradeDistribution, 
   getRecentActivity, 
-  getMonthlyStats,
-  type OverallStats,
-  type ClassPerformance,
-  type StudentPerformance,
-  type AttendanceStats,
-  type GradeDistribution,
-  type RecentActivity,
-  type MonthlyStats
+  getMonthlyStats
 } from '@/api/reports'
 import { useQuery } from '@tanstack/react-query'
 
@@ -76,7 +68,7 @@ export default function ReportsPage() {
     queryFn: getRecentActivity,
   })
 
-  const { data: monthlyStats, isLoading: monthlyLoading } = useQuery({
+  const { data: monthlyStats } = useQuery({
     queryKey: ['monthly-stats'],
     queryFn: getMonthlyStats,
   })

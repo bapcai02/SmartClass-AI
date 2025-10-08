@@ -31,7 +31,6 @@ export default function PublicExamTakePage() {
   const [candidateEmail, setCandidateEmail] = useState('')
   const [startedAt, setStartedAt] = useState<string | null>(null)
   const [aiQ, setAiQ] = useState('')
-  const [aiA, setAiA] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [showAi, setShowAi] = useState(false)
   type ChatMessage = { role: 'user' | 'assistant'; content: string; imageUrl?: string }
@@ -129,7 +128,6 @@ export default function PublicExamTakePage() {
   async function askPublicAi(msg: string) {
     try {
       setAiLoading(true)
-      setAiA('')
       const optimistic: ChatMessage = { role: 'user', content: msg || (aiImage ? '[Ảnh]' : '') }
       if (aiImage) {
         try { optimistic.imageUrl = URL.createObjectURL(aiImage) } catch {}
@@ -148,10 +146,8 @@ export default function PublicExamTakePage() {
       if (aiImage) form.append('image', aiImage)
       const { data } = await api.post('/public/ai/chat', form, { headers: { 'Content-Type': 'multipart/form-data' } })
       const resp = data?.response || data?.error || 'Không có phản hồi'
-      setAiA(resp)
       setMessages(prev => [...prev, { role: 'assistant', content: resp }])
     } catch (e) {
-      setAiA('Đã xảy ra lỗi, vui lòng thử lại.')
       setMessages(prev => [...prev, { role: 'assistant', content: 'Đã xảy ra lỗi, vui lòng thử lại.' }])
     } finally {
       setAiLoading(false)

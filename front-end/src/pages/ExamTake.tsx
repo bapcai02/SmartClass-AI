@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeftCircle, Play, Pause, Clock } from 'lucide-react'
+import { ArrowLeftCircle, Play, Clock } from 'lucide-react'
 import { submitExam, getClassExam, type ExamDto } from '@/api/exams'
 import { useUser } from '@/hooks/auth'
 
@@ -19,7 +19,7 @@ export default function ExamTakePage() {
   const [secondsLeft, setSecondsLeft] = useState(45 * 60)
   const [currentIdx, setCurrentIdx] = useState(0)
   const [answers, setAnswers] = useState<Record<number, any>>({})
-  const [exam, setExam] = useState<ExamDto | null>(null)
+  const [examData, setExamData] = useState<ExamDto | null>(null)
   const [expired, setExpired] = useState(false)
   const q = MOCK_QUESTIONS[currentIdx]
 
@@ -29,7 +29,7 @@ export default function ExamTakePage() {
     (async () => {
       try {
         const data = await getClassExam(id as string, eid as string)
-        setExam(data)
+        setExamData(data)
         if (data?.end_time) {
           const end = new Date(data.end_time)
           if (new Date() > end) setExpired(true)
@@ -84,7 +84,7 @@ export default function ExamTakePage() {
             className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm transition hover:shadow hover:bg-slate-100"
           >
             <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
-            Back to Exam Detail
+            Back to Exam Detail{examData?.title ? ` • ${examData.title}` : ''}
           </Link>
           <div className="flex items-center gap-4">
             <div className="hidden text-sm text-slate-600 sm:block">Answered {answeredCount}/{MOCK_QUESTIONS.length}</div>

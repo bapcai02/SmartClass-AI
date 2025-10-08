@@ -2,7 +2,7 @@ import { NavLink, useNavigate, useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Edit3, Trash2, UserPlus, LayoutDashboard, Users as UsersIcon, CalendarDays, FolderOpen, NotebookTabs, FileBarChart, BarChart3, Megaphone, MessageSquare } from 'lucide-react'
+import { Edit3, Trash2, LayoutDashboard, Users as UsersIcon, CalendarDays, FolderOpen, NotebookTabs, FileBarChart, BarChart3, Megaphone, MessageSquare } from 'lucide-react'
 // @ts-ignore
 import { useGetClassDetail } from '@/hooks/useClasses'
 // @ts-ignore

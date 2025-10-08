@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { classes, announcements, stats } from '@/data/dummy'
-import { BarChart3, CheckCircle2, ClipboardList } from 'lucide-react'
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, BarChart, Bar } from 'recharts'
 import { MetricChip } from '@/components/ui/metric-chip'
 import { Link } from 'react-router-dom'

@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { 
-  Settings, 
   Bell, 
   Shield, 
   Palette, 
-  User, 
+  User as UserIcon, 
   Key, 
   Trash2, 
   Download,
@@ -14,13 +13,9 @@ import {
   Eye,
   EyeOff,
   AlertTriangle,
-  CheckCircle,
   Moon,
   Sun,
   Monitor,
-  Globe,
-  Lock,
-  Unlock
 } from 'lucide-react'
 import { 
   getSettings, 
@@ -30,7 +25,6 @@ import {
   deleteAccount,
   exportData,
   type UserSettings,
-  type User
 } from '@/api/settings'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
@@ -191,7 +185,7 @@ export default function SettingsPage() {
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'privacy', label: 'Privacy', icon: Shield },
     { id: 'appearance', label: 'Appearance', icon: Palette },
-    { id: 'account', label: 'Account', icon: User },
+    { id: 'account', label: 'Account', icon: UserIcon },
   ]
 
   if (settingsLoading) {
@@ -400,7 +394,7 @@ export default function SettingsPage() {
                   onClick={handleEditClick}
                   className="text-black hover:bg-black hover:text-white"
                 >
-                  <User className="mr-2 h-4 w-4" />
+                  <UserIcon className="mr-2 h-4 w-4" />
                   Edit Profile
                 </Button>
               </div>
