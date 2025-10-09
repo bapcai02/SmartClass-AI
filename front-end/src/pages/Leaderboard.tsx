@@ -8,8 +8,8 @@ export default function LeaderboardPage() {
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Leaderboard</h1>
-        <p className="text-slate-600">Celebrate top performers and achievements</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Bảng xếp hạng</h1>
+        <p className="text-slate-600">Tôn vinh thành tích và người học xuất sắc</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         {top3.map((u, idx) => (
@@ -27,17 +27,17 @@ export default function LeaderboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Top Students</CardTitle>
+          <CardTitle>Top học sinh</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-hidden rounded-2xl">
             <table className="min-w-full text-sm">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-2 text-left">Rank</th>
-                  <th className="px-4 py-2 text-left">Student</th>
-                  <th className="px-4 py-2 text-left">Points</th>
-                  <th className="px-4 py-2 text-left">Badges</th>
+                  <th className="px-4 py-2 text-left">Hạng</th>
+                  <th className="px-4 py-2 text-left">Học sinh</th>
+                  <th className="px-4 py-2 text-left">Điểm</th>
+                  <th className="px-4 py-2 text-left">Huy hiệu</th>
                 </tr>
               </thead>
               <tbody>

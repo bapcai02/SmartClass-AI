@@ -143,11 +143,11 @@ export default function AllAssignmentsPage() {
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">All Assignments</h1>
-              <p className="text-slate-600">View and manage assignments from all your classes</p>
+              <h1 className="text-3xl font-bold text-slate-900">Tất cả bài tập</h1>
+              <p className="text-slate-600">Xem và quản lý bài tập từ tất cả lớp học của bạn</p>
             </div>
             <div className="text-sm text-slate-600">
-              {data?.total || 0} assignments total
+              Tổng {data?.total || 0} bài tập
             </div>
           </div>
 
@@ -161,7 +161,7 @@ export default function AllAssignmentsPage() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-slate-900">{stats.total}</div>
-                    <div className="text-sm text-slate-600">Total</div>
+                    <div className="text-sm text-slate-600">Tổng</div>
                   </div>
                 </div>
               </Card>
@@ -172,7 +172,7 @@ export default function AllAssignmentsPage() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-                    <div className="text-sm text-slate-600">Overdue</div>
+                    <div className="text-sm text-slate-600">Quá hạn</div>
                   </div>
                 </div>
               </Card>
@@ -194,7 +194,7 @@ export default function AllAssignmentsPage() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-yellow-600">{stats.due_this_week}</div>
-                    <div className="text-sm text-slate-600">This Week</div>
+                    <div className="text-sm text-slate-600">Trong tuần</div>
                   </div>
                 </div>
               </Card>
@@ -205,7 +205,7 @@ export default function AllAssignmentsPage() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-green-600">{stats.upcoming}</div>
-                    <div className="text-sm text-slate-600">Upcoming</div>
+                    <div className="text-sm text-slate-600">Sắp tới</div>
                   </div>
                 </div>
               </Card>
@@ -220,7 +220,7 @@ export default function AllAssignmentsPage() {
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search assignments..."
+                    placeholder="Tìm kiếm bài tập..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -228,7 +228,7 @@ export default function AllAssignmentsPage() {
                   />
                 </div>
                 <Button onClick={handleSearch} className="px-6 text-black hover:bg-black hover:text-white">
-                  Search
+                  Tìm kiếm
                 </Button>
                 <Button
                   variant="outline"
@@ -240,7 +240,7 @@ export default function AllAssignmentsPage() {
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={clearFilters} size="sm">
-                  Clear Filters
+                  Xóa lọc
                 </Button>
               </div>
             </div>
@@ -249,13 +249,13 @@ export default function AllAssignmentsPage() {
             {showFilters && (
               <div className="mt-4 grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Class</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Lớp</label>
                   <select
                     value={filters.class_id || ''}
                     onChange={(e) => handleFilterChange('class_id', e.target.value ? Number(e.target.value) : undefined)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
                   >
-                    <option value="">All Classes</option>
+                    <option value="">Tất cả lớp</option>
                     {(
                       (classesData as any)?.data || (classesData as any)?.items || []
                     ).map((cls: ClassroomDto) => (
@@ -266,13 +266,13 @@ export default function AllAssignmentsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Subject</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Môn học</label>
                   <select
                     value={filters.subject_id || ''}
                     onChange={(e) => handleFilterChange('subject_id', e.target.value ? Number(e.target.value) : undefined)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
                   >
-                    <option value="">All Subjects</option>
+                    <option value="">Tất cả môn</option>
                     {subjects.map((subject) => (
                       <option key={subject.id} value={subject.id}>
                         {subject.name}
@@ -281,21 +281,21 @@ export default function AllAssignmentsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Status</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Trạng thái</label>
                   <select
                     value={filters.status || ''}
                     onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
                   >
-                    <option value="">All Status</option>
-                    <option value="overdue">Overdue</option>
-                    <option value="due_today">Due Today</option>
-                    <option value="due_this_week">Due This Week</option>
-                    <option value="upcoming">Upcoming</option>
+                    <option value="">Tất cả</option>
+                    <option value="overdue">Quá hạn</option>
+                    <option value="due_today">Hôm nay</option>
+                    <option value="due_this_week">Tuần này</option>
+                    <option value="upcoming">Sắp tới</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Date From</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Từ ngày</label>
                   <input
                     type="date"
                     value={filters.date_from || ''}
@@ -338,15 +338,15 @@ export default function AllAssignmentsPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <User className="h-4 w-4" />
-                      <span>Created by {assignment.creator.name}</span>
+                    <span>Tạo bởi {assignment.creator.name}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      <span>Due {formatDate(assignment.due_date)}</span>
+                      <span>Hạn {formatDate(assignment.due_date)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <FileText className="h-4 w-4" />
-                      <span>{assignment.submissions.length} submissions</span>
+                      <span>{assignment.submissions.length} bài nộp</span>
                     </div>
                   </div>
                 </div>
@@ -356,7 +356,7 @@ export default function AllAssignmentsPage() {
                     to={`/class/${assignment.class_id}/assignments`}
                     className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50 hover:border-slate-400"
                   >
-                    View Class
+                    Xem lớp
                   </Link>
                   <div className="text-right text-xs text-slate-500">
                     ID: {assignment.id}
@@ -377,7 +377,7 @@ export default function AllAssignmentsPage() {
               disabled={page === 1}
               className="rounded-lg"
             >
-              Previous
+              Trước
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, data.last_page) }, (_, i) => {
@@ -402,7 +402,7 @@ export default function AllAssignmentsPage() {
               disabled={page === data.last_page}
               className="rounded-lg"
             >
-              Next
+              Sau
             </Button>
           </div>
         )}
@@ -413,8 +413,8 @@ export default function AllAssignmentsPage() {
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center">
               <FileText className="h-8 w-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">No assignments found</h3>
-            <p className="text-slate-600">Try adjusting your search or filter criteria.</p>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">Không có bài tập</h3>
+            <p className="text-slate-600">Hãy thử điều chỉnh từ khóa hoặc bộ lọc.</p>
           </div>
         )}
       </div>

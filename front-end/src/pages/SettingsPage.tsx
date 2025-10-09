@@ -182,10 +182,10 @@ export default function SettingsPage() {
   }
 
   const tabs = [
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'privacy', label: 'Privacy', icon: Shield },
-    { id: 'appearance', label: 'Appearance', icon: Palette },
-    { id: 'account', label: 'Account', icon: UserIcon },
+    { id: 'notifications', label: 'Thông báo', icon: Bell },
+    { id: 'privacy', label: 'Quyền riêng tư', icon: Shield },
+    { id: 'appearance', label: 'Giao diện', icon: Palette },
+    { id: 'account', label: 'Tài khoản', icon: UserIcon },
   ]
 
   if (settingsLoading) {
@@ -208,8 +208,8 @@ export default function SettingsPage() {
       <div className="mx-auto max-w-7xl px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
-          <p className="text-slate-600">Manage your preferences and account settings</p>
+          <h1 className="text-3xl font-bold text-slate-900">Cài đặt</h1>
+          <p className="text-slate-600">Quản lý tùy chọn và cài đặt tài khoản của bạn</p>
         </div>
 
         {/* Tabs */}
@@ -239,7 +239,7 @@ export default function SettingsPage() {
         {activeTab === 'notifications' && settings && (
           <div className="space-y-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Email Notifications</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Thông báo Email</h3>
               <div className="space-y-4">
                 {Object.entries(settings.notifications).map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between">
@@ -248,11 +248,11 @@ export default function SettingsPage() {
                         {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </div>
                       <div className="text-sm text-slate-600">
-                        {key === 'email_notifications' && 'Receive notifications via email'}
-                        {key === 'assignment_reminders' && 'Get reminded about upcoming assignments'}
-                        {key === 'exam_reminders' && 'Get reminded about upcoming exams'}
-                        {key === 'grade_updates' && 'Get notified when grades are posted'}
-                        {key === 'announcement_notifications' && 'Get notified about new announcements'}
+                        {key === 'email_notifications' && 'Nhận thông báo qua email'}
+                        {key === 'assignment_reminders' && 'Nhắc nhở các bài tập sắp đến hạn'}
+                        {key === 'exam_reminders' && 'Nhắc nhở các bài kiểm tra sắp tới'}
+                        {key === 'grade_updates' && 'Thông báo khi có điểm'}
+                        {key === 'announcement_notifications' && 'Thông báo khi có thông báo mới'}
                       </div>
                     </div>
                     <button
@@ -278,18 +278,18 @@ export default function SettingsPage() {
         {activeTab === 'privacy' && settings && (
           <div className="space-y-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Privacy Settings</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Cài đặt quyền riêng tư</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Profile Visibility</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Hiển thị hồ sơ</label>
                   <select
                     value={settings.privacy.profile_visibility}
                     onChange={(e) => handleSettingChange('privacy', 'profile_visibility', e.target.value)}
                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
                   >
-                    <option value="public">Public</option>
-                    <option value="friends">Friends Only</option>
-                    <option value="private">Private</option>
+                    <option value="public">Công khai</option>
+                    <option value="friends">Chỉ bạn bè</option>
+                    <option value="private">Riêng tư</option>
                   </select>
                 </div>
                 {Object.entries(settings.privacy).filter(([key]) => key !== 'profile_visibility').map(([key, value]) => (
@@ -299,8 +299,8 @@ export default function SettingsPage() {
                         {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </div>
                       <div className="text-sm text-slate-600">
-                        {key === 'show_email' && 'Show your email address to other users'}
-                        {key === 'show_activity' && 'Show your activity to other users'}
+                        {key === 'show_email' && 'Hiển thị email của bạn cho người khác'}
+                        {key === 'show_activity' && 'Hiển thị hoạt động của bạn cho người khác'}
                       </div>
                     </div>
                     <button
@@ -326,15 +326,15 @@ export default function SettingsPage() {
         {activeTab === 'appearance' && settings && (
           <div className="space-y-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Appearance</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Giao diện</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Theme</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Chủ đề</label>
                   <div className="flex gap-2">
                     {[
-                      { value: 'light', label: 'Light', icon: Sun },
-                      { value: 'dark', label: 'Dark', icon: Moon },
-                      { value: 'auto', label: 'Auto', icon: Monitor },
+                      { value: 'light', label: 'Sáng', icon: Sun },
+                      { value: 'dark', label: 'Tối', icon: Moon },
+                      { value: 'auto', label: 'Tự động', icon: Monitor },
                     ].map(({ value, label, icon: Icon }) => (
                       <button
                         key={value}
@@ -352,20 +352,20 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Language</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Ngôn ngữ</label>
                   <select
                     value={settings.appearance.language}
                     onChange={(e) => handleSettingChange('appearance', 'language', e.target.value)}
                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
                   >
-                    <option value="en">English</option>
+                    <option value="en">Tiếng Anh</option>
                     <option value="vi">Tiếng Việt</option>
-                    <option value="es">Español</option>
-                    <option value="fr">Français</option>
+                    <option value="es">Tiếng Tây Ban Nha</option>
+                    <option value="fr">Tiếng Pháp</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Timezone</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Múi giờ</label>
                   <select
                     value={settings.appearance.timezone}
                     onChange={(e) => handleSettingChange('appearance', 'timezone', e.target.value)}
@@ -373,8 +373,8 @@ export default function SettingsPage() {
                   >
                     <option value="UTC">UTC</option>
                     <option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh</option>
-                    <option value="America/New_York">America/New_York</option>
-                    <option value="Europe/London">Europe/London</option>
+                    <option value="America/New_York">Mỹ/New_York</option>
+                    <option value="Europe/London">Châu Âu/London</option>
                   </select>
                 </div>
               </div>
@@ -388,21 +388,21 @@ export default function SettingsPage() {
             {/* Profile Settings */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-900">Profile Information</h3>
+                <h3 className="text-lg font-semibold text-slate-900">Thông tin hồ sơ</h3>
                 <Button
                   variant="outline"
                   onClick={handleEditClick}
                   className="text-black hover:bg-black hover:text-white"
                 >
                   <UserIcon className="mr-2 h-4 w-4" />
-                  Edit Profile
+                  Chỉnh sửa hồ sơ
                 </Button>
               </div>
               {isEditing ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-slate-700">Name</label>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">Họ và tên</label>
                       <input
                         type="text"
                         value={editForm.name}
@@ -420,7 +420,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="mb-2 block text-sm font-medium text-slate-700">Bio</label>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">Giới thiệu</label>
                       <textarea
                         value={editForm.bio}
                         onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
@@ -429,7 +429,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="mb-2 block text-sm font-medium text-slate-700">Avatar URL</label>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">Ảnh đại diện (URL)</label>
                       <input
                         type="url"
                         value={editForm.avatar_url}
@@ -444,7 +444,7 @@ export default function SettingsPage() {
                       onClick={() => setIsEditing(false)}
                       className="text-black hover:bg-black hover:text-white"
                     >
-                      Cancel
+                      Hủy
                     </Button>
                     <Button
                       onClick={handleSaveProfile}
@@ -454,12 +454,12 @@ export default function SettingsPage() {
                       {updateProfileMutation.isPending ? (
                         <>
                           <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                          Saving...
+                          Đang lưu...
                         </>
                       ) : (
                         <>
                           <Save className="mr-2 h-4 w-4" />
-                          Save Changes
+                          Lưu thay đổi
                         </>
                       )}
                     </Button>
@@ -468,7 +468,7 @@ export default function SettingsPage() {
               ) : (
                 <div className="space-y-3">
                   <div>
-                    <div className="text-sm font-medium text-slate-500">Name</div>
+                    <div className="text-sm font-medium text-slate-500">Họ và tên</div>
                     <div className="text-slate-900">{user?.name}</div>
                   </div>
                   <div>
@@ -476,11 +476,11 @@ export default function SettingsPage() {
                     <div className="text-slate-900">{user?.email}</div>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-slate-500">Bio</div>
-                    <div className="text-slate-900">{user?.bio || 'No bio provided'}</div>
+                    <div className="text-sm font-medium text-slate-500">Giới thiệu</div>
+                    <div className="text-slate-900">{user?.bio || 'Chưa có giới thiệu'}</div>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-slate-500">Member since</div>
+                    <div className="text-sm font-medium text-slate-500">Thành viên từ</div>
                     <div className="text-slate-900">{user?.created_at && formatDate(user.created_at)}</div>
                   </div>
                 </div>
@@ -490,20 +490,20 @@ export default function SettingsPage() {
             {/* Password Settings */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-900">Password</h3>
+                <h3 className="text-lg font-semibold text-slate-900">Mật khẩu</h3>
                 <Button
                   variant="outline"
                   onClick={() => setShowPasswordForm(!showPasswordForm)}
                   className="text-black hover:bg-black hover:text-white"
                 >
                   <Key className="mr-2 h-4 w-4" />
-                  {showPasswordForm ? 'Cancel' : 'Change Password'}
+                  {showPasswordForm ? 'Hủy' : 'Đổi mật khẩu'}
                 </Button>
               </div>
               {showPasswordForm && (
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Current Password</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Mật khẩu hiện tại</label>
                     <div className="relative">
                       <input
                         type={showCurrentPassword ? 'text' : 'password'}
@@ -521,7 +521,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">New Password</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Mật khẩu mới</label>
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
@@ -539,7 +539,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Confirm New Password</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Xác nhận mật khẩu mới</label>
                     <input
                       type="password"
                       value={passwordForm.new_password_confirmation}
@@ -556,12 +556,12 @@ export default function SettingsPage() {
                       {updatePasswordMutation.isPending ? (
                         <>
                           <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                          Updating...
+                          Đang cập nhật...
                         </>
                       ) : (
                         <>
                           <Save className="mr-2 h-4 w-4" />
-                          Update Password
+                          Cập nhật mật khẩu
                         </>
                       )}
                     </Button>
@@ -572,12 +572,12 @@ export default function SettingsPage() {
 
             {/* Account Actions */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Account Actions</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Hành động tài khoản</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium text-slate-900">Export Data</div>
-                    <div className="text-sm text-slate-600">Download a copy of your data</div>
+                    <div className="font-medium text-slate-900">Xuất dữ liệu</div>
+                    <div className="text-sm text-slate-600">Tải xuống bản sao dữ liệu của bạn</div>
                   </div>
                   <Button
                     variant="outline"
@@ -586,13 +586,13 @@ export default function SettingsPage() {
                     className="text-black hover:bg-black hover:text-white"
                   >
                     <Download className="mr-2 h-4 w-4" />
-                    Export
+                    Xuất
                   </Button>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium text-red-600">Delete Account</div>
-                    <div className="text-sm text-slate-600">Permanently delete your account and all data</div>
+                    <div className="font-medium text-red-600">Xóa tài khoản</div>
+                    <div className="text-sm text-slate-600">Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu</div>
                   </div>
                   <Button
                     variant="outline"
@@ -600,7 +600,7 @@ export default function SettingsPage() {
                     className="text-red-600 hover:bg-red-50 hover:text-red-700"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
+                    Xóa
                   </Button>
                 </div>
               </div>
@@ -612,14 +612,14 @@ export default function SettingsPage() {
                 <Card className="p-6 max-w-md w-full mx-4">
                   <div className="flex items-center gap-3 mb-4">
                     <AlertTriangle className="h-6 w-6 text-red-600" />
-                    <h3 className="text-lg font-semibold text-slate-900">Delete Account</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">Xóa tài khoản</h3>
                   </div>
                   <p className="text-slate-600 mb-4">
-                    This action cannot be undone. This will permanently delete your account and remove all data from our servers.
+                    Hành động này không thể hoàn tác. Thao tác sẽ xóa vĩnh viễn tài khoản và toàn bộ dữ liệu khỏi hệ thống.
                   </p>
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-slate-700">Password</label>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">Mật khẩu</label>
                       <input
                         type="password"
                         value={deleteForm.password}
@@ -628,7 +628,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-slate-700">Type "DELETE" to confirm</label>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">Gõ "DELETE" để xác nhận</label>
                       <input
                         type="text"
                         value={deleteForm.confirmation}
@@ -643,7 +643,7 @@ export default function SettingsPage() {
                       onClick={() => setShowDeleteConfirm(false)}
                       className="text-black hover:bg-black hover:text-white"
                     >
-                      Cancel
+                      Hủy
                     </Button>
                     <Button
                       onClick={handleDeleteAccount}
@@ -653,12 +653,12 @@ export default function SettingsPage() {
                       {deleteAccountMutation.isPending ? (
                         <>
                           <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                          Deleting...
+                          Đang xóa...
                         </>
                       ) : (
                         <>
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Account
+                          Xóa tài khoản
                         </>
                       )}
                     </Button>

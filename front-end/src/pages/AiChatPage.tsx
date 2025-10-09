@@ -269,10 +269,10 @@ export default function AiChatPage() {
               onClick={createNewSession}
               className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
             >
-              New Chat
+              Chat mới
             </Button>
           </div>
-          <p className="text-slate-600 text-center">Your intelligent learning companion powered by Gemini</p>
+          <p className="text-slate-600 text-center">Trợ lý học tập thông minh của bạn (dựa trên Gemini)</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -282,7 +282,7 @@ export default function AiChatPage() {
             {context && (
               <Card className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-900">Your Context</h3>
+                  <h3 className="font-semibold text-slate-900">Ngữ cảnh của bạn</h3>
                   <Button
                     variant="outline"
                     size="sm"
@@ -295,15 +295,15 @@ export default function AiChatPage() {
                 {showContext && (
                   <div className="space-y-3 text-sm">
                     <div>
-                      <div className="font-medium text-slate-700 mb-1">Current Classes</div>
+                      <div className="font-medium text-slate-700 mb-1">Lớp hiện tại</div>
                       <div className="text-slate-600">{context.current_classes.join(', ')}</div>
                     </div>
                     <div>
-                      <div className="font-medium text-slate-700 mb-1">Recent Topics</div>
+                      <div className="font-medium text-slate-700 mb-1">Chủ đề gần đây</div>
                       <div className="text-slate-600">{context.recent_topics.join(', ')}</div>
                     </div>
                     <div>
-                      <div className="font-medium text-slate-700 mb-1">Upcoming</div>
+                      <div className="font-medium text-slate-700 mb-1">Sắp tới</div>
                       <div className="text-slate-600">{context.upcoming_assignments.join(', ')}</div>
                     </div>
                   </div>
@@ -316,18 +316,18 @@ export default function AiChatPage() {
             {/* Chat Stats */}
             {chatStats && (
               <Card className="p-4">
-                <h3 className="font-semibold text-slate-900 mb-3">Your Stats</h3>
+                <h3 className="font-semibold text-slate-900 mb-3">Thống kê của bạn</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Total Sessions</span>
+                    <span className="text-slate-600">Tổng số phiên</span>
                     <span className="font-medium">{chatStats.total_sessions}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Total Messages</span>
+                    <span className="text-slate-600">Tổng số tin nhắn</span>
                     <span className="font-medium">{chatStats.total_messages}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Active Sessions</span>
+                    <span className="text-slate-600">Phiên đang hoạt động</span>
                     <span className="font-medium">{chatStats.active_sessions}</span>
                   </div>
                 </div>
@@ -345,7 +345,7 @@ export default function AiChatPage() {
                     onClick={createNewSession}
                     className="text-black hover:bg-black hover:text-white"
                   >
-                    <RefreshCw className="mr-2 h-4 w-4" /> New Chat
+                    <RefreshCw className="mr-2 h-4 w-4" /> Chat mới
                   </Button>
                 </div>
                 <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
@@ -402,7 +402,7 @@ export default function AiChatPage() {
                   className="w-full justify-start text-black hover:bg-black hover:text-white"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Clear Current Chat
+                  Xóa luồng hiện tại
                 </Button>
               </div>
             </Card>
@@ -418,10 +418,10 @@ export default function AiChatPage() {
                     <div className="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mb-4">
                       <Sparkles className="h-8 w-8 text-indigo-600" />
                     </div>
-                    <h3 className="text-xl font-semibold text-slate-900 mb-2">Welcome to SmartClass AI!</h3>
+                    <h3 className="text-xl font-semibold text-slate-900 mb-2">Chào mừng đến với SmartClass AI!</h3>
                     <p className="text-slate-600 mb-6 max-w-md">
-                      I'm here to help you with your studies. Ask me anything about your subjects, 
-                      get explanations, solve problems, or just chat about learning!
+                      Mình ở đây để hỗ trợ việc học của bạn. Hãy hỏi bất cứ điều gì về môn học, 
+                      xin giải thích, giải bài, hoặc đơn giản là trò chuyện về việc học!
                     </p>
                 <div />
                   </div>
@@ -460,19 +460,19 @@ export default function AiChatPage() {
                               <button
                                 onClick={() => copyMessage(message.content)}
                                 className="p-1 rounded hover:bg-slate-200 transition-colors"
-                                title="Copy message"
+                                title="Sao chép"
                               >
                                 <Copy className="h-3 w-3" />
                               </button>
                               <button
                                 className="p-1 rounded hover:bg-slate-200 transition-colors"
-                                title="Good response"
+                                title="Hữu ích"
                               >
                                 <ThumbsUp className="h-3 w-3" />
                               </button>
                               <button
                                 className="p-1 rounded hover:bg-slate-200 transition-colors"
-                                title="Poor response"
+                                title="Chưa tốt"
                               >
                                 <ThumbsDown className="h-3 w-3" />
                               </button>
@@ -526,7 +526,7 @@ export default function AiChatPage() {
                       value={inputMessage}
                       onChange={(e) => setInputMessage(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder="Ask me anything about your studies..."
+                      placeholder="Hãy hỏi bất cứ điều gì về việc học..."
                       className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-12 text-slate-900 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none"
                       rows={1}
                       style={{ minHeight: '48px', maxHeight: '120px' }}
@@ -548,7 +548,7 @@ export default function AiChatPage() {
                           }}
                         />
                       </label>
-                      <span>Enter to send, Shift+Enter for new line</span>
+                      <span>Enter để gửi, Shift+Enter để xuống dòng</span>
                     </div>
                   </div>
                   <Button

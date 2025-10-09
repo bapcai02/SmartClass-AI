@@ -84,17 +84,17 @@ export default function ExamTakePage() {
             className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm transition hover:shadow hover:bg-slate-100"
           >
             <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
-            Back to Exam Detail{examData?.title ? ` • ${examData.title}` : ''}
+            Quay lại chi tiết bài kiểm tra{examData?.title ? ` • ${examData.title}` : ''}
           </Link>
           <div className="flex items-center gap-4">
-            <div className="hidden text-sm text-slate-600 sm:block">Answered {answeredCount}/{MOCK_QUESTIONS.length}</div>
+            <div className="hidden text-sm text-slate-600 sm:block">Đã trả lời {answeredCount}/{MOCK_QUESTIONS.length}</div>
             <div className={`inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm ${timerClass} transition-colors`}>
               <Clock className="h-4 w-4"/>
               <span className="tabular-nums">{timeText}</span>
               {!expired && (running ? (
-                <button className="text-slate-700 hover:text-slate-900" onClick={()=>setRunning(false)} aria-label="Pause"><Play className="h-4 w-4 rotate-90"/></button>
+                <button className="text-slate-700 hover:text-slate-900" onClick={()=>setRunning(false)} aria-label="Tạm dừng"><Play className="h-4 w-4 rotate-90"/></button>
               ) : (
-                <button className="text-slate-700 hover:text-slate-900" onClick={()=>setRunning(true)} aria-label="Resume"><Play className="h-4 w-4"/></button>
+                <button className="text-slate-700 hover:text-slate-900" onClick={()=>setRunning(true)} aria-label="Tiếp tục"><Play className="h-4 w-4"/></button>
               ))}
             </div>
           </div>
@@ -110,12 +110,12 @@ export default function ExamTakePage() {
         <div className="lg:col-span-2 grid gap-4">
           {expired ? (
             <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-800 shadow-sm">
-              This exam has ended. You can no longer take or submit it.
+              Bài kiểm tra đã kết thúc. Bạn không thể làm hoặc nộp bài nữa.
             </div>
           ) : (
             <>
               <div key={q.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-transform duration-300 will-change-transform">
-                <div className="mb-3 text-sm text-slate-600">Question {currentIdx + 1} of {MOCK_QUESTIONS.length}</div>
+                <div className="mb-3 text-sm text-slate-600">Câu hỏi {currentIdx + 1} / {MOCK_QUESTIONS.length}</div>
                 <div className="mb-4 text-base font-medium text-slate-900">{q.text}</div>
                 {q.type === 'single' ? (
                   <div className="grid gap-2">
@@ -138,20 +138,20 @@ export default function ExamTakePage() {
                     onChange={(e)=>setAnswer(q.id, e.target.value)}
                     rows={10}
                     className="w-full rounded-2xl border border-slate-300 p-3 shadow-sm focus:border-brand-blue focus:outline-none"
-                    placeholder="Type your answer"
+                    placeholder="Nhập câu trả lời của bạn"
                     disabled={expired}
                   />
                 )}
               </div>
 
               <div className="flex items-center justify-between">
-                <Button variant="outline" className="rounded-xl transition" onClick={prev} disabled={currentIdx===0 || expired}>Previous</Button>
+                <Button variant="outline" className="rounded-xl transition" onClick={prev} disabled={currentIdx===0 || expired}>Trước</Button>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" className="rounded-xl transition" onClick={handleSubmit} disabled={expired}>Save Progress</Button>
+                  <Button variant="outline" className="rounded-xl transition" onClick={handleSubmit} disabled={expired}>Lưu tiến độ</Button>
                   {currentIdx < MOCK_QUESTIONS.length - 1 ? (
-                    <Button className="rounded-xl text-black transition hover:scale-[1.02] hover:bg-black hover:text-white" onClick={next} disabled={expired}>Next</Button>
+                    <Button className="rounded-xl text-black transition hover:scale-[1.02] hover:bg-black hover:text-white" onClick={next} disabled={expired}>Tiếp</Button>
                   ) : (
-                    <Button className="rounded-xl text-black transition hover:scale-[1.02] hover:bg-black hover:text-white" onClick={handleSubmit} disabled={expired}>Submit</Button>
+                    <Button className="rounded-xl text-black transition hover:scale-[1.02] hover:bg-black hover:text-white" onClick={handleSubmit} disabled={expired}>Nộp bài</Button>
                   )}
                 </div>
               </div>
@@ -162,7 +162,7 @@ export default function ExamTakePage() {
         {/* Sidebar */}
         <div className="grid gap-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="mb-2 text-sm font-medium text-slate-700">Question Navigator</div>
+            <div className="mb-2 text-sm font-medium text-slate-700">Bộ điều hướng câu hỏi</div>
             <div className="flex flex-wrap gap-2">
               {MOCK_QUESTIONS.map((qq, i) => {
                 const isActive = i===currentIdx
@@ -172,7 +172,7 @@ export default function ExamTakePage() {
                     key={qq.id}
                     onClick={()=>setCurrentIdx(i)}
                     className={`h-9 w-9 rounded-full border text-sm transition-transform duration-150 ${isActive ? 'bg-black text-white border-black' : isAnswered ? 'bg-brand-blue text-white border-brand-blue' : 'border-slate-300 hover:bg-slate-100'} hover:scale-105`}
-                    aria-label={`Go to question ${i+1}`}
+                    aria-label={`Tới câu ${i+1}`}
                     disabled={expired}
                   >
                     {i+1}
@@ -182,11 +182,11 @@ export default function ExamTakePage() {
             </div>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-sm">
-            <div className="mb-1 font-medium">Tips</div>
+            <div className="mb-1 font-medium">Mẹo</div>
             <ul className="list-disc pl-5">
-              <li>Use the navigator to jump between questions.</li>
-              <li>Your progress autosaves when you press Save or Submit.</li>
-              <li>Timer will auto-submit at 00:00.</li>
+              <li>Dùng bộ điều hướng để chuyển nhanh giữa các câu.</li>
+              <li>Tiến độ sẽ lưu khi bạn bấm Lưu hoặc Nộp bài.</li>
+              <li>Hết giờ (00:00) hệ thống sẽ tự động nộp.</li>
             </ul>
           </div>
         </div>

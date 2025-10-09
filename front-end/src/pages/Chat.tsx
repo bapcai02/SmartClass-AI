@@ -32,7 +32,7 @@ export default function ChatPage() {
           <CardContent className="p-0">
             <div className="p-3">
               <div className="flex items-center justify-between">
-                <div className="text-sm font-medium">Messages</div>
+                <div className="text-sm font-medium">Tin nhắn</div>
               </div>
               {/* Favorites strip */}
               <div className="mt-2 flex items-center gap-2 overflow-x-auto pb-1">
@@ -43,12 +43,12 @@ export default function ChatPage() {
               <div className="mt-3 flex items-center gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                  <input className="w-full rounded-2xl border bg-white pl-9 pr-3 py-2 text-sm shadow-sm" placeholder="Search" />
+                  <input className="w-full rounded-2xl border bg-white pl-9 pr-3 py-2 text-sm shadow-sm" placeholder="Tìm kiếm" />
                 </div>
               </div>
               <div className="mt-3">
                 <Segmented
-                  options={[{label:'All',value:'all'},{label:'Classes',value:'classes'},{label:'Teachers',value:'teachers'},{label:'Groups',value:'groups'}]}
+                  options={[{label:'Tất cả',value:'all'},{label:'Lớp',value:'classes'},{label:'Giáo viên',value:'teachers'},{label:'Nhóm',value:'groups'}]}
                   value={segment}
                   onChange={setSegment}
                 />
@@ -87,7 +87,7 @@ export default function ChatPage() {
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-blue to-brand-green" />
                 <div>
                   <div className="text-sm font-medium">{conversations.find(c=>c.id===active)?.name}</div>
-                  <div className="text-xs text-slate-600">Online • Typing…</div>
+                  <div className="text-xs text-slate-600">Trực tuyến • Đang nhập…</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -100,7 +100,7 @@ export default function ChatPage() {
 
             {/* Thread */}
             <div className="h-[calc(100dvh-16rem)] overflow-y-auto p-4">
-              <div className="mb-3 text-center text-[10px] text-slate-500">Today</div>
+              <div className="mb-3 text-center text-[10px] text-slate-500">Hôm nay</div>
               {Array.from({length: 100}).map((_,i) => (
                 <div key={i} className={`mb-3 flex items-end gap-2 ${i % 2 ? 'justify-start' : 'justify-end'}`}>
                   {i % 2 ? (
@@ -108,13 +108,13 @@ export default function ChatPage() {
                   ) : null}
                   <div className={`max-w-[70%] rounded-2xl px-3 py-2 text-sm shadow ${i % 2 ? 'bg-slate-50' : 'bg-blue-500/90 text-white'}`}>
                     <div className="mb-1 flex items-center gap-2 text-[10px] opacity-70">
-                      <span>10:{10+i} AM</span>
-                      {! (i%2) && <span className="flex items-center gap-1"><CheckCheck className="h-3 w-3"/> Seen</span>}
+                      <span>10:{10+i}</span>
+                      {! (i%2) && <span className="flex items-center gap-1"><CheckCheck className="h-3 w-3"/> Đã xem</span>}
                     </div>
                     Message {i} content...
                     {i===2 && (
-                      <div className="mt-2 inline-flex items-center gap-2 rounded-xl bg-white/20 px-2 py-1 text-xs backdrop-blur-sm">
-                        <Paperclip className="h-3 w-3"/> assignment.pdf
+                    <div className="mt-2 inline-flex items-center gap-2 rounded-xl bg-white/20 px-2 py-1 text-xs backdrop-blur-sm">
+                      <Paperclip className="h-3 w-3"/> assignment.pdf
                       </div>
                     )}
                   </div>
@@ -137,10 +137,10 @@ export default function ChatPage() {
                   </div>
                   <input
                     className="w-full rounded-full border bg-white pl-36 pr-16 py-3 text-sm shadow-sm outline-none focus:border-blue-500"
-                    placeholder="Write a message…"
+                    placeholder="Nhập tin nhắn…"
                   />
                   <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 hidden sm:block">
-                    Enter to send
+                    Nhấn Enter để gửi
                   </div>
                 </div>
                 <button className="grid h-11 w-11 place-items-center rounded-full bg-blue-600 text-white shadow-md hover:brightness-105">

@@ -14,9 +14,9 @@ type Assignment = {
 }
 
 const data: Assignment[] = [
-  { id: 'a1', title: 'Linear Equations', subject: 'Math', due: '2025-09-30', status: 'Not Started' },
-  { id: 'a2', title: 'Cell Structure', subject: 'Biology', due: '2025-10-02', status: 'In Progress' },
-  { id: 'a3', title: 'World War II Essay', subject: 'History', due: '2025-10-05', status: 'Completed', score: 92 },
+  { id: 'a1', title: 'Phương trình bậc nhất', subject: 'Toán', due: '2025-09-30', status: 'Not Started' },
+  { id: 'a2', title: 'Cấu trúc tế bào', subject: 'Sinh học', due: '2025-10-02', status: 'In Progress' },
+  { id: 'a3', title: 'Bài luận Thế chiến II', subject: 'Lịch sử', due: '2025-10-05', status: 'Completed', score: 92 },
 ]
 
 function StatusTag({ status }: { status: Assignment['status'] }) {
@@ -26,7 +26,11 @@ function StatusTag({ status }: { status: Assignment['status'] }) {
     'Completed': 'bg-green-100 text-green-700',
     'Overdue': 'bg-red-100 text-red-700',
   } as const
-  const label = status === 'Not Started' ? 'Pending' : status
+  const label =
+    status === 'Not Started' ? 'Chưa bắt đầu'
+    : status === 'In Progress' ? 'Đang làm'
+    : status === 'Completed' ? 'Hoàn thành'
+    : 'Quá hạn'
   return <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${map[status]}`}>{label}</span>
 }
 
@@ -65,26 +69,26 @@ export default function AssignmentsPage() {
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Assignments</h1>
-          <p className="text-slate-600">Track your tasks, due dates, and scores</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Bài tập</h1>
+          <p className="text-slate-600">Theo dõi công việc, hạn nộp và điểm số</p>
         </div>
         <div className="hidden md:flex items-center gap-2">
-          <Button variant="outline">Export</Button>
-          <Button>Add Assignment</Button>
+          <Button variant="outline">Xuất</Button>
+          <Button>Thêm bài tập</Button>
         </div>
       </div>
 
       {/* Top summary chips */}
       <div className="grid gap-3 sm:grid-cols-4">
-        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Total</div><div className="text-2xl font-semibold">{normalized.length}</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Pending</div><div className="text-2xl font-semibold">{normalized.filter(a=>a.status==='Not Started' || a.status==='In Progress').length}</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Overdue</div><div className="text-2xl font-semibold">{normalized.filter(a=>a.status==='Overdue').length}</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Completed</div><div className="text-2xl font-semibold">{normalized.filter(a=>a.status==='Completed').length}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Tổng</div><div className="text-2xl font-semibold">{normalized.length}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Chưa xong</div><div className="text-2xl font-semibold">{normalized.filter(a=>a.status==='Not Started' || a.status==='In Progress').length}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Quá hạn</div><div className="text-2xl font-semibold">{normalized.filter(a=>a.status==='Overdue').length}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-slate-600">Hoàn thành</div><div className="text-2xl font-semibold">{normalized.filter(a=>a.status==='Completed').length}</div></CardContent></Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Assignments</CardTitle>
+          <CardTitle>Tất cả bài tập</CardTitle>
         </CardHeader>
         <CardContent className="overflow-hidden rounded-2xl">
           {/* Segmented filters (Prodex-style) */}
@@ -95,20 +99,20 @@ export default function AssignmentsPage() {
                   key={f}
                   onClick={() => setFilter(f)}
                   className={`rounded-xl px-3 py-1.5 ${filter===f ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:bg-white/60'}`}
-                >{f}</button>
+                >{f==='All'?'Tất cả': f==='Pending'?'Chưa xong': f==='Overdue'?'Quá hạn':'Hoàn thành'}</button>
               ))}
             </div>
-            <Button variant="outline" className="gap-2"><Filter className="h-4 w-4"/> Filters</Button>
+            <Button variant="outline" className="gap-2"><Filter className="h-4 w-4"/> Bộ lọc</Button>
           </div>
 
           {/* Bulk toolbar */}
           {Object.values(selected).some(Boolean) && (
             <div className="m-3 flex items-center justify-between rounded-xl border bg-white px-3 py-2 text-sm shadow-sm">
-              <div>{Object.values(selected).filter(Boolean).length} Selected</div>
+              <div>{Object.values(selected).filter(Boolean).length} đã chọn</div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" className="gap-1"><Copy className="h-4 w-4"/> Duplicate</Button>
-                <Button variant="outline" className="gap-1"><Printer className="h-4 w-4"/> Print</Button>
-                <Button variant="outline" className="gap-1 text-red-600"><Trash2 className="h-4 w-4"/> Delete</Button>
+                <Button variant="outline" className="gap-1"><Copy className="h-4 w-4"/> Nhân bản</Button>
+                <Button variant="outline" className="gap-1"><Printer className="h-4 w-4"/> In</Button>
+                <Button variant="outline" className="gap-1 text-red-600"><Trash2 className="h-4 w-4"/> Xóa</Button>
               </div>
             </div>
           )}
@@ -117,12 +121,12 @@ export default function AssignmentsPage() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-4 py-2 text-left"><input type="checkbox" checked={allOnPageSelected} onChange={toggleSelectAll} /></th>
-                <th className="px-4 py-2 text-left">Title</th>
-                <th className="px-4 py-2 text-left">Subject</th>
-                <th className="px-4 py-2 text-left">Due Date</th>
-                <th className="px-4 py-2 text-left">Status</th>
-                <th className="px-4 py-2 text-left">Score</th>
-                <th className="px-4 py-2 text-left">Actions</th>
+                <th className="px-4 py-2 text-left">Tiêu đề</th>
+                <th className="px-4 py-2 text-left">Môn</th>
+                <th className="px-4 py-2 text-left">Hạn nộp</th>
+                <th className="px-4 py-2 text-left">Trạng thái</th>
+                <th className="px-4 py-2 text-left">Điểm</th>
+                <th className="px-4 py-2 text-left">Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -136,16 +140,16 @@ export default function AssignmentsPage() {
                   <td className="px-4 py-3">{a.score ?? '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <button className="rounded-full bg-white shadow p-2 hover:shadow-md border border-slate-200" aria-label="View">
+              <button className="rounded-full bg-white shadow p-2 hover:shadow-md border border-slate-200" aria-label="Xem">
                         <Eye className="h-4 w-4 text-slate-700" />
                       </button>
-                      <button className="rounded-full bg-white shadow p-2 hover:shadow-md border border-slate-200" aria-label="Edit">
+              <button className="rounded-full bg-white shadow p-2 hover:shadow-md border border-slate-200" aria-label="Sửa">
                         <Edit3 className="h-4 w-4 text-slate-700" />
                       </button>
-                      <button className="rounded-full bg-white shadow p-2 hover:shadow-md border border-slate-200" aria-label="Submit">
+              <button className="rounded-full bg-white shadow p-2 hover:shadow-md border border-slate-200" aria-label="Nộp bài">
                         <Send className="h-4 w-4 text-slate-700" />
                       </button>
-                      <button className="rounded-full bg-white shadow p-2 hover:shadow-md border border-slate-200" aria-label="More">
+              <button className="rounded-full bg-white shadow p-2 hover:shadow-md border border-slate-200" aria-label="Thêm">
                         <MoreHorizontal className="h-4 w-4 text-slate-700" />
                       </button>
                     </div>
@@ -158,7 +162,7 @@ export default function AssignmentsPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between p-3 text-sm text-slate-600">
             <div>
-              Showing {(page-1)*pageSize + 1}-{Math.min(page*pageSize, total)} of {total} entries
+              Hiển thị {(page-1)*pageSize + 1}-{Math.min(page*pageSize, total)} trong tổng {total}
             </div>
             <nav className="flex items-center gap-2" aria-label="Pagination">
               <button
@@ -166,7 +170,7 @@ export default function AssignmentsPage() {
                 disabled={page===1}
                 className={`h-9 rounded-full px-3 shadow-sm border bg-white text-slate-700 flex items-center gap-1 ${page===1?'opacity-60 cursor-not-allowed':''}`}
               >
-                <ChevronLeft className="h-4 w-4"/> Previous
+                <ChevronLeft className="h-4 w-4"/> Trước
               </button>
               {(() => {
                 const items: React.ReactElement[] = []
@@ -195,7 +199,7 @@ export default function AssignmentsPage() {
                 disabled={page===totalPages}
                 className={`h-9 rounded-full px-3 shadow-sm border bg-white text-slate-700 flex items-center gap-1 ${page===totalPages?'opacity-60 cursor-not-allowed':''}`}
               >
-                Next <ChevronRight className="h-4 w-4"/>
+                Sau <ChevronRight className="h-4 w-4"/>
               </button>
             </nav>
           </div>

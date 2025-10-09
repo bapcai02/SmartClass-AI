@@ -41,49 +41,49 @@ export default function CreateClassPage() {
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Create New Class</h1>
-        <p className="text-slate-600">Provide class details and save when ready</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Tạo lớp học</h1>
+        <p className="text-slate-600">Nhập thông tin lớp và lưu khi hoàn tất</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Class Information</CardTitle>
+          <CardTitle>Thông tin lớp</CardTitle>
         </CardHeader>
         <CardContent>
           <form className="grid gap-6 max-w-3xl" onSubmit={onSubmit} noValidate>
             <div className="grid gap-1">
-              <label className="text-sm font-medium">Class Name</label>
+              <label className="text-sm font-medium">Tên lớp</label>
               <input
                 className={`rounded-2xl border px-3 py-2 border-slate-300 focus:border-brand-blue ${errors.name?'border-red-300':''}`}
-                placeholder="e.g., Algebra I"
+                placeholder="VD: Đại số 1"
                 value={form.name}
                 onChange={(e)=>update('name', e.target.value)}
               />
-              {errors.name && <span className="text-xs text-red-600">{errors.name}</span>}
+                {errors.name && <span className="text-xs text-red-600">{errors.name}</span>}
             </div>
 
             <div className="grid gap-1 sm:grid-cols-2 sm:gap-4">
               <div className="grid gap-1">
-                <label className="text-sm font-medium">Subject</label>
+                <label className="text-sm font-medium">Môn học</label>
                 <input
                   className={`rounded-2xl border px-3 py-2 border-slate-300 focus:border-brand-blue ${errors.subject?'border-red-300':''}`}
-                  placeholder="e.g., Math"
+                  placeholder="VD: Toán học"
                   value={form.subject}
                   onChange={(e)=>update('subject', e.target.value)}
                 />
                 {errors.subject && <span className="text-xs text-red-600">{errors.subject}</span>}
               </div>
               <div className="grid gap-1">
-                <label className="text-sm font-medium">Teacher</label>
+                <label className="text-sm font-medium">Giáo viên</label>
                 <select
                   className={`rounded-2xl border px-3 py-2 border-slate-300 focus:border-brand-blue ${errors.teacher?'border-red-300':''}`}
                   value={form.teacher}
                   onChange={(e)=>update('teacher', e.target.value)}
                 >
-                  <option value="">Select a teacher</option>
-                  <option>Ms. Johnson</option>
-                  <option>Dr. Lee</option>
-                  <option>Mr. Patel</option>
+                  <option value="">Chọn giáo viên</option>
+                  <option>Cô Johnson</option>
+                  <option>Thầy Lee</option>
+                  <option>Thầy Patel</option>
                 </select>
                 {errors.teacher && <span className="text-xs text-red-600">{errors.teacher}</span>}
               </div>
@@ -91,21 +91,21 @@ export default function CreateClassPage() {
 
             <div className="grid gap-1 sm:grid-cols-2 sm:gap-4">
               <div className="grid gap-1">
-                <label className="text-sm font-medium">Semester</label>
+                <label className="text-sm font-medium">Học kỳ</label>
                 <input
                   className={`rounded-2xl border px-3 py-2 border-slate-300 focus:border-brand-blue ${errors.semester?'border-red-300':''}`}
-                  placeholder="e.g., Fall 2025"
+                  placeholder="VD: Học kỳ I 2025"
                   value={form.semester}
                   onChange={(e)=>update('semester', e.target.value)}
                 />
                 {errors.semester && <span className="text-xs text-red-600">{errors.semester}</span>}
               </div>
               <div className="grid gap-1">
-                <label className="text-sm font-medium">Max Students</label>
+                <label className="text-sm font-medium">Sĩ số tối đa</label>
                 <input
                   type="number"
                   className={`rounded-2xl border px-3 py-2 border-slate-300 focus:border-brand-blue ${errors.maxStudents?'border-red-300':''}`}
-                  placeholder="e.g., 30"
+                  placeholder="VD: 30"
                   value={form.maxStudents}
                   onChange={(e)=>update('maxStudents', e.target.value)}
                 />
@@ -115,7 +115,7 @@ export default function CreateClassPage() {
 
             <div className="grid gap-1 sm:grid-cols-2 sm:gap-4">
               <div className="grid gap-1">
-                <label className="text-sm font-medium">Start Date</label>
+                <label className="text-sm font-medium">Ngày bắt đầu</label>
                 <input
                   type="date"
                   className="rounded-2xl border px-3 py-2 border-slate-300 focus:border-brand-blue"
@@ -124,7 +124,7 @@ export default function CreateClassPage() {
                 />
               </div>
               <div className="grid gap-1">
-                <label className="text-sm font-medium">End Date</label>
+                <label className="text-sm font-medium">Ngày kết thúc</label>
                 <input
                   type="date"
                   className={`rounded-2xl border px-3 py-2 border-slate-300 focus:border-brand-blue ${errors.endDate?'border-red-300':''}`}
@@ -136,18 +136,18 @@ export default function CreateClassPage() {
             </div>
 
             <div className="grid gap-1">
-              <label className="text-sm font-medium">Description</label>
+              <label className="text-sm font-medium">Mô tả</label>
               <textarea
                 className="min-h-28 rounded-2xl border px-3 py-2 border-slate-300 focus:border-brand-blue"
-                placeholder="Brief description..."
+                placeholder="Mô tả ngắn..."
                 value={form.description}
                 onChange={(e)=>update('description', e.target.value)}
               />
             </div>
 
             <div className="flex items-center gap-2 pt-2">
-              <Button type="submit">Save</Button>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="submit">Lưu</Button>
+              <Button type="button" variant="outline">Hủy</Button>
             </div>
           </form>
         </CardContent>

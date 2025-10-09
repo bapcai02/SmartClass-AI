@@ -166,9 +166,9 @@ export default function ProfilePage() {
   }
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'activity', label: 'Activity', icon: Activity },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'overview', label: 'Tổng quan', icon: BarChart3 },
+    { id: 'activity', label: 'Hoạt động', icon: Activity },
+    { id: 'settings', label: 'Cài đặt', icon: Settings },
   ]
 
   return (
@@ -176,8 +176,8 @@ export default function ProfilePage() {
       <div className="mx-auto max-w-7xl px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900">Profile</h1>
-          <p className="text-slate-600">Manage your profile and view your activity</p>
+          <h1 className="text-3xl font-bold text-slate-900">Hồ sơ</h1>
+          <p className="text-slate-600">Quản lý hồ sơ và xem hoạt động của bạn</p>
         </div>
 
         {/* User Info Card */}
@@ -221,7 +221,7 @@ export default function ProfilePage() {
                   className="text-black hover:bg-black hover:text-white"
                 >
                   <Edit3 className="mr-2 h-4 w-4" />
-                  Edit Profile
+                  Chỉnh sửa hồ sơ
                 </Button>
               </div>
             </div>
@@ -271,8 +271,8 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-slate-900">{stats.assignments.completed}</div>
-                        <div className="text-sm text-slate-600">Assignments Completed</div>
-                        <div className="text-xs text-slate-500">Avg: {stats.assignments.average_grade}/100</div>
+                        <div className="text-sm text-slate-600">Bài tập đã hoàn thành</div>
+                        <div className="text-xs text-slate-500">Trung bình: {stats.assignments.average_grade}/100</div>
                       </div>
                     </div>
                   </Card>
@@ -283,8 +283,8 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-slate-900">{stats.exams.completed}</div>
-                        <div className="text-sm text-slate-600">Exams Completed</div>
-                        <div className="text-xs text-slate-500">Avg: {stats.exams.average_grade}/100</div>
+                        <div className="text-sm text-slate-600">Bài kiểm tra đã hoàn thành</div>
+                        <div className="text-xs text-slate-500">Trung bình: {stats.exams.average_grade}/100</div>
                       </div>
                     </div>
                   </Card>
@@ -295,7 +295,7 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-slate-900">{stats.qa.questions}</div>
-                        <div className="text-sm text-slate-600">Questions Asked</div>
+                        <div className="text-sm text-slate-600">Câu hỏi đã hỏi</div>
                       </div>
                     </div>
                   </Card>
@@ -306,7 +306,7 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-slate-900">{stats.qa.answers}</div>
-                        <div className="text-sm text-slate-600">Answers Given</div>
+                        <div className="text-sm text-slate-600">Câu trả lời đã đăng</div>
                       </div>
                     </div>
                   </Card>
@@ -317,7 +317,7 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-slate-900">{stats.resources.uploaded}</div>
-                        <div className="text-sm text-slate-600">Resources Uploaded</div>
+                        <div className="text-sm text-slate-600">Tài nguyên đã tải lên</div>
                       </div>
                     </div>
                   </Card>
@@ -328,7 +328,7 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-slate-900">{stats.classes.enrolled}</div>
-                        <div className="text-sm text-slate-600">Classes Enrolled</div>
+                        <div className="text-sm text-slate-600">Lớp đang tham gia</div>
                       </div>
                     </div>
                   </Card>
@@ -336,23 +336,23 @@ export default function ProfilePage() {
 
                 {/* Recent Activity Summary */}
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Activity (Last 7 Days)</h3>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Hoạt động gần đây (7 ngày qua)</h3>
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-600">{stats.recent_activity.assignments}</div>
-                      <div className="text-sm text-slate-600">Assignments</div>
+                      <div className="text-sm text-slate-600">Bài tập</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">{stats.recent_activity.exams}</div>
-                      <div className="text-sm text-slate-600">Exams</div>
+                      <div className="text-sm text-slate-600">Bài kiểm tra</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-orange-600">{stats.recent_activity.questions}</div>
-                      <div className="text-sm text-slate-600">Questions</div>
+                      <div className="text-sm text-slate-600">Câu hỏi</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-purple-600">{stats.recent_activity.answers}</div>
-                      <div className="text-sm text-slate-600">Answers</div>
+                      <div className="text-sm text-slate-600">Câu trả lời</div>
                     </div>
                   </div>
                 </Card>
@@ -365,13 +365,13 @@ export default function ProfilePage() {
         {activeTab === 'activity' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">Recent Activity</h2>
+              <h2 className="text-xl font-semibold text-slate-900">Hoạt động gần đây</h2>
               <Button
                 variant="outline"
                 onClick={() => setShowAll(!showAll)}
                 className="text-black hover:bg-black hover:text-white"
               >
-                {showAll ? 'Show Less' : 'Show All'}
+                {showAll ? 'Thu gọn' : 'Xem tất cả'}
               </Button>
             </div>
             {activitiesLoading ? (
@@ -404,7 +404,7 @@ export default function ProfilePage() {
                           {activity.grade && (
                             <div className="flex items-center gap-1">
                               <Award className="h-3 w-3" />
-                              <span>Grade: {activity.grade}/100</span>
+                              <span>Điểm: {activity.grade}/100</span>
                             </div>
                           )}
                         </div>
@@ -424,7 +424,7 @@ export default function ProfilePage() {
             {isEditing && (
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-900">Edit Profile</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Chỉnh sửa hồ sơ</h3>
                   <Button
                     variant="outline"
                     onClick={() => setIsEditing(false)}
@@ -435,7 +435,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Name</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Họ và tên</label>
                     <input
                       type="text"
                       value={editForm.name}
@@ -453,7 +453,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Bio</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Giới thiệu</label>
                     <textarea
                       value={editForm.bio}
                       onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
@@ -462,7 +462,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Avatar URL</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Ảnh đại diện (URL)</label>
                     <input
                       type="url"
                       value={editForm.avatar_url}
@@ -480,12 +480,12 @@ export default function ProfilePage() {
                     {updateProfileMutation.isPending ? (
                       <>
                         <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                        Saving...
+                        Đang lưu...
                       </>
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        Save Changes
+                        Lưu thay đổi
                       </>
                     )}
                   </Button>
@@ -496,19 +496,19 @@ export default function ProfilePage() {
             {/* Change Password Form */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-900">Change Password</h3>
+                <h3 className="text-lg font-semibold text-slate-900">Đổi mật khẩu</h3>
                 <Button
                   variant="outline"
                   onClick={() => setShowPasswordForm(!showPasswordForm)}
                   className="text-black hover:bg-black hover:text-white"
                 >
-                  {showPasswordForm ? 'Cancel' : 'Change Password'}
+                  {showPasswordForm ? 'Hủy' : 'Đổi mật khẩu'}
                 </Button>
               </div>
               {showPasswordForm && (
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Current Password</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Mật khẩu hiện tại</label>
                     <div className="relative">
                       <input
                         type={showCurrentPassword ? 'text' : 'password'}
@@ -526,7 +526,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">New Password</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Mật khẩu mới</label>
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
@@ -544,7 +544,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Confirm New Password</label>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Xác nhận mật khẩu mới</label>
                     <input
                       type="password"
                       value={passwordForm.new_password_confirmation}
@@ -561,12 +561,12 @@ export default function ProfilePage() {
                       {updatePasswordMutation.isPending ? (
                         <>
                           <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                          Updating...
+                          Đang cập nhật...
                         </>
                       ) : (
                         <>
                           <Save className="mr-2 h-4 w-4" />
-                          Update Password
+                          Cập nhật mật khẩu
                         </>
                       )}
                     </Button>

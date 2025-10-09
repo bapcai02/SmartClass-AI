@@ -52,30 +52,30 @@ export default function ClassExamsPage() {
           className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
         >
           <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
-          Back to Class Detail
+          Quay lại chi tiết lớp
         </Link>
       </div>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Class Exams</h1>
-          <p className="text-slate-600">Manage exams and track results</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Bài kiểm tra của lớp</h1>
+          <p className="text-slate-600">Quản lý bài kiểm tra và theo dõi kết quả</p>
         </div>
         <Modal open={open} onOpenChange={setOpen}>
           <ModalTrigger asChild>
-            <Button className="gap-2 text-black hover:bg-black hover:text-white" onClick={()=>setOpen(true)}><Plus className="h-4 w-4"/> Create New Exam</Button>
+            <Button className="gap-2 text-black hover:bg-black hover:text-white" onClick={()=>setOpen(true)}><Plus className="h-4 w-4"/> Tạo bài kiểm tra</Button>
           </ModalTrigger>
           <ModalContent>
-            <ModalHeader title="Create Exam" />
+            <ModalHeader title="Tạo bài kiểm tra" />
             <div className="grid gap-3">
-              <label className="text-sm">Title</label>
+              <label className="text-sm">Tiêu đề</label>
               <input value={title} onChange={(e)=>setTitle(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
-              <label className="text-sm">Start time</label>
+              <label className="text-sm">Thời gian bắt đầu</label>
               <input type="datetime-local" value={date} onChange={(e)=>setDate(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
-              <label className="text-sm">Duration (minutes)</label>
+              <label className="text-sm">Thời lượng (phút)</label>
               <input type="number" value={durationMin} onChange={(e)=>setDurationMin(Number(e.target.value)||60)} className="w-32 rounded-md border border-slate-300 px-3 py-2" />
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={()=>setOpen(false)}>Cancel</Button>
+                <Button variant="outline" onClick={()=>setOpen(false)}>Hủy</Button>
                 <Button
                   className="rounded-xl border border-black px-4 text-black bg-white hover:bg-black hover:text-white shadow-sm disabled:opacity-60"
                   disabled={!title || !date || creating}
@@ -99,7 +99,7 @@ export default function ClassExamsPage() {
                     } finally { setCreating(false) }
                   }}
                 >
-                  {creating ? 'Creating…' : 'Create'}
+                  {creating ? 'Đang tạo…' : 'Tạo'}
                 </Button>
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function ClassExamsPage() {
       <div className="flex items-center justify-between">
         <div className="inline-flex rounded-2xl bg-slate-100 p-1 text-sm">
           {(['all','upcoming','ongoing','finished'] as const).map(s => (
-            <button key={s} onClick={()=>setStatus(s)} className={`rounded-xl px-3 py-1.5 ${status===s?'bg-white text-slate-900 shadow-sm':'text-slate-600 hover:bg-white/60'}`}>{s}</button>
+            <button key={s} onClick={()=>setStatus(s)} className={`rounded-xl px-3 py-1.5 ${status===s?'bg-white text-slate-900 shadow-sm':'text-slate-600 hover:bg-white/60'}`}>{s==='all'?'tất cả':s==='upcoming'?'sắp diễn ra':s==='ongoing'?'đang diễn ra':'đã kết thúc'}</button>
           ))}
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function ClassExamsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex items-center justify-between">
-                <span className={`rounded-full px-2 py-0.5 text-xs ${r.status==='upcoming'?'bg-amber-100 text-amber-700':r.status==='ongoing'?'bg-blue-100 text-blue-700':'bg-slate-200 text-slate-700'}`}>{r.status}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs ${r.status==='upcoming'?'bg-amber-100 text-amber-700':r.status==='ongoing'?'bg-blue-100 text-blue-700':'bg-slate-200 text-slate-700'}`}>{r.status==='upcoming'?'sắp diễn ra':r.status==='ongoing'?'đang diễn ra':'đã kết thúc'}</span>
                 <div className="flex items-center gap-2">
                   <Link to={`/class/${id}/exam/${r.id}`}><Button variant="outline" className="h-8 px-2"><Eye className="h-4 w-4"/></Button></Link>
                   <Button
@@ -153,12 +153,12 @@ export default function ClassExamsPage() {
         </div>
 
         <Card>
-          <CardHeader><CardTitle>Leaderboard</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Bảng xếp hạng</CardTitle></CardHeader>
           <CardContent className="grid gap-2">
             {[{name:'Alice',score:98},{name:'Bob',score:95},{name:'Charlie',score:92}].map((s,i)=> (
               <div key={s.name} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
                 <div className="font-medium">{i+1}. {s.name}</div>
-                <div className="text-sm text-slate-600">{s.score} pts</div>
+                <div className="text-sm text-slate-600">{s.score} điểm</div>
               </div>
             ))}
           </CardContent>
@@ -168,16 +168,16 @@ export default function ClassExamsPage() {
       {/* Edit Modal */}
       <Modal open={editOpen} onOpenChange={setEditOpen}>
         <ModalContent>
-          <ModalHeader title="Edit Exam" />
+          <ModalHeader title="Sửa bài kiểm tra" />
           <div className="grid gap-3">
-            <label className="text-sm">Title</label>
+            <label className="text-sm">Tiêu đề</label>
             <input value={editTitle} onChange={(e)=>setEditTitle(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
-            <label className="text-sm">Start time</label>
+            <label className="text-sm">Thời gian bắt đầu</label>
             <input type="datetime-local" value={editDate} onChange={(e)=>setEditDate(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
-            <label className="text-sm">Duration (minutes)</label>
+            <label className="text-sm">Thời lượng (phút)</label>
             <input type="number" value={editDurationMin} onChange={(e)=>setEditDurationMin(Number(e.target.value)||60)} className="w-32 rounded-md border border-slate-300 px-3 py-2" />
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={()=>setEditOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={()=>setEditOpen(false)}>Hủy</Button>
               <Button
                 className="rounded-xl border border-black px-4 text-black bg-white hover:bg-black hover:text-white shadow-sm disabled:opacity-60"
                 disabled={!editExam || !editTitle || !editDate || saving}
@@ -202,7 +202,7 @@ export default function ClassExamsPage() {
                   } finally { setSaving(false) }
                 }}
               >
-                {saving ? (<span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/> Saving…</span>) : 'Save'}
+                {saving ? (<span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/> Đang lưu…</span>) : 'Lưu'}
               </Button>
             </div>
           </div>
@@ -212,9 +212,9 @@ export default function ClassExamsPage() {
       {/* Delete Confirm */}
       <Modal open={deleteOpen} onOpenChange={setDeleteOpen}>
         <ModalContent>
-          <ModalHeader title="Delete Exam" description="This action cannot be undone." />
+          <ModalHeader title="Xóa bài kiểm tra" description="Hành động này không thể hoàn tác." />
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={()=>setDeleteOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={()=>setDeleteOpen(false)}>Hủy</Button>
             <Button
               className="text-red-600"
               disabled={!deleteId || deleting}
@@ -237,7 +237,7 @@ export default function ClassExamsPage() {
                 } finally { setDeleting(false); setDeleteId(null) }
               }}
             >
-              {deleting ? 'Deleting…' : 'Delete'}
+              {deleting ? 'Đang xóa…' : 'Xóa'}
             </Button>
           </div>
         </ModalContent>

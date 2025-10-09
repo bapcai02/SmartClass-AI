@@ -97,12 +97,12 @@ export default function ReportsPage() {
   }
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'classes', label: 'Classes', icon: BookOpen },
-    { id: 'students', label: 'Students', icon: Users },
-    { id: 'attendance', label: 'Attendance', icon: Calendar },
-    { id: 'grades', label: 'Grades', icon: Award },
-    { id: 'activity', label: 'Activity', icon: Activity },
+    { id: 'overview', label: 'Tổng quan', icon: BarChart3 },
+    { id: 'classes', label: 'Lớp học', icon: BookOpen },
+    { id: 'students', label: 'Học sinh', icon: Users },
+    { id: 'attendance', label: 'Điểm danh', icon: Calendar },
+    { id: 'grades', label: 'Điểm số', icon: Award },
+    { id: 'activity', label: 'Hoạt động', icon: Activity },
   ]
 
   if (overallLoading) {
@@ -125,8 +125,8 @@ export default function ReportsPage() {
       <div className="mx-auto max-w-7xl px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900">Reports & Analytics</h1>
-          <p className="text-slate-600">Comprehensive insights into your educational platform</p>
+          <h1 className="text-3xl font-bold text-slate-900">Báo cáo & Phân tích</h1>
+          <p className="text-slate-600">Tổng quan số liệu toàn diện cho nền tảng của bạn</p>
         </div>
 
         {/* Tabs */}
@@ -166,7 +166,7 @@ export default function ReportsPage() {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-slate-900">{overallStats.total_classes}</div>
-                      <div className="text-sm text-slate-600">Classes</div>
+                      <div className="text-sm text-slate-600">Lớp học</div>
                     </div>
                   </div>
                 </Card>
@@ -177,7 +177,7 @@ export default function ReportsPage() {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-slate-900">{overallStats.total_students}</div>
-                      <div className="text-sm text-slate-600">Students</div>
+                      <div className="text-sm text-slate-600">Học sinh</div>
                     </div>
                   </div>
                 </Card>
@@ -188,7 +188,7 @@ export default function ReportsPage() {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-slate-900">{overallStats.total_teachers}</div>
-                      <div className="text-sm text-slate-600">Teachers</div>
+                      <div className="text-sm text-slate-600">Giáo viên</div>
                     </div>
                   </div>
                 </Card>
@@ -199,7 +199,7 @@ export default function ReportsPage() {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-slate-900">{overallStats.total_assignments}</div>
-                      <div className="text-sm text-slate-600">Assignments</div>
+                      <div className="text-sm text-slate-600">Bài tập</div>
                     </div>
                   </div>
                 </Card>
@@ -210,7 +210,7 @@ export default function ReportsPage() {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-slate-900">{overallStats.total_exams}</div>
-                      <div className="text-sm text-slate-600">Exams</div>
+                      <div className="text-sm text-slate-600">Bài kiểm tra</div>
                     </div>
                   </div>
                 </Card>
@@ -222,7 +222,7 @@ export default function ReportsPage() {
               <Card className="p-6">
                 <div className="mb-4 flex items-center gap-2">
                   <LineChart className="h-5 w-5 text-slate-600" />
-                  <h3 className="text-lg font-semibold text-slate-900">Monthly Activity</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Hoạt động theo tháng</h3>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {monthlyStats.slice(-6).map((month, index) => (
@@ -230,15 +230,15 @@ export default function ReportsPage() {
                       <div className="text-sm font-medium text-slate-600">{month.month}</div>
                       <div className="mt-2 space-y-1">
                         <div className="flex justify-between text-sm">
-                          <span>Assignments</span>
+                          <span>Bài tập</span>
                           <span className="font-medium">{month.assignments}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span>Exams</span>
+                          <span>Bài kiểm tra</span>
                           <span className="font-medium">{month.exams}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span>Submissions</span>
+                          <span>Bài nộp</span>
                           <span className="font-medium">{month.submissions}</span>
                         </div>
                       </div>
@@ -253,7 +253,7 @@ export default function ReportsPage() {
               <Card className="p-6">
                 <div className="mb-4 flex items-center gap-2">
                   <Activity className="h-5 w-5 text-slate-600" />
-                  <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Hoạt động gần đây</h3>
                 </div>
                 <div className="space-y-3">
                   {recentActivity.map((activity, index) => (
@@ -272,7 +272,7 @@ export default function ReportsPage() {
                       <div className="flex-1">
                         <div className="font-medium text-slate-900">{activity.title}</div>
                         <div className="text-sm text-slate-600">
-                          {activity.class_name} • {activity.subject} • by {activity.created_by}
+                          {activity.class_name} • {activity.subject} • bởi {activity.created_by}
                         </div>
                       </div>
                       <div className="text-sm text-slate-500">
@@ -290,13 +290,13 @@ export default function ReportsPage() {
         {activeTab === 'classes' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">Class Performance</h2>
+              <h2 className="text-xl font-semibold text-slate-900">Hiệu suất lớp học</h2>
               <Button
                 variant="outline"
                 onClick={() => setShowAll(prev => ({ ...prev, classes: !prev.classes }))}
                 className="text-black hover:bg-black hover:text-white"
               >
-                {showAll.classes ? 'Show Less' : 'Show All'}
+                {showAll.classes ? 'Thu gọn' : 'Xem tất cả'}
               </Button>
             </div>
             {classLoading ? (
@@ -313,11 +313,11 @@ export default function ReportsPage() {
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-slate-900">{classData.name}</h3>
                         <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-slate-600">
-                          <span>Subject: {classData.subject}</span>
-                          <span>Teacher: {classData.teacher}</span>
-                          <span>Students: {classData.student_count}</span>
-                          <span>Assignments: {classData.assignment_count}</span>
-                          <span>Exams: {classData.exam_count}</span>
+                          <span>Môn: {classData.subject}</span>
+                          <span>Giáo viên: {classData.teacher}</span>
+                          <span>Sĩ số: {classData.student_count}</span>
+                          <span>Bài tập: {classData.assignment_count}</span>
+                          <span>Bài kiểm tra: {classData.exam_count}</span>
                         </div>
                       </div>
                       <div className="ml-4 text-right">
@@ -325,7 +325,7 @@ export default function ReportsPage() {
                           <Award className="h-4 w-4" />
                           {classData.average_grade.toFixed(1)}
                         </div>
-                        <div className="mt-1 text-xs text-slate-500">Average Grade</div>
+                        <div className="mt-1 text-xs text-slate-500">Điểm trung bình</div>
                       </div>
                     </div>
                   </Card>
@@ -339,13 +339,13 @@ export default function ReportsPage() {
         {activeTab === 'students' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">Student Performance</h2>
+              <h2 className="text-xl font-semibold text-slate-900">Hiệu suất học sinh</h2>
               <Button
                 variant="outline"
                 onClick={() => setShowAll(prev => ({ ...prev, students: !prev.students }))}
                 className="text-black hover:bg-black hover:text-white"
               >
-                {showAll.students ? 'Show Less' : 'Show All'}
+                {showAll.students ? 'Thu gọn' : 'Xem tất cả'}
               </Button>
             </div>
             {studentLoading ? (
@@ -363,8 +363,8 @@ export default function ReportsPage() {
                         <h3 className="font-semibold text-slate-900">{student.name}</h3>
                         <div className="text-sm text-slate-600">{student.email}</div>
                         <div className="mt-1 flex items-center gap-4 text-sm text-slate-500">
-                          <span>Submissions: {student.total_submissions}</span>
-                          <span>Graded: {student.graded_submissions}</span>
+                          <span>Bài nộp: {student.total_submissions}</span>
+                          <span>Đã chấm: {student.graded_submissions}</span>
                         </div>
                       </div>
                       <div className="text-right">
@@ -372,7 +372,7 @@ export default function ReportsPage() {
                           <Award className="h-4 w-4" />
                           {student.average_grade.toFixed(1)}
                         </div>
-                        <div className="mt-1 text-xs text-slate-500">Average Grade</div>
+                        <div className="mt-1 text-xs text-slate-500">Điểm trung bình</div>
                       </div>
                     </div>
                   </Card>
@@ -386,13 +386,13 @@ export default function ReportsPage() {
         {activeTab === 'attendance' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">Attendance Statistics</h2>
+              <h2 className="text-xl font-semibold text-slate-900">Thống kê điểm danh</h2>
               <Button
                 variant="outline"
                 onClick={() => setShowAll(prev => ({ ...prev, attendance: !prev.attendance }))}
                 className="text-black hover:bg-black hover:text-white"
               >
-                {showAll.attendance ? 'Show Less' : 'Show All'}
+                {showAll.attendance ? 'Thu gọn' : 'Xem tất cả'}
               </Button>
             </div>
             {attendanceLoading ? (
@@ -410,8 +410,8 @@ export default function ReportsPage() {
                         <h3 className="font-semibold text-slate-900">{attendance.student_name}</h3>
                         <div className="text-sm text-slate-600">{attendance.class_name}</div>
                         <div className="mt-1 flex items-center gap-4 text-sm text-slate-500">
-                          <span>Present: {attendance.present_count}</span>
-                          <span>Total: {attendance.total_attendance}</span>
+                          <span>Có mặt: {attendance.present_count}</span>
+                          <span>Tổng: {attendance.total_attendance}</span>
                         </div>
                       </div>
                       <div className="text-right">
@@ -419,7 +419,7 @@ export default function ReportsPage() {
                           <Calendar className="h-4 w-4" />
                           {attendance.attendance_rate.toFixed(1)}%
                         </div>
-                        <div className="mt-1 text-xs text-slate-500">Attendance Rate</div>
+                        <div className="mt-1 text-xs text-slate-500">Tỉ lệ chuyên cần</div>
                       </div>
                     </div>
                   </Card>
@@ -438,14 +438,14 @@ export default function ReportsPage() {
               <Card className="p-6">
                 <div className="mb-4 flex items-center gap-2">
                   <PieChart className="h-5 w-5 text-slate-600" />
-                  <h3 className="text-lg font-semibold text-slate-900">Grade Distribution</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Phân bố điểm</h3>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {Object.entries(gradeDistribution || {}).map(([gradeRange, count]) => (
                     <div key={gradeRange} className="rounded-lg border border-slate-200 p-4">
                       <div className="text-sm font-medium text-slate-600">{gradeRange}</div>
                       <div className="mt-2 text-2xl font-bold text-slate-900">{count}</div>
-                      <div className="text-xs text-slate-500">submissions</div>
+                      <div className="text-xs text-slate-500">bài nộp</div>
                     </div>
                   ))}
                 </div>
@@ -458,13 +458,13 @@ export default function ReportsPage() {
         {activeTab === 'activity' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">Recent Activity</h2>
+              <h2 className="text-xl font-semibold text-slate-900">Hoạt động gần đây</h2>
               <Button
                 variant="outline"
                 onClick={() => setShowAll(prev => ({ ...prev, activity: !prev.activity }))}
                 className="text-black hover:bg-black hover:text-white"
               >
-                {showAll.activity ? 'Show Less' : 'Show All'}
+                {showAll.activity ? 'Thu gọn' : 'Xem tất cả'}
               </Button>
             </div>
             {activityLoading ? (
@@ -477,7 +477,7 @@ export default function ReportsPage() {
               <Card className="p-6">
                 <div className="mb-4 flex items-center gap-2">
                   <Activity className="h-5 w-5 text-slate-600" />
-                  <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Hoạt động gần đây</h3>
                 </div>
                 <div className="space-y-3">
                   {(showAll.activity ? recentActivity : recentActivity?.slice(0, 20))?.map((activity, index) => (

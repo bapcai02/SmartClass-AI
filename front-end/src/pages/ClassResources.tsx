@@ -89,18 +89,18 @@ export default function ClassResourcesManagePage() {
           className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
         >
           <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
-          Back to Class Detail
+          Quay lại chi tiết lớp
         </Link>
       </div>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Class Resources</h1>
-          <p className="text-slate-600">Manage course documents, videos, and images</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Tài nguyên của lớp</h1>
+          <p className="text-slate-600">Quản lý tài liệu, video và hình ảnh</p>
         </div>
         <Modal open={openUpload} onOpenChange={(v)=>{ setOpenUpload(v); if (!v) { if (previewUrl) { URL.revokeObjectURL(previewUrl) } setPreviewUrl(null); setSelectedFile(null); setTitle(''); if (fileInputRef.current) fileInputRef.current.value=''} }}>
           <ModalTrigger asChild>
-            <Button variant="outline" className="gap-2" onClick={()=>setOpenUpload(true)}><Upload className="h-4 w-4"/> Upload</Button>
+            <Button variant="outline" className="gap-2" onClick={()=>setOpenUpload(true)}><Upload className="h-4 w-4"/> Tải lên</Button>
           </ModalTrigger>
           <ModalContent>
             <ModalHeader title="Upload Resource" description="Choose a file and optional title to upload to this class" />

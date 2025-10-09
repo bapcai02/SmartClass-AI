@@ -6,13 +6,13 @@ import { useLogout } from '@/hooks/auth'
 import { useUser } from '@/hooks/auth'
 
 const links = [
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/classes', label: 'Classes' },
-  { to: '/assignments', label: 'Assignments' },
-  { to: '/reports', label: 'Reports' },
+  { to: '/dashboard', label: 'Bảng điều khiển' },
+  { to: '/classes', label: 'Lớp học' },
+  { to: '/assignments', label: 'Bài tập' },
+  { to: '/reports', label: 'Báo cáo' },
   { to: '/public/pdfs', label: 'Thư viện PDF' },
-  { to: '/chat', label: 'Chat' },
-  { to: '/profile', label: 'Profile' },
+  { to: '/chat', label: 'Trò chuyện' },
+  { to: '/profile', label: 'Hồ sơ' },
 ]
 
 export function Navbar() {
@@ -76,7 +76,7 @@ export function Navbar() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
               <input
                 className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-3 py-2 text-sm shadow-sm focus:border-brand-blue focus:outline-none"
-                placeholder="Search classes, assignments..."
+                placeholder="Tìm lớp, bài tập..."
               />
             </div>
           </div>
@@ -120,7 +120,7 @@ export function Navbar() {
               )}
               <div className="hidden lg:flex flex-col leading-tight text-left">
                 <span className="text-sm font-medium text-slate-800">
-                  {user?.name || 'Guest'}
+                  {user?.name || 'Khách'}
                 </span>
                 <span className="text-xs text-slate-500 truncate max-w-[160px]">
                   {user?.email || ''}
@@ -134,14 +134,14 @@ export function Navbar() {
                   className="block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
                   onClick={() => setUserMenuOpen(false)}
                 >
-                  Profile
+                  Hồ sơ
                 </Link>
                 <button
                   className="block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
                   onClick={() => { setUserMenuOpen(false); handleLogout() }}
                   disabled={logout.isPending}
                 >
-                  {logout.isPending ? 'Logging out...' : 'Logout'}
+                  {logout.isPending ? 'Đang đăng xuất...' : 'Đăng xuất'}
                 </button>
               </div>
             ) : null}
@@ -167,7 +167,7 @@ export function Navbar() {
                 </div>
               )}
               <div className="flex flex-col leading-tight">
-                <span className="text-sm font-medium text-slate-800">{user?.name || 'Guest'}</span>
+                <span className="text-sm font-medium text-slate-800">{user?.name || 'Khách'}</span>
                 <span className="text-xs text-slate-500">{user?.email || ''}</span>
               </div>
             </div>
@@ -184,7 +184,7 @@ export function Navbar() {
               </NavLink>
             ))}
             <Button variant="outline" onClick={() => { setOpen(false); handleLogout() }} disabled={logout.isPending}>
-              {logout.isPending ? 'Logging out...' : 'Logout'}
+              {logout.isPending ? 'Đang đăng xuất...' : 'Đăng xuất'}
             </Button>
           </div>
         </div>

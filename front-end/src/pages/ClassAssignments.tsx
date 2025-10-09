@@ -56,30 +56,30 @@ export default function ClassAssignmentsPage() {
           className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
         >
           <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
-          Back to Class Detail
+          Quay lại chi tiết lớp
         </Link>
       </div>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Class Assignments</h1>
-          <p className="text-slate-600">Manage and track class assignments</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Bài tập của lớp</h1>
+          <p className="text-slate-600">Quản lý và theo dõi bài tập của lớp</p>
         </div>
         <Modal open={open} onOpenChange={(v)=>{ setOpen(v); if (!v) { setTitle(''); setDescription(''); setDue('') } }}>
           <ModalTrigger asChild>
-            <Button variant="outline" className="gap-2 text-slate-900" onClick={()=>setOpen(true)}><Plus className="h-4 w-4"/> Create New Assignment</Button>
+            <Button variant="outline" className="gap-2 text-slate-900" onClick={()=>setOpen(true)}><Plus className="h-4 w-4"/> Tạo bài tập mới</Button>
           </ModalTrigger>
           <ModalContent>
-            <ModalHeader title="Create Assignment" />
+            <ModalHeader title="Tạo bài tập" />
             <div className="grid gap-3">
-              <label className="text-sm">Title</label>
+              <label className="text-sm">Tiêu đề</label>
               <input value={title} onChange={(e)=>setTitle(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
-              <label className="text-sm">Description</label>
+              <label className="text-sm">Mô tả</label>
               <textarea value={description} onChange={(e)=>setDescription(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
-              <label className="text-sm">Due date</label>
+              <label className="text-sm">Hạn nộp</label>
               <input type="datetime-local" value={due} onChange={(e)=>setDue(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" />
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={()=>setOpen(false)}>Cancel</Button>
+                <Button variant="outline" onClick={()=>setOpen(false)}>Hủy</Button>
                 <Button
                   className="bg-blue-600 text-white hover:bg-blue-700"
                   disabled={!title || !due || createMut.isPending}
@@ -87,13 +87,13 @@ export default function ClassAssignmentsPage() {
                     try {
                       await createMut.mutateAsync({ title, description, due_date: due })
                       setOpen(false)
-                      addToast({ title: 'Created', variant: 'success' })
+                      addToast({ title: 'Đã tạo', variant: 'success' })
                     } catch {
-                      addToast({ title: 'Create failed', variant: 'error' })
+                      addToast({ title: 'Tạo thất bại', variant: 'error' })
                     }
                   }}
                 >
-                  {createMut.isPending ? 'Creating…' : 'Create'}
+                  {createMut.isPending ? 'Đang tạo…' : 'Tạo'}
                 </Button>
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function ClassAssignmentsPage() {
             <button key={s} onClick={()=>setStatus(s)} className={`rounded-xl px-3 py-1.5 ${status===s?'bg-white text-slate-900 shadow-sm':'text-slate-600 hover:bg-white/60'}`}>{s}</button>
           ))}
         </div>
-        <Button variant="outline" className="gap-2"><Filter className="h-4 w-4"/> Filters</Button>
+        <Button variant="outline" className="gap-2"><Filter className="h-4 w-4"/> Bộ lọc</Button>
       </div>
 
       <div className="grid gap-4">
@@ -116,14 +116,14 @@ export default function ClassAssignmentsPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>{r.title}</span>
-                <span className="text-sm text-slate-600">Deadline: {r.deadline}</span>
+                <span className="text-sm text-slate-600">Hạn: {r.deadline}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
               <div className="flex items-center gap-3 text-sm text-slate-600">
-                <span className={`rounded-full px-2 py-0.5 text-xs ${r.status==='open'?'bg-green-100 text-green-700':'bg-slate-200 text-slate-700'}`}>{r.status}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs ${r.status==='open'?'bg-green-100 text-green-700':'bg-slate-200 text-slate-700'}`}>{r.status==='open'?'Đang mở':'Đã đóng'}</span>
                 <span className="mx-1">•</span>
-                Submissions: {r.submissions}
+                Bài nộp: {r.submissions}
               </div>
               <div className="h-2 w-full rounded-full bg-slate-200">
                 <div className="h-full rounded-full bg-brand-blue" style={{ width: `${r.rate}%` }} />

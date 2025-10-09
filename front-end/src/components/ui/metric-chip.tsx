@@ -19,7 +19,7 @@ export function MetricChip({
     red: 'bg-red-500',
   }
   return (
-    <div className={cn('rounded-2xl border bg-white p-4 shadow-sm', className)}>
+    <div className={cn('rounded-2xl border border-slate-200 bg-white p-4 shadow-sm', className)}>
       <div className="flex items-center gap-2 text-xs text-slate-600">
         <span className={cn('h-2 w-2 rounded-full', dot[color])} /> {label}
       </div>

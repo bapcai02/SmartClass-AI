@@ -173,7 +173,7 @@ export default function ClassesPage() {
                 <ProgressBar value={progress} />
                 <div className="flex justify-between">
                   <Link to={`/class/${c.id}`}>
-                    <Button variant="outline">Open</Button>
+                    <Button variant="outline">Mở</Button>
                   </Link>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" className="h-8 px-2" onClick={() => { setEditing(c); setEditingId(Number(c.id)); setOpen(true) }}><Edit3 className="h-4 w-4"/></Button>

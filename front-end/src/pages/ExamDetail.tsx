@@ -48,14 +48,14 @@ export default function ExamDetailPage() {
           className="group inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 shadow-sm hover:bg-slate-100"
         >
           <ArrowLeftCircle className="h-4 w-4 transition-colors group-hover:text-brand-blue"/>
-          Back to Exams
+          Quay lại danh sách bài kiểm tra
         </Link>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>{exam?.title || 'Exam'}</span>
+            <span>{exam?.title || 'Bài kiểm tra'}</span>
             {!loading && !error && (
               <div className="text-sm text-slate-600">#{exam?.id}</div>
             )}
@@ -64,17 +64,17 @@ export default function ExamDetailPage() {
         <CardContent className="grid gap-4">
           {error && <div className="text-sm text-red-600">{error}</div>}
           {loading ? (
-            <div className="text-sm text-slate-600">Loading…</div>
+            <div className="text-sm text-slate-600">Đang tải…</div>
           ) : (
             <>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="flex items-center gap-2 text-slate-700"><CalendarClock className="h-4 w-4"/> <span>Start: {exam?.start_time?.replace('T',' ').slice(0,16) || '—'}</span></div>
-                <div className="flex items-center gap-2 text-slate-700"><Timer className="h-4 w-4"/> <span>End: {exam?.end_time?.replace('T',' ').slice(0,16) || '—'}</span></div>
-                <div className="flex items-center gap-2 text-slate-700"><Users className="h-4 w-4"/> <span>Duration: {duration || '—'}</span></div>
+                <div className="flex items-center gap-2 text-slate-700"><CalendarClock className="h-4 w-4"/> <span>Bắt đầu: {exam?.start_time?.replace('T',' ').slice(0,16) || '—'}</span></div>
+                <div className="flex items-center gap-2 text-slate-700"><Timer className="h-4 w-4"/> <span>Kết thúc: {exam?.end_time?.replace('T',' ').slice(0,16) || '—'}</span></div>
+                <div className="flex items-center gap-2 text-slate-700"><Users className="h-4 w-4"/> <span>Thời lượng: {duration || '—'}</span></div>
               </div>
               <div className="flex items-center gap-2">
                 <Link to={`/class/${id}/exam/${eid}/take`}>
-                  <Button className="gap-2 text-black hover:bg-black hover:text-white"><Play className="h-4 w-4"/> Open Exam Screen</Button>
+                  <Button className="gap-2 text-black hover:bg-black hover:text-white"><Play className="h-4 w-4"/> Mở màn hình làm bài</Button>
                 </Link>
               </div>
               {exam?.description && (
@@ -84,33 +84,35 @@ export default function ExamDetailPage() {
               {stats && (
                 <div className="grid gap-3">
                   <div className="grid gap-3 sm:grid-cols-4">
-                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Total</div><div className="text-2xl font-semibold">{stats.counts.total}</div></div>
-                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Taking</div><div className="text-2xl font-semibold">{stats.counts.taking}</div></div>
-                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Completed</div><div className="text-2xl font-semibold">{stats.counts.completed}</div></div>
-                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Missed</div><div className="text-2xl font-semibold">{stats.counts.missed}</div></div>
+                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Tổng</div><div className="text-2xl font-semibold">{stats.counts.total}</div></div>
+                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Đang làm</div><div className="text-2xl font-semibold">{stats.counts.taking}</div></div>
+                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Hoàn thành</div><div className="text-2xl font-semibold">{stats.counts.completed}</div></div>
+                    <div className="rounded-xl border border-slate-200 p-3"><div className="text-xs text-slate-600">Bỏ lỡ</div><div className="text-2xl font-semibold">{stats.counts.missed}</div></div>
                   </div>
 
-                  <div className="overflow-x-auto rounded-2xl">
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
                     <table className="min-w-full text-sm">
-                      <thead className="bg-slate-50">
-                        <tr>
-                          <th className="px-4 py-2 text-left">Student</th>
-                          <th className="px-4 py-2 text-left">Email</th>
-                          <th className="px-4 py-2 text-left">Status</th>
-                          <th className="px-4 py-2 text-left">Grade</th>
-                          <th className="px-4 py-2 text-left">Submitted</th>
+                      <thead className="sticky top-0 z-10 bg-slate-50/90 backdrop-blur">
+                        <tr className="border-b border-slate-200">
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Học sinh</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Email</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Trạng thái</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Điểm</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Nộp lúc</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        {stats.rows.map((r, idx) => (
-                          <tr key={r.id} className={`${idx % 2 ? 'bg-slate-50/50' : ''} hover:bg-slate-100/70 transition-colors`}>
-                            <td className="px-4 py-2 whitespace-nowrap font-medium">{r.name}</td>
-                            <td className="px-4 py-2">{r.email}</td>
-                            <td className="px-4 py-2">
-                              <span className={`rounded-full px-2 py-0.5 text-xs ${r.status==='completed'?'bg-green-100 text-green-700':r.status==='taking'?'bg-blue-100 text-blue-700':r.status==='missed'?'bg-red-100 text-red-700':'bg-slate-200 text-slate-700'}`}>{r.status}</span>
+                      <tbody className="divide-y divide-slate-100">
+                        {stats.rows.map((r) => (
+                          <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-900">{r.name}</td>
+                            <td className="px-4 py-3 text-slate-700">{r.email}</td>
+                            <td className="px-4 py-3">
+                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${r.status==='completed'?'bg-green-50 text-green-700 ring-green-200':r.status==='taking'?'bg-blue-50 text-blue-700 ring-blue-200':r.status==='missed'?'bg-red-50 text-red-700 ring-red-200':'bg-slate-100 text-slate-700 ring-slate-200'}`}>
+                                {r.status==='completed'?'hoàn thành':r.status==='taking'?'đang làm':r.status==='missed'?'bỏ lỡ':r.status}
+                              </span>
                             </td>
-                            <td className="px-4 py-2">{r.grade != null ? r.grade.toFixed(2) : '—'}</td>
-                            <td className="px-4 py-2">{r.submitted_at ? r.submitted_at.replace('T',' ').slice(0,16) : '—'}</td>
+                            <td className="px-4 py-3 tabular-nums">{r.grade != null ? r.grade.toFixed(2) : '—'}</td>
+                            <td className="px-4 py-3 tabular-nums text-slate-700">{r.submitted_at ? r.submitted_at.replace('T',' ').slice(0,16) : '—'}</td>
                           </tr>
                         ))}
                       </tbody>

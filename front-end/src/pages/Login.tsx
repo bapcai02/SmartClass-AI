@@ -35,7 +35,7 @@ const Login: React.FC = () => {
       navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error(err);
-      addToast({ title: 'Login failed', description: 'Please check your credentials.', variant: 'error' });
+      addToast({ title: 'Đăng nhập thất bại', description: 'Vui lòng kiểm tra lại thông tin.', variant: 'error' });
     }
   };
 
@@ -63,7 +63,7 @@ const Login: React.FC = () => {
             <img src="/brand-mark.svg" alt="SmartClass AI" className="h-10 w-10" />
             <span className="text-2xl font-semibold tracking-tight">SmartClass AI</span>
           </div>
-          <p className="text-sm text-gray-500">Welcome back. Please sign in to continue.</p>
+          <p className="text-sm text-gray-500">Chào mừng trở lại. Vui lòng đăng nhập để tiếp tục.</p>
         </CardHeader>
 
         <CardContent className="pt-2">
@@ -85,9 +85,7 @@ const Login: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-gray-700">
-                Password
-              </label>
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">Mật khẩu</label>
               <input
                 id="password"
                 type="password"
@@ -108,21 +106,19 @@ const Login: React.FC = () => {
                   onChange={onChange("remember")}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                Remember me
+                Ghi nhớ đăng nhập
               </label>
 
-              <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
-                Forgot password?
-              </a>
+              <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">Quên mật khẩu?</a>
             </div>
 
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loginMutation.isPending}>
-              {loginMutation.isPending ? "Signing in..." : "Sign in"}
+              {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
 
             <div className="flex items-center gap-4">
               <div className="h-px flex-1 bg-gray-200" />
-              <span className="text-xs uppercase tracking-wider text-gray-500">or</span>
+              <span className="text-xs uppercase tracking-wider text-gray-500">hoặc</span>
               <div className="h-px flex-1 bg-gray-200" />
             </div>
 
@@ -132,7 +128,7 @@ const Login: React.FC = () => {
               className="w-full border-gray-200"
               onClick={() => {
                 // eslint-disable-next-line no-console
-                console.log("Login with Google");
+                console.log("Đăng nhập với Google");
               }}
             >
               <span className="mr-2 inline-flex h-5 w-5" aria-hidden>
@@ -143,16 +139,16 @@ const Login: React.FC = () => {
                   />
                 </svg>
               </span>
-              Continue with Google
+              Đăng nhập với Google
             </Button>
           </form>
         </CardContent>
 
         <CardFooter className="flex justify-center pb-8">
           <p className="text-sm text-gray-600">
-            Don’t have an account? {" "}
+            Chưa có tài khoản? {" "}
             <a href="#" className="font-medium text-blue-600 hover:text-blue-700 hover:underline">
-              Sign up
+              Đăng ký
             </a>
           </p>
         </CardFooter>

@@ -2,19 +2,19 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { LayoutDashboard, NotebookTabs, BarChart3, MessageCircle, User, MessageSquare, Trophy, FileBarChart, FolderOpen, Settings, BookOpen } from 'lucide-react'
 
 const links = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/classes', label: 'Classes', icon: NotebookTabs },
-  { to: '/assignments', label: 'Assignments', icon: NotebookTabs },
-  { to: '/exams', label: 'Exams', icon: FileBarChart },
-  { to: '/reports', label: 'Reports', icon: BarChart3 },
-  { to: '/chat', label: 'Chat', icon: MessageCircle },
-  { to: '/qa', label: 'Q&A', icon: MessageSquare },
-  { to: '/resources', label: 'Resources', icon: FolderOpen },
-  { to: '/question-bank', label: 'Question Bank', icon: BookOpen },
-  { to: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-  { to: '/profile', label: 'Profile', icon: User },
-  { to: '/settings', label: 'Settings', icon: Settings },
-  { to: '/ai-chat', label: 'AI Chat', icon: MessageCircle },
+  { to: '/dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard },
+  { to: '/classes', label: 'Lớp học', icon: NotebookTabs },
+  { to: '/assignments', label: 'Bài tập', icon: NotebookTabs },
+  { to: '/exams', label: 'Bài kiểm tra', icon: FileBarChart },
+  { to: '/reports', label: 'Báo cáo', icon: BarChart3 },
+  { to: '/chat', label: 'Trò chuyện', icon: MessageCircle },
+  { to: '/qa', label: 'Hỏi & Đáp', icon: MessageSquare },
+  { to: '/resources', label: 'Tài nguyên', icon: FolderOpen },
+  { to: '/question-bank', label: 'Ngân hàng câu hỏi', icon: BookOpen },
+  { to: '/leaderboard', label: 'Bảng xếp hạng', icon: Trophy },
+  { to: '/profile', label: 'Hồ sơ', icon: User },
+  { to: '/settings', label: 'Cài đặt', icon: Settings },
+  { to: '/ai-chat', label: 'Trợ lý AI', icon: MessageCircle },
 ]
 
 export function Sidebar() {

@@ -11,31 +11,31 @@ export default function DashboardPage() {
   return (
     <div className="grid gap-8">
       <div className="rounded-2xl bg-gradient-to-r from-slate-100 to-white border border-slate-200 p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight">{user ? `Welcome, ${user.name}` : 'Welcome back, Alex'}</h1>
-        <p className="text-slate-600">Keep up the great work. You’re making steady progress!</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{user ? `Xin chào, ${user.name}` : 'Chào mừng trở lại'}</h1>
+        <p className="text-slate-600">Tiếp tục phát huy nhé! Bạn đang tiến bộ rất tốt.</p>
       </div>
       <section className="grid gap-3 md:grid-cols-4">
-        <MetricChip label="Assignments Due" value={stats.assignmentsDue} color="amber" />
-        <MetricChip label="Completed" value={stats.completed} color="green" />
-        <MetricChip label="Avg Score" value={`${stats.avgScore}%`} color="blue" />
-        <MetricChip label="Active Classes" value={classes.length} />
+        <MetricChip label="Bài tập đến hạn" value={stats.assignmentsDue} color="amber" />
+        <MetricChip label="Đã hoàn thành" value={stats.completed} color="green" />
+        <MetricChip label="Điểm trung bình" value={`${stats.avgScore}%`} color="blue" />
+        <MetricChip label="Lớp đang tham gia" value={classes.length} />
       </section>
 
       <section className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>My Classes</CardTitle>
+            <CardTitle>Lớp học của tôi</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {classes.map((c) => (
-                <Card key={c.id} className="border-slate-200">
-                  <CardContent className="p-4">
+                <Card key={c.id} className="border-slate-200 h-full">
+                  <CardContent className="p-4 min-h-40 flex flex-col">
                     <div className="text-lg font-semibold">{c.name}</div>
                     <div className="text-sm text-slate-600">{c.teacher}</div>
-                    <div className="text-sm text-slate-600">{c.students} students</div>
+                    <div className="text-sm text-slate-600">{c.students} học sinh</div>
                     <Link to={`/class/${c.id}`}>
-                      <Button className="mt-3" variant="outline">Open</Button>
+                      <Button className="mt-3" variant="outline">Mở</Button>
                     </Link>
                   </CardContent>
                 </Card>
@@ -45,7 +45,7 @@ export default function DashboardPage() {
         </Card>
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Announcements</CardTitle>
+            <CardTitle>Thông báo</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
             {announcements.map((a) => (
@@ -61,7 +61,7 @@ export default function DashboardPage() {
       <section className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Progress Over Time</CardTitle>
+            <CardTitle>Tiến độ theo thời gian</CardTitle>
           </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -80,7 +80,7 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Strengths vs Weaknesses</CardTitle>
+            <CardTitle>Thế mạnh và điểm cần cải thiện</CardTitle>
           </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">

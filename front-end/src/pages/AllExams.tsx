@@ -151,11 +151,11 @@ export default function AllExamsPage() {
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">All Exams</h1>
-              <p className="text-slate-600">View and manage exams from all your classes</p>
+              <h1 className="text-3xl font-bold text-slate-900">Tất cả bài kiểm tra</h1>
+              <p className="text-slate-600">Xem và quản lý bài kiểm tra từ tất cả lớp học của bạn</p>
             </div>
             <div className="text-sm text-slate-600">
-              {data?.total || 0} exams total
+              Tổng {data?.total || 0} bài kiểm tra
             </div>
           </div>
 
@@ -169,7 +169,7 @@ export default function AllExamsPage() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-slate-900">{stats.total}</div>
-                    <div className="text-sm text-slate-600">Total</div>
+                    <div className="text-sm text-slate-600">Tổng</div>
                   </div>
                 </div>
               </Card>
@@ -180,7 +180,7 @@ export default function AllExamsPage() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-blue-600">{stats.upcoming}</div>
-                    <div className="text-sm text-slate-600">Upcoming</div>
+                    <div className="text-sm text-slate-600">Sắp tới</div>
                   </div>
                 </div>
               </Card>
@@ -191,7 +191,7 @@ export default function AllExamsPage() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-green-600">{stats.ongoing}</div>
-                    <div className="text-sm text-slate-600">Ongoing</div>
+                    <div className="text-sm text-slate-600">Đang diễn ra</div>
                   </div>
                 </div>
               </Card>
@@ -202,7 +202,7 @@ export default function AllExamsPage() {
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-gray-600">{stats.completed}</div>
-                    <div className="text-sm text-slate-600">Completed</div>
+                    <div className="text-sm text-slate-600">Đã kết thúc</div>
                   </div>
                 </div>
               </Card>
@@ -217,7 +217,7 @@ export default function AllExamsPage() {
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search exams..."
+                  placeholder="Tìm kiếm bài kiểm tra..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -225,7 +225,7 @@ export default function AllExamsPage() {
                   />
                 </div>
                 <Button onClick={handleSearch} className="px-6 text-black hover:bg-black hover:text-white">
-                  Search
+                  Tìm kiếm
                 </Button>
                 <Button
                   variant="outline"
@@ -237,7 +237,7 @@ export default function AllExamsPage() {
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={clearFilters} size="sm">
-                  Clear Filters
+                  Xóa lọc
                 </Button>
               </div>
             </div>
@@ -246,13 +246,13 @@ export default function AllExamsPage() {
             {showFilters && (
               <div className="mt-4 grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Class</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Lớp</label>
                   <select
                     value={filters.class_id || ''}
                     onChange={(e) => handleFilterChange('class_id', e.target.value ? Number(e.target.value) : undefined)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
                   >
-                    <option value="">All Classes</option>
+                    <option value="">Tất cả lớp</option>
                     {(
                       (classesData as any)?.data || (classesData as any)?.items || []
                     ).map((cls: ClassroomDto) => (
@@ -263,13 +263,13 @@ export default function AllExamsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Subject</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Môn học</label>
                   <select
                     value={filters.subject_id || ''}
                     onChange={(e) => handleFilterChange('subject_id', e.target.value ? Number(e.target.value) : undefined)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
                   >
-                    <option value="">All Subjects</option>
+                    <option value="">Tất cả môn</option>
                     {subjects.map((subject) => (
                       <option key={subject.id} value={subject.id}>
                         {subject.name}
@@ -278,20 +278,20 @@ export default function AllExamsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Status</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Trạng thái</label>
                   <select
                     value={filters.status || ''}
                     onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
                   >
-                    <option value="">All Status</option>
-                    <option value="upcoming">Upcoming</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="completed">Completed</option>
+                    <option value="">Tất cả</option>
+                    <option value="upcoming">Sắp tới</option>
+                    <option value="ongoing">Đang diễn ra</option>
+                    <option value="completed">Đã kết thúc</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Date From</label>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Từ ngày</label>
                   <input
                     type="date"
                     value={filters.date_from || ''}
@@ -359,7 +359,7 @@ export default function AllExamsPage() {
                     to={`/class/${exam.class_id}/exam/${exam.id}`}
                     className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50 hover:border-slate-400"
                   >
-                    View Details
+                    Xem chi tiết
                   </Link>
                   <div className="text-right text-xs text-slate-500">
                     ID: {exam.id}
@@ -380,7 +380,7 @@ export default function AllExamsPage() {
               disabled={page === 1}
               className="rounded-lg"
             >
-              Previous
+              Trước
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, data.last_page) }, (_, i) => {
@@ -405,7 +405,7 @@ export default function AllExamsPage() {
               disabled={page === data.last_page}
               className="rounded-lg"
             >
-              Next
+              Sau
             </Button>
           </div>
         )}
@@ -416,8 +416,8 @@ export default function AllExamsPage() {
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center">
               <FileText className="h-8 w-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">No exams found</h3>
-            <p className="text-slate-600">Try adjusting your search or filter criteria.</p>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">Không có bài kiểm tra</h3>
+            <p className="text-slate-600">Hãy thử điều chỉnh từ khóa hoặc bộ lọc.</p>
           </div>
         )}
       </div>
