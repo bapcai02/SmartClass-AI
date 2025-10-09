@@ -24,6 +24,8 @@ services:
       - REDIS_PORT=6379
     networks:
       - smartclass
+    ports:
+      - "8090:8080"
 
   web:
     image: nginx:alpine

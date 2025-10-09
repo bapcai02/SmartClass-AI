@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             PublicDemoSeeder::class,
             PublicMath50Seeder::class,
             PublicChem50Seeder::class,
+            ChatDemoSeeder::class,
         ]);
     }
 }

@@ -17,6 +17,8 @@ import {
   getQaStats,
   deleteQaPost,
   deleteQaAnswer,
+  createQaPost,
+  createQaAnswer,
 } from '@/api/qa'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
@@ -25,6 +27,11 @@ export default function AllQaPage() {
   const [page, setPage] = useState(1)
   const [showAll, setShowAll] = useState(false)
   const queryClient = useQueryClient()
+  const [askOpen, setAskOpen] = useState(false)
+  const [askText, setAskText] = useState('')
+  const [askImageUrl, setAskImageUrl] = useState('')
+  const [replyPostId, setReplyPostId] = useState<number | null>(null)
+  const [replyText, setReplyText] = useState('')
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -61,6 +68,28 @@ export default function AllQaPage() {
     },
   })
 
+  const createPostMutation = useMutation({
+    mutationFn: createQaPost,
+    onSuccess: () => {
+      setAskOpen(false)
+      setAskText('')
+      setAskImageUrl('')
+      queryClient.invalidateQueries({ queryKey: ['my-qa-posts'] })
+      queryClient.invalidateQueries({ queryKey: ['qa-stats'] })
+    },
+  })
+
+  const createAnswerMutation = useMutation({
+    mutationFn: ({ postId, answer_text }: { postId: number; answer_text: string }) => createQaAnswer(postId, { answer_text }),
+    onSuccess: () => {
+      setReplyPostId(null)
+      setReplyText('')
+      queryClient.invalidateQueries({ queryKey: ['my-qa-answers'] })
+      queryClient.invalidateQueries({ queryKey: ['my-qa-posts'] })
+      queryClient.invalidateQueries({ queryKey: ['qa-stats'] })
+    },
+  })
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
@@ -72,20 +101,20 @@ export default function AllQaPage() {
   }
 
   const handleDeletePost = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this question?')) {
+    if (window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) {
       deletePostMutation.mutate(id)
     }
   }
 
   const handleDeleteAnswer = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this answer?')) {
+    if (window.confirm('Bạn có chắc muốn xóa câu trả lời này?')) {
       deleteAnswerMutation.mutate(id)
     }
   }
 
   const tabs = [
-    { id: 'questions', label: 'My Questions', icon: HelpCircle },
-    { id: 'answers', label: 'My Answers', icon: MessageCircle },
+    { id: 'questions', label: 'Câu hỏi của tôi', icon: HelpCircle },
+    { id: 'answers', label: 'Câu trả lời của tôi', icon: MessageCircle },
   ]
 
   if (statsLoading) {
@@ -108,8 +137,11 @@ export default function AllQaPage() {
       <div className="mx-auto max-w-7xl px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900">My Q&A</h1>
-          <p className="text-slate-600">Manage your questions and answers</p>
+          <h1 className="text-3xl font-bold text-slate-900">Hỏi & Đáp của tôi</h1>
+          <p className="text-slate-600">Quản lý câu hỏi và câu trả lời của bạn</p>
+          <div className="mt-4">
+            <Button onClick={()=> setAskOpen(true)} className="bg-brand-blue text-white hover:bg-brand-blue/90">Đặt câu hỏi</Button>
+          </div>
         </div>
 
         {/* Statistics Cards */}
@@ -122,7 +154,7 @@ export default function AllQaPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-slate-900">{stats.total_questions}</div>
-                  <div className="text-sm text-slate-600">Total Questions</div>
+                  <div className="text-sm text-slate-600">Tổng số câu hỏi</div>
                 </div>
               </div>
             </Card>
@@ -133,7 +165,7 @@ export default function AllQaPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-slate-900">{stats.total_answers}</div>
-                  <div className="text-sm text-slate-600">Total Answers</div>
+                  <div className="text-sm text-slate-600">Tổng số câu trả lời</div>
                 </div>
               </div>
             </Card>
@@ -144,7 +176,7 @@ export default function AllQaPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-slate-900">{stats.recent_questions}</div>
-                  <div className="text-sm text-slate-600">Recent Questions</div>
+                  <div className="text-sm text-slate-600">Câu hỏi gần đây</div>
                 </div>
               </div>
             </Card>
@@ -155,7 +187,7 @@ export default function AllQaPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-slate-900">{stats.recent_answers}</div>
-                  <div className="text-sm text-slate-600">Recent Answers</div>
+                  <div className="text-sm text-slate-600">Câu trả lời gần đây</div>
                 </div>
               </div>
             </Card>
@@ -190,13 +222,13 @@ export default function AllQaPage() {
         {activeTab === 'questions' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">My Questions</h2>
+              <h2 className="text-xl font-semibold text-slate-900">Câu hỏi của tôi</h2>
               <Button
                 variant="outline"
                 onClick={() => setShowAll(!showAll)}
                 className="text-black hover:bg-black hover:text-white"
               >
-                {showAll ? 'Show Less' : 'Show All'}
+                {showAll ? 'Thu gọn' : 'Xem tất cả'}
               </Button>
             </div>
             {questionsLoading ? (
@@ -213,7 +245,7 @@ export default function AllQaPage() {
                       <div className="flex-1">
                         <div className="mb-2 flex items-center gap-2">
                           <HelpCircle className="h-5 w-5 text-blue-600" />
-                          <h3 className="text-lg font-semibold text-slate-900">Question</h3>
+                          <h3 className="text-lg font-semibold text-slate-900">Câu hỏi</h3>
                         </div>
                         <p className="mb-3 text-slate-700">{question.question_text}</p>
                         {question.image_url && (
@@ -236,11 +268,19 @@ export default function AllQaPage() {
                           </div>
                           <div className="flex items-center gap-1">
                             <MessageSquare className="h-4 w-4" />
-                            <span>{question.answers.length} answers</span>
+                            <span>{question.answers.length} trả lời</span>
                           </div>
                         </div>
                       </div>
                       <div className="ml-4 flex flex-col gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => { setReplyPostId(question.id); setReplyText('') }}
+                          className="text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                        >
+                          Trả lời
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -262,13 +302,13 @@ export default function AllQaPage() {
         {activeTab === 'answers' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">My Answers</h2>
+              <h2 className="text-xl font-semibold text-slate-900">Câu trả lời của tôi</h2>
               <Button
                 variant="outline"
                 onClick={() => setShowAll(!showAll)}
                 className="text-black hover:bg-black hover:text-white"
               >
-                {showAll ? 'Show Less' : 'Show All'}
+                {showAll ? 'Thu gọn' : 'Xem tất cả'}
               </Button>
             </div>
             {answersLoading ? (
@@ -285,14 +325,14 @@ export default function AllQaPage() {
                       <div className="flex-1">
                         <div className="mb-2 flex items-center gap-2">
                           <MessageCircle className="h-5 w-5 text-green-600" />
-                          <h3 className="text-lg font-semibold text-slate-900">Answer</h3>
+                          <h3 className="text-lg font-semibold text-slate-900">Câu trả lời</h3>
                         </div>
                         <p className="mb-3 text-slate-700">{answer.answer_text}</p>
                         {answer.post && (
                           <div className="mb-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                            <div className="text-sm font-medium text-slate-600 mb-1">Original Question:</div>
+                            <div className="text-sm font-medium text-slate-600 mb-1">Câu hỏi gốc:</div>
                             <div className="text-sm text-slate-700">{answer.post.question_text}</div>
-                            <div className="mt-1 text-xs text-slate-500">by {answer.post.user.name}</div>
+                            <div className="mt-1 text-xs text-slate-500">bởi {answer.post.user.name}</div>
                           </div>
                         )}
                         <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
@@ -335,7 +375,7 @@ export default function AllQaPage() {
               disabled={page === 1}
               className="rounded-lg"
             >
-              Previous
+              Trước
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, (activeTab === 'questions' ? questionsData?.last_page : answersData?.last_page) || 1) }, (_, i) => {
@@ -360,7 +400,7 @@ export default function AllQaPage() {
               disabled={page === (activeTab === 'questions' ? questionsData?.last_page : answersData?.last_page)}
               className="rounded-lg"
             >
-              Next
+              Sau
             </Button>
           </div>
         )}
@@ -377,16 +417,75 @@ export default function AllQaPage() {
               )}
             </div>
             <h3 className="text-lg font-medium text-slate-900 mb-2">
-              No {activeTab === 'questions' ? 'questions' : 'answers'} found
+              Không có {activeTab === 'questions' ? 'câu hỏi' : 'câu trả lời'} nào
             </h3>
             <p className="text-slate-600">
               {activeTab === 'questions' 
-                ? "You haven't asked any questions yet." 
-                : "You haven't answered any questions yet."
+                ? "Bạn chưa đặt câu hỏi nào." 
+                : "Bạn chưa trả lời câu hỏi nào."
               }
             </p>
           </div>
         )}
+
+        {/* Ask Question Modal */}
+        {askOpen && (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/40" onClick={()=> setAskOpen(false)} />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-xl rounded-xl bg-white shadow-2xl">
+              <div className="border-b p-4 text-slate-900 font-semibold">Đặt câu hỏi</div>
+              <div className="p-4 grid gap-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Nội dung câu hỏi</label>
+                  <textarea className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none min-h-28" value={askText} onChange={(e)=> setAskText(e.target.value)} placeholder="Mô tả vấn đề bạn gặp phải..." />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Ảnh minh họa (URL, tùy chọn)</label>
+                  <input className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none" value={askImageUrl} onChange={(e)=> setAskImageUrl(e.target.value)} placeholder="https://..." />
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button variant="outline" onClick={()=> setAskOpen(false)}>Hủy</Button>
+                  <Button
+                    onClick={()=> {
+                      if (!askText.trim()) { alert('Nhập nội dung câu hỏi'); return }
+                      createPostMutation.mutate({ question_text: askText.trim(), image_url: askImageUrl.trim() || undefined })
+                    }}
+                    disabled={createPostMutation.isPending}
+                    className="bg-brand-blue text-white hover:bg-brand-blue/90"
+                  >{createPostMutation.isPending ? 'Đang tạo...' : 'Tạo câu hỏi'}</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reply Modal */}
+        {replyPostId !== null && (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/40" onClick={()=> setReplyPostId(null)} />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-xl rounded-xl bg-white shadow-2xl">
+              <div className="border-b p-4 text-slate-900 font-semibold">Trả lời câu hỏi</div>
+              <div className="p-4 grid gap-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Nội dung câu trả lời</label>
+                  <textarea className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none min-h-28" value={replyText} onChange={(e)=> setReplyText(e.target.value)} placeholder="Nhập câu trả lời của bạn..." />
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button variant="outline" onClick={()=> setReplyPostId(null)}>Hủy</Button>
+                  <Button
+                    onClick={()=> {
+                      if (!replyText.trim() || replyPostId === null) { alert('Nhập nội dung trả lời'); return }
+                      createAnswerMutation.mutate({ postId: replyPostId, answer_text: replyText.trim() })
+                    }}
+                    disabled={createAnswerMutation.isPending}
+                    className="bg-brand-blue text-white hover:bg-brand-blue/90"
+                  >{createAnswerMutation.isPending ? 'Đang gửi...' : 'Gửi trả lời'}</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   )

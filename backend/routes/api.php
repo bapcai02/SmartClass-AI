@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\PublicExamController;
 use App\Http\Controllers\Api\PublicExamPdfController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ConversationController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -135,6 +136,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/ai/sessions', [AiChatController::class, 'createSession']);
     Route::delete('/ai/sessions/{id}', [AiChatController::class, 'deleteSession']);
     Route::get('/ai/stats', [AiChatController::class, 'getStats']);
+
+    // Conversations (1-1, groups)
+    Route::get('/chat/conversations', [ConversationController::class, 'index']);
+    Route::get('/chat/conversations/{id}', [ConversationController::class, 'show']);
 
     // Lookups
     Route::get('/subjects', [SubjectController::class, 'index']);
