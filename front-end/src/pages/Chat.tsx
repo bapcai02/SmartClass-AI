@@ -6,6 +6,7 @@ import { Segmented } from '@/components/ui/segmented'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getConversations, getConversation, getOrCreateDirect, sendChatMessage } from '@/api/chat'
 import { getUsers, getMe } from '@/api/users'
+import { getPusher } from '@/utils/ws'
 
 export default function ChatPage() {
   const [active, setActive] = useState<number | null>(null)
@@ -58,6 +59,29 @@ export default function ChatPage() {
     load()
     return () => { cancelled = true }
   }, [active])
+
+  // Realtime subscription for new messages via WebSocket (Pusher protocol)
+  useEffect(() => {
+    if (!active) return
+    const pusher = getPusher()
+    const channelName = `private-conversation.${active}`
+    const channel = pusher.subscribe(channelName)
+    const handler = (payload: { id:number; conversation_id:number; sender:{id:number; name:string}; content?:string|null; message_type:string; file_url?:string|null; created_at:string }) => {
+      // Only append if we're still on this conversation
+      setThread(t => {
+        if (!t || t.id !== active) return t
+        return { ...t, messages: [...t.messages, { id: payload.id, sender: payload.sender, content: payload.content || '', created_at: payload.created_at }] }
+      })
+      // Keep sidebar list fresh
+      queryClient.invalidateQueries({ queryKey: ['chat-conversations'] })
+    }
+    channel.bind('MessageCreated', handler)
+
+    return () => {
+      try { channel.unbind('MessageCreated', handler) } catch {}
+      try { pusher.unsubscribe(channelName) } catch {}
+    }
+  }, [active, queryClient])
   return (
     <div className="grid gap-6 overflow-hidden">
       <div className="grid grid-cols-12 gap-6 overflow-hidden">

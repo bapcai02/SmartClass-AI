@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PublicExamController;
 use App\Http\Controllers\Api\PublicExamPdfController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ConversationController;
+use Illuminate\Broadcasting\BroadcastController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -32,6 +33,9 @@ Route::get('/public/exam-pdfs/{id}/download', [PublicExamPdfController::class, '
 Route::get('/public/exam-pdfs/{id}/view', [PublicExamPdfController::class, 'view']);
 
 // (Removed /public2/* aliases)
+
+// Broadcasting auth for SPA (token-based)
+Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate'])->middleware('auth:api');
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
