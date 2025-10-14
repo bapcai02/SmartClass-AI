@@ -6,10 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Services\ConversationService;
 use App\Events\MessageCreated;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class ConversationController extends Controller
 {
-    public function __construct(private ConversationService $service) {}
+    private ConversationService $service;
+
+    public function __construct(ConversationService $service)
+    {
+        $this->service = $service;
+    }
 
     public function index(): JsonResponse
     {
@@ -79,5 +85,41 @@ class ConversationController extends Controller
         abort_if(!$otherId, 422, 'user_id required');
         $conv = $this->service->getOrCreateDirect($user->id, $otherId);
         return response()->json(['id' => $conv->id]);
+    }
+
+    public function createGroup(): JsonResponse
+    {
+        $user = request()->user();
+        $data = request()->validate([
+            'title' => ['required','string','max:120'],
+            'participant_ids' => ['array'],
+            'participant_ids.*' => ['integer'],
+        ]);
+        $participantIds = collect($data['participant_ids'] ?? [])->unique()->reject(fn($id) => $id === $user->id)->values()->all();
+        $conv = $this->service->createGroup($user->id, (string) $data['title'], $participantIds);
+        return response()->json(['id' => $conv->id]);
+    }
+
+    public function addParticipants(int $id): JsonResponse
+    {
+        $user = request()->user();
+        $data = request()->validate([
+            'participant_ids' => ['required','array','min:1'],
+            'participant_ids.*' => ['integer'],
+        ]);
+        abort_unless($this->service->userCanManage($id, $user->id), 403);
+        $added = $this->service->addParticipants($id, $data['participant_ids']);
+        return response()->json(['added' => $added]);
+    }
+
+    public function removeParticipant(int $id): JsonResponse
+    {
+        $user = request()->user();
+        $data = request()->validate([
+            'user_id' => ['required','integer'],
+        ]);
+        abort_unless($this->service->userCanManage($id, $user->id), 403);
+        $ok = $this->service->removeParticipant($id, (int) $data['user_id']);
+        return response()->json(['removed' => (bool) $ok]);
     }
 }

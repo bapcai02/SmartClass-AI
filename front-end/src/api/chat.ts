@@ -66,4 +66,19 @@ export async function sendChatMessage(conversationId: number | string, payload: 
   return data as { id:number; conversation_id:number; sender:{id:number; name:string}; content?:string; message_type:'text'|'image'|'file'; file_url?:string; created_at:string }
 }
 
+export async function createGroupChat(title: string, participantIds: number[]) {
+  const { data } = await api.post<{ id: number }>(`/chat/groups`, { title, participant_ids: participantIds })
+  return data.id
+}
+
+export async function addParticipants(conversationId: number, userIds: number[]) {
+  const { data } = await api.post<{ added: number }>(`/chat/conversations/${conversationId}/participants`, { participant_ids: userIds })
+  return data.added
+}
+
+export async function removeParticipant(conversationId: number, userId: number) {
+  const { data } = await api.delete<{ removed: boolean }>(`/chat/conversations/${conversationId}/participants`, { data: { user_id: userId } })
+  return data.removed
+}
+
 

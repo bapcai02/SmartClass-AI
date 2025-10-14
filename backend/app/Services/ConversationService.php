@@ -6,7 +6,12 @@ use App\Repositories\ConversationRepository;
 
 class ConversationService
 {
-    public function __construct(private ConversationRepository $repo) {}
+    private ConversationRepository $repo;
+
+    public function __construct(ConversationRepository $repo)
+    {
+        $this->repo = $repo;
+    }
 
     public function listForUser(int $userId, int $limit = 20)
     {
@@ -31,6 +36,26 @@ class ConversationService
     public function getOrCreateDirect(int $currentUserId, int $otherUserId)
     {
         return $this->repo->findOrCreateDirect($currentUserId, $otherUserId);
+    }
+
+    public function createGroup(int $ownerId, string $title, array $participantIds)
+    {
+        return $this->repo->createGroup($ownerId, $title, $participantIds);
+    }
+
+    public function userCanManage(int $conversationId, int $userId): bool
+    {
+        return $this->repo->userIsOwner($conversationId, $userId);
+    }
+
+    public function addParticipants(int $conversationId, array $userIds): int
+    {
+        return $this->repo->addParticipants($conversationId, $userIds);
+    }
+
+    public function removeParticipant(int $conversationId, int $userId): int
+    {
+        return $this->repo->removeParticipant($conversationId, $userId);
     }
 }
 

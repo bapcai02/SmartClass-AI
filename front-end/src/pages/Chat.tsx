@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Paperclip, Send, Search, Phone, Video, MoreHorizontal, Image, Smile, Mic, Info } from 'lucide-react'
 import { Segmented } from '@/components/ui/segmented'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getConversations, getConversation, getOrCreateDirect, sendChatMessage } from '@/api/chat'
+import { getConversations, getConversation, getOrCreateDirect, sendChatMessage, createGroupChat } from '@/api/chat'
 import { getUsers, getMe } from '@/api/users'
 import { getPusher } from '@/utils/ws'
 
@@ -122,12 +122,20 @@ export default function ChatPage() {
                   </button>
                 ))}
               </div>
-              <div className="mt-3">
+              <div className="mt-3 flex items-center gap-2">
                 <Segmented
                   options={[{label:'Tất cả',value:'all'},{label:'Lớp',value:'classes'},{label:'Giáo viên',value:'teachers'},{label:'Nhóm',value:'groups'}]}
                   value={segment}
                   onChange={setSegment}
                 />
+                <Button variant="outline" className="h-8 px-3 text-xs" onClick={async ()=>{
+                  const ids = (usersPage?.data||[]).slice(0,3).map((u:any)=>u.id)
+                  if (ids.length) {
+                    const newId = await createGroupChat('Nhóm mới', ids)
+                    setActive(newId)
+                    queryClient.invalidateQueries({ queryKey: ['chat-conversations'] })
+                  }
+                }}>Tạo nhóm</Button>
               </div>
             </div>
             <div className="max-h-[calc(100dvh-12rem)] overflow-y-auto p-2">

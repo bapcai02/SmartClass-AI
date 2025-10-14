@@ -84,6 +84,24 @@ services:
     networks:
       - smartclass
 
+  socket-rt:
+    build:
+      context: ./socket-rt
+      dockerfile: Dockerfile
+    container_name: smartclass-socket-rt
+    environment:
+      - RT_PORT=8092
+      - API_BASE=http://web/api
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "8092:8092"
+    depends_on:
+      - web
+      - redis
+    networks:
+      - smartclass
+
 volumes:
   mysql_data:
 

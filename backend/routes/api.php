@@ -146,6 +146,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/chat/conversations/{id}', [ConversationController::class, 'show']);
     Route::post('/chat/conversations/{id}/messages', [ConversationController::class, 'send']);
     Route::post('/chat/direct', [ConversationController::class, 'direct']);
+    Route::post('/chat/groups', [ConversationController::class, 'createGroup']);
+    Route::post('/chat/conversations/{id}/participants', [ConversationController::class, 'addParticipants']);
+    Route::delete('/chat/conversations/{id}/participants', [ConversationController::class, 'removeParticipant']);
 
     // Lookups
     Route::get('/subjects', [SubjectController::class, 'index']);

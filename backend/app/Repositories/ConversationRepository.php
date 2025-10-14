@@ -113,6 +113,60 @@ class ConversationRepository
             return $conv;
         });
     }
+
+    public function createGroup(int $ownerId, string $title, array $participantIds): Conversation
+    {
+        return DB::transaction(function () use ($ownerId, $title, $participantIds) {
+            $conv = Conversation::create([
+                'type' => 'group',
+                'title' => $title,
+                'created_by' => $ownerId,
+                'last_message_at' => now(),
+            ]);
+
+            $all = collect($participantIds)->unique()->push($ownerId)->unique()->values();
+            $rows = $all->map(fn($uid) => [
+                'conversation_id' => $conv->id,
+                'user_id' => $uid,
+                'role' => $uid === $ownerId ? 'owner' : 'member',
+                'joined_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])->all();
+            DB::table('conversation_participants')->insert($rows);
+            return $conv;
+        });
+    }
+
+    public function userIsOwner(int $conversationId, int $userId): bool
+    {
+        return Conversation::query()
+            ->where('id', $conversationId)
+            ->where('created_by', $userId)
+            ->exists();
+    }
+
+    public function addParticipants(int $conversationId, array $userIds): int
+    {
+        $now = now();
+        $rows = collect($userIds)->unique()->map(fn($uid) => [
+            'conversation_id' => $conversationId,
+            'user_id' => $uid,
+            'role' => 'member',
+            'joined_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ])->all();
+        return DB::table('conversation_participants')->upsert($rows, ['conversation_id','user_id'], ['updated_at']);
+    }
+
+    public function removeParticipant(int $conversationId, int $userId): int
+    {
+        return DB::table('conversation_participants')
+            ->where('conversation_id', $conversationId)
+            ->where('user_id', $userId)
+            ->delete();
+    }
 }
 
 
