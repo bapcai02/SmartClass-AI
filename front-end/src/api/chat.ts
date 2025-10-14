@@ -56,4 +56,14 @@ export async function getConversation(id: number | string, params: { page?: numb
   return data
 }
 
+export async function getOrCreateDirect(userId: number) {
+  const { data } = await api.post<{ id: number }>(`/chat/direct`, { user_id: userId })
+  return data.id
+}
+
+export async function sendChatMessage(conversationId: number | string, payload: { content?: string; message_type?: 'text'|'image'|'file'; file_url?: string }) {
+  const { data } = await api.post(`/chat/conversations/${conversationId}/messages`, payload)
+  return data as { id:number; conversation_id:number; sender:{id:number; name:string}; content?:string; message_type:'text'|'image'|'file'; file_url?:string; created_at:string }
+}
+
 

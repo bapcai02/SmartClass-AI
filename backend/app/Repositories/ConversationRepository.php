@@ -6,6 +6,8 @@ use App\Models\Conversation;
 use App\Models\Message;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class ConversationRepository
 {
@@ -54,6 +56,62 @@ class ConversationRepository
             ->where('conversation_id', $conversationId)
             ->orderBy('created_at', 'asc')
             ->paginate($perPage);
+    }
+
+    public function appendMessage(int $conversationId, int $senderId, array $payload): Message
+    {
+        return DB::transaction(function () use ($conversationId, $senderId, $payload) {
+            /** @var Message $m */
+            $m = Message::create([
+                'conversation_id' => $conversationId,
+                'sender_id' => $senderId,
+                'content' => $payload['content'] ?? null,
+                'message_type' => $payload['message_type'] ?? 'text',
+                'file_url' => $payload['file_url'] ?? null,
+            ]);
+
+            Conversation::where('id', $conversationId)->update([
+                'last_message_at' => now(),
+                'messages_count' => DB::raw('messages_count + 1'),
+            ]);
+
+            return $m->load('sender:id,name');
+        });
+    }
+
+    public function findOrCreateDirect(int $userA, int $userB): Conversation
+    {
+        $ids = [$userA, $userB];
+        sort($ids);
+
+        // Try find existing direct conversation with exactly these 2 participants
+        $existing = Conversation::query()
+            ->where('type', 'direct')
+            ->whereHas('participants', fn($q) => $q->whereIn('users.id', $ids))
+            ->withCount(['participants' => fn($q) => $q->whereIn('users.id', $ids)])
+            ->get()
+            ->first(function ($c) use ($ids) {
+                return (int) $c->participants_count === 2;
+            });
+
+        if ($existing) {
+            return $existing;
+        }
+
+        return DB::transaction(function () use ($userA, $userB) {
+            $conv = Conversation::create([
+                'type' => 'direct',
+                'created_by' => $userA,
+                'last_message_at' => now(),
+            ]);
+
+            DB::table('conversation_participants')->insert([
+                ['conversation_id' => $conv->id, 'user_id' => $userA, 'role' => 'owner', 'joined_at' => now(), 'created_at' => now(), 'updated_at' => now()],
+                ['conversation_id' => $conv->id, 'user_id' => $userB, 'role' => 'member', 'joined_at' => now(), 'created_at' => now(), 'updated_at' => now()],
+            ]);
+
+            return $conv;
+        });
     }
 }
 

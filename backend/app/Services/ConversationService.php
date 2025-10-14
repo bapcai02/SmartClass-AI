@@ -22,6 +22,16 @@ class ConversationService
     {
         return $this->repo->paginateMessages($conversationId, $perPage);
     }
+
+    public function sendMessage(int $conversationId, int $senderId, array $payload)
+    {
+        return $this->repo->appendMessage($conversationId, $senderId, $payload);
+    }
+
+    public function getOrCreateDirect(int $currentUserId, int $otherUserId)
+    {
+        return $this->repo->findOrCreateDirect($currentUserId, $otherUserId);
+    }
 }
 
 

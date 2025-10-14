@@ -140,6 +140,8 @@ Route::middleware('auth:api')->group(function () {
     // Conversations (1-1, groups)
     Route::get('/chat/conversations', [ConversationController::class, 'index']);
     Route::get('/chat/conversations/{id}', [ConversationController::class, 'show']);
+    Route::post('/chat/conversations/{id}/messages', [ConversationController::class, 'send']);
+    Route::post('/chat/direct', [ConversationController::class, 'direct']);
 
     // Lookups
     Route::get('/subjects', [SubjectController::class, 'index']);

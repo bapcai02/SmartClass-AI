@@ -1,17 +1,21 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useEffect, useMemo, useState } from 'react'
-import { Paperclip, Send, Search, Phone, Video, MoreHorizontal, CheckCheck, Image, Smile, Mic, Info } from 'lucide-react'
+import { Paperclip, Send, Search, Phone, Video, MoreHorizontal, Image, Smile, Mic, Info } from 'lucide-react'
 import { Segmented } from '@/components/ui/segmented'
-
-import { useQuery } from '@tanstack/react-query'
-import { getConversations, getConversation, type ConversationListItem } from '@/api/chat'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { getConversations, getConversation, getOrCreateDirect, sendChatMessage } from '@/api/chat'
+import { getUsers, getMe } from '@/api/users'
 
 export default function ChatPage() {
   const [active, setActive] = useState<number | null>(null)
   const [segment, setSegment] = useState('all')
+  const { data: me } = useQuery({ queryKey: ['me'], queryFn: () => getMe() })
   const { data: convos } = useQuery({ queryKey: ['chat-conversations'], queryFn: () => getConversations(50) })
+  const { data: usersPage } = useQuery({ queryKey: ['users-lite'], queryFn: () => getUsers({ perPage: 30 }) })
   const [thread, setThread] = useState<{ id: number; title?: string | null; messages: Array<{ id:number; sender: { id:number; name:string }; content?:string|null; created_at:string }> } | null>(null)
+  const [input, setInput] = useState('')
+  const queryClient = useQueryClient()
 
   const colorPalette = useMemo(() => [
     'bg-slate-200','bg-blue-200','bg-emerald-200','bg-amber-200','bg-purple-200','bg-pink-200','bg-cyan-200','bg-lime-200'
@@ -21,6 +25,21 @@ export default function ChatPage() {
     let hash = 0
     for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) >>> 0
     return colorPalette[hash % colorPalette.length]
+  }
+
+  const getDisplayName = (c: any) => {
+    if (c?.type === 'direct') {
+      const other = c.participants.find((p: any) => p.id !== me?.id)
+      return other?.name || ''
+    }
+    return c?.title || c?.participants.map((p: any) => p.name).join(', ')
+  }
+
+  const getInitials = (name: string) => {
+    if (!name) return ''
+    const parts = name.trim().split(/\s+/)
+    if (parts.length === 1) return parts[0].slice(0,2).toUpperCase()
+    return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase()
   }
 
   useEffect(() => {
@@ -66,6 +85,19 @@ export default function ChatPage() {
                   <input className="w-full rounded-2xl border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm shadow-sm text-slate-900 placeholder-slate-500 focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue" placeholder="Tìm kiếm" />
                 </div>
               </div>
+              {/* Suggested users */}
+              <div className="mt-2 flex items-center gap-2 overflow-x-auto pb-1">
+                {(usersPage?.data || []).slice(0,10).map(u => (
+                  <button key={u.id} onClick={async ()=> {
+                    const id = await getOrCreateDirect(u.id)
+                    setActive(id)
+                    queryClient.invalidateQueries({ queryKey: ['chat-conversations'] })
+                  }} className={`flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 px-2 py-1 text-xs ${pickColor(u.id)} hover:brightness-95`} title={u.name}>
+                    <span className="inline-grid h-5 w-5 place-items-center rounded-full bg-white/60 text-[10px]">{(u.name||'')[0]?.toUpperCase() || '?'}</span>
+                    <span className="max-w-[120px] pr-1 text-slate-700 truncate">{u.name}</span>
+                  </button>
+                ))}
+              </div>
               <div className="mt-3">
                 <Segmented
                   options={[{label:'Tất cả',value:'all'},{label:'Lớp',value:'classes'},{label:'Giáo viên',value:'teachers'},{label:'Nhóm',value:'groups'}]}
@@ -79,20 +111,22 @@ export default function ChatPage() {
                 <button
                   key={c.id}
                   onClick={() => setActive(c.id)}
-                  className={`w-full rounded-xl px-3 py-2 text-left transition-colors ${active===c.id ? 'bg-blue-50 ring-1 ring-blue-200' : 'hover:bg-slate-50'}`}
+                  className={`w-full cursor-pointer rounded-xl px-3 py-2 text-left transition-colors ${active===c.id ? 'bg-blue-50 ring-1 ring-blue-200' : 'hover:bg-slate-50'}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`h-8 w-8 shrink-0 rounded-full grid place-items-center text-[10px] ${pickColor(c.id)}`}>
-                      {(c.title || c.participants.map(p=>p.name).join(', ')).slice(0,2)}
+                      {getInitials(getDisplayName(c))}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="font-medium truncate">{c.title || c.participants.map(p=>p.name).join(', ')}</div>
-                        <div className="text-[10px] text-slate-500">{c.last_message_at ? new Date(c.last_message_at).toLocaleTimeString('vi-VN') : ''}</div>
+                        <div className="font-medium truncate">{getDisplayName(c)}</div>
+                        {idx % 3 === 0 && <span className="h-2 w-2 rounded-full bg-blue-500"/>}
                       </div>
-                      <div className="text-xs text-slate-600 truncate">{c.last_message?.content || ''}</div>
+                      <div className="flex items-center justify-between text-xs text-slate-600">
+                        <div className="truncate">{c.last_message?.content || ''}</div>
+                        <div className="shrink-0 text-[10px] text-slate-500 ml-2">{c.last_message_at ? new Date(c.last_message_at).toLocaleTimeString('vi-VN') : ''}</div>
+                      </div>
                     </div>
-                    {idx % 3 === 0 && <span className="ml-auto h-2 w-2 rounded-full bg-blue-500"/>}
                   </div>
                 </button>
               ))}
@@ -106,9 +140,22 @@ export default function ChatPage() {
             {/* Header */}
             <div className="flex items-center justify-between p-3">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-blue to-brand-green" />
+                <div className={`h-8 w-8 rounded-full grid place-items-center text-[10px] ${pickColor(active || 0)}`}>
+                  {getInitials(getDisplayName((convos||[]).find(c=>c.id===active)))}
+                </div>
                 <div>
-                  <div className="text-sm font-medium">{thread?.title || (convos||[]).find(c=>c.id===active)?.participants.map(p=>p.name).join(', ')}</div>
+                  <div className="text-sm font-medium">{
+                    (()=>{
+                      const current = (convos||[]).find(c=>c.id===active)
+                      if (!current) return thread?.title || ''
+                      if (current.type === 'direct') {
+                        const meId = me?.id
+                        const other = current.participants.find(p=> p.id !== meId)
+                        return other?.name || ''
+                      }
+                      return current.title || current.participants.map(p=>p.name).join(', ')
+                    })()
+                  }</div>
                   <div className="text-xs text-slate-600">Trực tuyến • Đang nhập…</div>
                 </div>
               </div>
@@ -148,12 +195,30 @@ export default function ChatPage() {
                   <input
                     className="w-full rounded-full border border-slate-300 bg-white pl-36 pr-16 py-3 text-sm shadow-sm text-slate-900 placeholder-slate-500 focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
                     placeholder="Nhập tin nhắn…"
+                    value={input}
+                    onChange={(e)=> setInput(e.target.value)}
+                    onKeyDown={async (e)=>{
+                      if (e.key === 'Enter' && !e.shiftKey && active && input.trim()) {
+                        e.preventDefault()
+                        const msg = await sendChatMessage(active, { content: input.trim(), message_type: 'text' })
+                        setThread((t)=> t ? { ...t, messages: [...t.messages, { id: msg.id, sender: msg.sender, content: msg.content, created_at: msg.created_at }] } : t)
+                        setInput('')
+                        queryClient.invalidateQueries({ queryKey: ['chat-conversations'] })
+                      }
+                    }}
                   />
                   <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 hidden sm:block">
                     Nhấn Enter để gửi
                   </div>
                 </div>
-                <button className="grid h-11 w-11 place-items-center rounded-full bg-blue-600 text-white shadow-md hover:brightness-105">
+                <button className="grid h-11 w-11 place-items-center rounded-full bg-blue-600 text-white shadow-md hover:brightness-105" onClick={async ()=>{
+                  if (active && input.trim()) {
+                    const msg = await sendChatMessage(active, { content: input.trim(), message_type: 'text' })
+                    setThread((t)=> t ? { ...t, messages: [...t.messages, { id: msg.id, sender: msg.sender, content: msg.content, created_at: msg.created_at }] } : t)
+                    setInput('')
+                    queryClient.invalidateQueries({ queryKey: ['chat-conversations'] })
+                  }
+                }}>
                   <Send className="h-4 w-4" />
                 </button>
               </div>

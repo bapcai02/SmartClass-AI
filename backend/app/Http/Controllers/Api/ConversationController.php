@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\ConversationService;
+use App\Events\MessageCreated;
 use Illuminate\Http\JsonResponse;
 
 class ConversationController extends Controller
@@ -47,6 +48,36 @@ class ConversationController extends Controller
             'messages' => $messages,
         ]);
     }
+
+    public function send(int $id): JsonResponse
+    {
+        $user = request()->user();
+        request()->validate([
+            'content' => ['nullable','string'],
+            'message_type' => ['nullable','in:text,image,file'],
+            'file_url' => ['nullable','url'],
+        ]);
+        $c = $this->service->getForUser($id, $user->id);
+        abort_unless($c, 404);
+        $msg = $this->service->sendMessage($id, $user->id, request()->only('content','message_type','file_url'));
+        MessageCreated::dispatch($id, [
+            'id' => $msg->id,
+            'conversation_id' => $msg->conversation_id,
+            'sender' => ['id' => $msg->sender->id, 'name' => $msg->sender->name],
+            'content' => $msg->content,
+            'message_type' => $msg->message_type,
+            'file_url' => $msg->file_url,
+            'created_at' => $msg->created_at,
+        ]);
+        return response()->json($msg);
+    }
+
+    public function direct(): JsonResponse
+    {
+        $user = request()->user();
+        $otherId = request()->integer('user_id');
+        abort_if(!$otherId, 422, 'user_id required');
+        $conv = $this->service->getOrCreateDirect($user->id, $otherId);
+        return response()->json(['id' => $conv->id]);
+    }
 }
-
-
