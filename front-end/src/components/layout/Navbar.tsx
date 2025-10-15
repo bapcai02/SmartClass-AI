@@ -10,7 +10,7 @@ const links = [
   { to: '/classes', label: 'Lớp học' },
   { to: '/assignments', label: 'Bài tập' },
   { to: '/reports', label: 'Báo cáo' },
-  { to: '/public/pdfs', label: 'Thư viện PDF' },
+  { to: '/public/pdfs', label: 'Thư viện PDF', hasSub: true },
   { to: '/chat', label: 'Trò chuyện' },
   { to: '/profile', label: 'Hồ sơ' },
 ]
@@ -83,17 +83,54 @@ export function Navbar() {
         </div>
         <nav className="hidden md:flex items-center gap-1 rounded-2xl bg-slate-100 p-1">
           {links.map((l) => {
-            return (
+            const base = (
               <NavLink
                 key={l.to}
                 to={l.to}
                 className={({ isActive }) => {
                   const active = isActive || (l.to === '/classes' && location.pathname.startsWith('/class/'))
-                  return `rounded-xl px-3 py-2 text-sm ${active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:bg-white/60'}`
+                  return `relative rounded-xl px-3 py-2 text-sm ${active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:bg-white/60'}`
                 }}
               >
                 {l.label}
               </NavLink>
+            )
+            if (!l.hasSub) return base
+
+            // Submenu for Thư viện PDF
+            return (
+              <div key={l.to} className="relative group">
+                {base}
+                <div className="invisible absolute left-0 top-full z-50 mt-1 w-[560px] translate-y-1 opacity-0 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 transition">
+                  <div className="grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
+                    <div>
+                      <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Môn học</div>
+                      <div className="grid gap-1 text-sm">
+                        <Link to="/public/pdfs?subject_name=Toán" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Toán</Link>
+                        <Link to="/public/pdfs?subject_name=Lý" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Vật lý</Link>
+                        <Link to="/public/pdfs?subject_name=Hóa học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Hóa học</Link>
+                        <Link to="/public/pdfs?subject_name=Sinh học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Sinh học</Link>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Khối lớp</div>
+                      <div className="grid gap-1 text-sm">
+                        <Link to="/public/pdfs?class_name=L%C3%A1p%2010" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 10</Link>
+                        <Link to="/public/pdfs?class_name=L%C3%A1p%2011" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 11</Link>
+                        <Link to="/public/pdfs?class_name=L%E1%BB%9Bp%2012" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 12</Link>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Category</div>
+                      <div className="grid gap-1 text-sm">
+                        <Link to="/public/pdfs?category=Thi%20%C4%91%E1%BA%A1i%20h%E1%BB%8Dc" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi đại học</Link>
+                        <Link to="/public/pdfs?category=Thi%20gi%E1%BB%AFa%20k%E1%BB%B3" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi giữa kỳ</Link>
+                        <Link to="/public/pdfs?category=Thi%20cu%E1%BB%91i%20k%E1%BB%B3" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi cuối kỳ</Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )
           })}
         </nav>

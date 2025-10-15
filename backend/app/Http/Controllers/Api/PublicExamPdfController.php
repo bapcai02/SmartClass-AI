@@ -14,6 +14,7 @@ class PublicExamPdfController extends Controller
         $query = PublicExamPdf::with(['subject','clazz'])
             ->when($request->filled('subject_id'), fn($q) => $q->where('public_subject_id', $request->get('subject_id')))
             ->when($request->filled('class_id'), fn($q) => $q->where('public_class_id', $request->get('class_id')))
+            ->when($request->filled('category'), fn($q) => $q->where('category', $request->get('category')))
             ->when($request->filled('search'), fn($q) => $q->where('title','like','%'.$request->get('search').'%'))
             ->orderByDesc('id');
 
@@ -33,6 +34,7 @@ class PublicExamPdfController extends Controller
                 'view_count' => (int)($e->view_count ?? 0),
                 'subject' => $e->subject ? ['id' => $e->subject->id, 'name' => $e->subject->name] : null,
                 'clazz' => $e->clazz ? ['id' => $e->clazz->id, 'name' => $e->clazz->name] : null,
+                'category' => $e->category,
             ];
         });
 

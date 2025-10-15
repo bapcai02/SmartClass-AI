@@ -188,10 +188,41 @@ export default function PublicQuestionBankPage() {
       {/* Top nav minimal like reference */}
       <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center justify-between">
-          <a href="/public/question-bank" className="flex items-center gap-2 text-slate-800 font-semibold">
-            <div className="h-8 w-8 rounded-md bg-indigo-600 grid place-items-center text-white"><GraduationCap className="h-5 w-5"/></div>
-            Ngân hàng đề thi
-          </a>
+          <div className="relative group">
+            <a href="/public/question-bank" className="flex items-center gap-2 text-slate-800 font-semibold">
+              <div className="h-8 w-8 rounded-md bg-indigo-600 grid place-items-center text-white"><GraduationCap className="h-5 w-5"/></div>
+              Ngân hàng đề thi
+            </a>
+            <div className="invisible absolute left-0 top-full mt-2 w-[560px] translate-y-1 opacity-0 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 transition z-50">
+              <div className="grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
+                <div>
+                  <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Môn học</div>
+                  <div className="grid gap-1 text-sm">
+                    <a href="/public/pdfs?subject_name=Toán" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Toán</a>
+                    <a href="/public/pdfs?subject_name=Vật lý" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Vật lý</a>
+                    <a href="/public/pdfs?subject_name=Hóa học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Hóa học</a>
+                    <a href="/public/pdfs?subject_name=Sinh học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Sinh học</a>
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Khối lớp</div>
+                  <div className="grid gap-1 text-sm">
+                    <a href="/public/pdfs?class_name=Lớp 10" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 10</a>
+                    <a href="/public/pdfs?class_name=Lớp 11" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 11</a>
+                    <a href="/public/pdfs?class_name=Lớp 12" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 12</a>
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Loại</div>
+                  <div className="grid gap-1 text-sm">
+                    <a href="/public/pdfs?category=Thi đại học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi đại học</a>
+                    <a href="/public/pdfs?category=Thi giữa kỳ" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi giữa kỳ</a>
+                    <a href="/public/pdfs?category=Thi cuối kỳ" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi cuối kỳ</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <nav className="hidden sm:flex items-center gap-5 text-sm text-slate-600">
             <a href="#explore" className="hover:text-slate-900">Đề thi</a>
             <a href="#featured" className="hover:text-slate-900">Kỳ thi nổi bật</a>
@@ -717,7 +748,30 @@ export default function PublicQuestionBankPage() {
 }
 
 function FeaturedPdfs() {
-  const [items, setItems] = useState<Array<{ id:number; title:string; pdf_url:string; subject?:{name:string}; clazz?:{name:string}; file_size_bytes?:number; download_count?:number; view_count?:number }>>([])
+  const [items, setItems] = useState<Array<{ id:number; title:string; pdf_url:string; subject?:{name:string}; clazz?:{name:string}; category?:string; file_size_bytes?:number; download_count?:number; view_count?:number }>>([])
+  const tagBase = "inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium border"
+  const subjectTagClass = (name?: string) => {
+    const n = (name || '').toLowerCase()
+    if (n.includes('toán')) return `${tagBase} bg-blue-50 text-blue-700 border-blue-100`
+    if (n.includes('vật') || n.includes('ly') || n.includes('lý')) return `${tagBase} bg-amber-50 text-amber-800 border-amber-200`
+    if (n.includes('hóa')) return `${tagBase} bg-emerald-50 text-emerald-700 border-emerald-100`
+    if (n.includes('sinh')) return `${tagBase} bg-green-50 text-green-700 border-green-100`
+    return `${tagBase} bg-slate-100 text-slate-700 border-slate-200`
+  }
+  const classTagClass = (name?: string) => {
+    const n = (name || '').toLowerCase()
+    if (n.includes('12')) return `${tagBase} bg-sky-50 text-sky-700 border-sky-100`
+    if (n.includes('11')) return `${tagBase} bg-cyan-50 text-cyan-700 border-cyan-100`
+    if (n.includes('10')) return `${tagBase} bg-teal-50 text-teal-700 border-teal-100`
+    return `${tagBase} bg-slate-100 text-slate-700 border-slate-200`
+  }
+  const categoryTagClass = (name?: string) => {
+    const n = (name || '').toLowerCase()
+    if (n.includes('đại học') || n.includes('dai hoc')) return `${tagBase} bg-indigo-50 text-indigo-700 border-indigo-100`
+    if (n.includes('giữa') || n.includes('giua')) return `${tagBase} bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100`
+    if (n.includes('cuối') || n.includes('cuoi')) return `${tagBase} bg-violet-50 text-violet-700 border-violet-100`
+    return `${tagBase} bg-slate-100 text-slate-700 border-slate-200`
+  }
   const [active, setActive] = useState<typeof items[number] | null>(null)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
   const toPublicUrl = (pdfUrl: string) => {
@@ -763,7 +817,11 @@ function FeaturedPdfs() {
         {items.map(it => (
           <div key={it.id} className="text-left rounded-lg border border-slate-200 bg-white p-4 hover:shadow-md transition">
             <div className="font-medium line-clamp-2">{it.title}</div>
-            <div className="text-xs text-slate-600 mt-1">{it.subject?.name || 'Môn?'} · {it.clazz?.name || 'Khối?'}</div>
+            <div className="text-xs text-slate-600 mt-1 flex items-center gap-2 flex-wrap">
+              <span className={subjectTagClass(it.subject?.name)}>{it.subject?.name || 'Môn?'}</span>
+              <span className={classTagClass(it.clazz?.name)}>{it.clazz?.name || 'Khối?'}</span>
+              {it.category ? (<span className={categoryTagClass(it.category)}>{it.category}</span>) : null}
+            </div>
             <div className="text-xs text-slate-500 mt-1">
               {it.file_size_bytes ? `${(it.file_size_bytes/1024/1024).toFixed(2)} MB` : ''}
               {(typeof it.view_count === 'number' || typeof it.download_count === 'number') && (

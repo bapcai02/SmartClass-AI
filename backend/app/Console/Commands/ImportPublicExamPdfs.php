@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ImportPublicExamPdfs extends Command
 {
-    protected $signature = 'public:import-exam-pdfs {--subject=} {--class=} {--dir=}';
+    protected $signature = 'public:import-exam-pdfs {--subject=} {--class=} {--dir=} {--category=}';
 
     protected $description = 'Import exam PDF files from a directory into public_exam_pdfs with subject/class mapping';
 
@@ -19,6 +19,7 @@ class ImportPublicExamPdfs extends Command
         $subjectName = $this->option('subject') ?: 'Hóa học';
         $className = $this->option('class') ?: 'Lớp 12';
         $dir = $this->option('dir') ?: 'storage/app/public/exam-pdfs';
+        $categoryOpt = $this->option('category');
 
         // Normalize to storage-relative path when under storage/app/public
         $storagePublicPrefix = 'storage/app/public/';
@@ -60,11 +61,31 @@ class ImportPublicExamPdfs extends Command
             $title = preg_replace('/\.pdf$/i', '', $base);
             $title = str_replace(['.docx - Google Tài liệu', '.docx - Google Tài liệu (1)'], '', $title);
 
+            // Skip if already imported for this subject/class by same pdf_url
+            $alreadyExists = PublicExamPdf::where('pdf_url', $pdfUrl)
+                ->where('public_subject_id', $subject->id)
+                ->where('public_class_id', $class->id)
+                ->exists();
+
+            if ($alreadyExists) {
+                $skipped++;
+                continue;
+            }
+
+            // derive category from directory name if not provided
+            $category = $categoryOpt;
+            if (!$category) {
+                // pick immediate parent directory under Lop-12/<Category>/filename.pdf
+                $parentDir = basename(dirname($path));
+                $category = $parentDir && !preg_match('/^Lop-\d+$/i', $parentDir) ? $parentDir : null;
+            }
+
             try {
                 PublicExamPdf::create([
                     'title' => $title,
                     'public_subject_id' => $subject->id,
                     'public_class_id' => $class->id,
+                    'category' => $category,
                     'pdf_url' => $pdfUrl,
                     'file_size_bytes' => @filesize($path) ?: null,
                     'num_pages' => null,
