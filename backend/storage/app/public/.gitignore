@@ -1,2 +1,6 @@
 *
 !.gitignore
+!exam-pdfs/
+!exam-pdfs/**
+
+

@@ -188,48 +188,56 @@ export default function PublicQuestionBankPage() {
       {/* Top nav minimal like reference */}
       <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center justify-between">
-          <div className="relative group">
-            <a href="/public/question-bank" className="flex items-center gap-2 text-slate-800 font-semibold">
-              <div className="h-8 w-8 rounded-md bg-indigo-600 grid place-items-center text-white"><GraduationCap className="h-5 w-5"/></div>
-              Ngân hàng đề thi
-            </a>
-            <div className="invisible absolute left-0 top-full mt-2 w-[560px] translate-y-1 opacity-0 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 transition z-50">
-              <div className="grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
-                <div>
-                  <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Môn học</div>
-                  <div className="grid gap-1 text-sm">
-                    <a href="/public/pdfs?subject_name=Toán" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Toán</a>
-                    <a href="/public/pdfs?subject_name=Vật lý" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Vật lý</a>
-                    <a href="/public/pdfs?subject_name=Hóa học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Hóa học</a>
-                    <a href="/public/pdfs?subject_name=Sinh học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Sinh học</a>
+          <a href="/public/question-bank" className="flex items-center gap-2 text-slate-800 font-semibold">
+            <div className="h-8 w-8 rounded-md bg-indigo-600 grid place-items-center text-white"><GraduationCap className="h-5 w-5"/></div>
+            Ngân hàng đề thi
+          </a>
+          <nav className="hidden sm:flex items-center gap-5 text-sm text-slate-600">
+            <a href="#explore" className="hover:text-slate-900">Đề thi</a>
+            <a href="#featured" className="hover:text-slate-900">Kỳ thi nổi bật</a>
+            <div className="relative group">
+              <a href="/public/pdfs" className="hover:text-slate-900">Thư viện PDF</a>
+              <div className="invisible absolute left-0 top-full mt-2 w-[560px] translate-y-1 opacity-0 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 transition z-50">
+                <div className="grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
+                  <div>
+                    <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Môn học</div>
+                    <div className="grid gap-1 text-sm">
+                      <a href="/public/pdfs?subject_name=Toán" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Toán</a>
+                      <a href="/public/pdfs?subject_name=Vật lý" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Vật lý</a>
+                      <a href="/public/pdfs?subject_name=Hóa học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Hóa học</a>
+                      <a href="/public/pdfs?subject_name=Sinh học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Sinh học</a>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Khối lớp</div>
-                  <div className="grid gap-1 text-sm">
-                    <a href="/public/pdfs?class_name=Lớp 10" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 10</a>
-                    <a href="/public/pdfs?class_name=Lớp 11" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 11</a>
-                    <a href="/public/pdfs?class_name=Lớp 12" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 12</a>
+                  <div>
+                    <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Khối lớp</div>
+                    <div className="grid gap-1 text-sm">
+                      <a href="/public/pdfs?class_name=Lớp 10" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 10</a>
+                      <a href="/public/pdfs?class_name=Lớp 11" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 11</a>
+                      <a href="/public/pdfs?class_name=Lớp 12" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Lớp 12</a>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Loại</div>
-                  <div className="grid gap-1 text-sm">
-                    <a href="/public/pdfs?category=Thi đại học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi đại học</a>
-                    <a href="/public/pdfs?category=Thi giữa kỳ" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi giữa kỳ</a>
-                    <a href="/public/pdfs?category=Thi cuối kỳ" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi cuối kỳ</a>
+                  <div>
+                    <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Loại</div>
+                    <div className="grid gap-1 text-sm">
+                      <a href="/public/pdfs?category=Thi đại học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi đại học</a>
+                      <a href="/public/pdfs?category=Thi giữa kỳ" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi giữa kỳ</a>
+                      <a href="/public/pdfs?category=Thi cuối kỳ" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thi cuối kỳ</a>
+                    </div>
+                  </div>
+                  <div className="col-span-3 border-t pt-2 mt-1">
+                    <div className="mb-2 px-2 text-xs font-semibold text-slate-500">Liên kết nhanh</div>
+                    <div className="grid grid-cols-3 gap-1 text-sm">
+                      <a href="/public/pdfs" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Thư viện PDF</a>
+                      <a href="/public/pdfs?category=Thi đại học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">PDF · Thi đại học</a>
+                      <a href="/public/pdfs?subject_name=Toán&class_name=Lớp 12" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">PDF · Toán · Lớp 12</a>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <nav className="hidden sm:flex items-center gap-5 text-sm text-slate-600">
-            <a href="#explore" className="hover:text-slate-900">Đề thi</a>
-            <a href="#featured" className="hover:text-slate-900">Kỳ thi nổi bật</a>
-            <a href="/public/pdfs" className="hover:text-slate-900">Thư viện PDF</a>
             <a href="#contact" className="hover:text-slate-900">Liên hệ</a>
           </nav>
-          <div className="flex items-center gap-2"/>
+          <div className="flex items-center gap-2" />
         </div>
       </header>
 
@@ -597,6 +605,17 @@ export default function PublicQuestionBankPage() {
             </div>
           )}
         </Card>
+
+        <section className="mb-5">
+          <div className="mb-2 text-slate-800 font-medium">Danh mục</div>
+          <div className="flex flex-wrap gap-2">
+            <a href="#explore" className="rounded-full px-3 py-1.5 text-sm border border-slate-300 text-slate-700 hover:bg-slate-50">Đề thi</a>
+            <a href="#featured" className="rounded-full px-3 py-1.5 text-sm border border-amber-300 text-amber-700 hover:bg-amber-50">Kỳ thi nổi bật</a>
+            <a href="/public/pdfs" className="rounded-full px-3 py-1.5 text-sm border border-indigo-300 text-indigo-700 hover:bg-indigo-50">Thư viện PDF</a>
+            <a href="#contact" className="rounded-full px-3 py-1.5 text-sm border border-slate-300 text-slate-700 hover:bg-slate-50">Liên hệ</a>
+          </div>
+        </section>
+
         <h2 className="mb-3 text-lg font-semibold text-slate-900">Đề thi mới</h2>
         <div className="mb-3 text-sm text-slate-600">{loadingList ? 'Đang lọc…' : `Có ${items.length} đề phù hợp`}</div>
         <div className="grid gap-4 sm:grid-cols-2">

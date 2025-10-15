@@ -164,6 +164,9 @@ export default function PublicExamPdfsPage() {
                     <a href="/public/pdfs?subject_name=Vật lý&class_name=Lớp 12&category=Thi đại học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Vật lý · Lớp 12 · Thi đại học</a>
                     <a href="/public/pdfs?subject_name=Hóa học&class_name=Lớp 12&category=Thi đại học" className="rounded-lg px-2 py-1.5 hover:bg-slate-50">Hóa học · Lớp 12 · Thi đại học</a>
                   </div>
+                  <div className="mt-2 px-2 text-xs text-slate-600">
+                    <a href="/public/question-bank" className="rounded px-2 py-1 hover:bg-slate-50 text-slate-700 border border-slate-200">Tới Ngân hàng đề thi</a>
+                  </div>
                 </div>
               </div>
             </div>
