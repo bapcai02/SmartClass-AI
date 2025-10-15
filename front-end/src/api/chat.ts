@@ -61,9 +61,14 @@ export async function getOrCreateDirect(userId: number) {
   return data.id
 }
 
-export async function sendChatMessage(conversationId: number | string, payload: { content?: string; message_type?: 'text'|'image'|'file'; file_url?: string }) {
+export async function sendChatMessage(conversationId: number | string, payload: { content?: string; message_type?: 'text'|'image'|'file'; file_url?: string; replied_to_id?: number }) {
   const { data } = await api.post(`/chat/conversations/${conversationId}/messages`, payload)
-  return data as { id:number; conversation_id:number; sender:{id:number; name:string}; content?:string; message_type:'text'|'image'|'file'; file_url?:string; created_at:string }
+  return data as { id:number; conversation_id:number; sender:{id:number; name:string}; content?:string; message_type:'text'|'image'|'file'; file_url?:string; replied_to_id?:number; created_at:string }
+}
+
+export async function addReaction(conversationId: number, data: { message_id: number; emoji: string }) {
+  const response = await api.post(`/chat/conversations/${conversationId}/reactions`, data)
+  return response.data
 }
 
 export async function createGroupChat(title: string, participantIds: number[]) {

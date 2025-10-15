@@ -145,6 +145,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/chat/conversations', [ConversationController::class, 'index']);
     Route::get('/chat/conversations/{id}', [ConversationController::class, 'show']);
     Route::post('/chat/conversations/{id}/messages', [ConversationController::class, 'send']);
+    Route::post('/chat/conversations/{id}/reactions', [ConversationController::class, 'react']);
     Route::post('/chat/direct', [ConversationController::class, 'direct']);
     Route::post('/chat/groups', [ConversationController::class, 'createGroup']);
     Route::post('/chat/conversations/{id}/participants', [ConversationController::class, 'addParticipants']);

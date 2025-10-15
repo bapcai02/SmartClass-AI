@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\ConversationService;
-use App\Events\MessageCreated;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 
@@ -62,19 +62,22 @@ class ConversationController extends Controller
             'content' => ['nullable','string'],
             'message_type' => ['nullable','in:text,image,file'],
             'file_url' => ['nullable','url'],
+            'replied_to_id' => ['nullable','integer'],
         ]);
         $c = $this->service->getForUser($id, $user->id);
         abort_unless($c, 404);
-        $msg = $this->service->sendMessage($id, $user->id, request()->only('content','message_type','file_url'));
-        MessageCreated::dispatch($id, [
+        $msg = $this->service->sendMessage($id, $user->id, request()->only('content','message_type','file_url','replied_to_id'));
+        // Publish to outgoing bus for Socket.io to fan-out
+        Redis::publish('chat:outgoing', json_encode([
             'id' => $msg->id,
             'conversation_id' => $msg->conversation_id,
             'sender' => ['id' => $msg->sender->id, 'name' => $msg->sender->name],
             'content' => $msg->content,
             'message_type' => $msg->message_type,
             'file_url' => $msg->file_url,
+            'replied_to_id' => $msg->replied_to_id,
             'created_at' => $msg->created_at,
-        ]);
+        ]));
         return response()->json($msg);
     }
 
@@ -121,5 +124,32 @@ class ConversationController extends Controller
         abort_unless($this->service->userCanManage($id, $user->id), 403);
         $ok = $this->service->removeParticipant($id, (int) $data['user_id']);
         return response()->json(['removed' => (bool) $ok]);
+    }
+
+    public function react(int $id): JsonResponse
+    {
+        $user = request()->user();
+        $data = request()->validate([
+            'message_id' => ['required','integer'],
+            'emoji' => ['required','string','max:8'],
+        ]);
+        // Store reaction in a lightweight table or pivot-like structure
+        
+        \DB::table('message_reactions')->updateOrInsert(
+            [ 'message_id' => $data['message_id'], 'user_id' => $user->id ],
+            [ 'emoji' => $data['emoji'], 'updated_at' => now(), 'created_at' => now() ]
+        );
+
+        // Fan-out via Redis so Socket.io can update in realtime
+        \Illuminate\Support\Facades\Redis::publish('chat:outgoing', json_encode([
+            'type' => 'reaction',
+            'conversation_id' => $id,
+            'message_id' => $data['message_id'],
+            'user_id' => $user->id,
+            'emoji' => $data['emoji'],
+            'created_at' => now()->toISOString(),
+        ]));
+
+        return response()->json(['ok' => true]);
     }
 }

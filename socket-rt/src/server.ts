@@ -22,6 +22,19 @@ const pubClient = new Redis({ host: REDIS_HOST, port: REDIS_PORT })
 const subClient = pubClient.duplicate()
 io.adapter(createAdapter(pubClient, subClient))
 
+// Subscribe outgoing bus and fan-out to rooms
+subClient.subscribe('chat:outgoing').then(() => {
+  subClient.on('message', (channel, message) => {
+    if (channel !== 'chat:outgoing') return
+    try {
+      const data = JSON.parse(message)
+      const conversationId = data?.conversation_id || data?.conversationId
+      if (!conversationId) return
+      io.to(`conversation:${conversationId}`).emit('message', data)
+    } catch {}
+  })
+})
+
 io.use(async (socket, next) => {
   const token = socket.handshake.auth?.token || socket.handshake.headers['authorization']?.toString().replace(/^Bearer\s+/i, '')
   if (!token) return next(new Error('unauthorized'))
@@ -40,15 +53,19 @@ io.on('connection', (socket) => {
     const token: string = (socket as any).token
     if (!payload?.conversationId || (!payload.content && !payload.file_url)) return
     try {
-      const resp = await fetch(`${API_BASE}/chat/conversations/${payload.conversationId}/messages`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: payload.content, message_type: payload.message_type || 'text', file_url: payload.file_url })
-      })
-      if (!resp.ok) return
-      const data = await resp.json()
-      // client will also get Reverb broadcast; local emit optional
-      io.to(`conversation:${payload.conversationId}`).emit('message_echo', data)
+      // Verify token to get sender id
+      const me = await fetch(`${API_BASE}/profile`, { headers: { 'Authorization': `Bearer ${token}` }})
+      if (!me.ok) return
+      const meJson = await me.json()
+      const senderId = meJson?.id || meJson?.user?.id
+      if (!senderId) return
+      await pubClient.publish('chat:incoming', JSON.stringify({
+        conversationId: payload.conversationId,
+        senderId,
+        content: payload.content,
+        message_type: payload.message_type || 'text',
+        file_url: payload.file_url || null,
+      }))
     } catch {}
   })
 })
