@@ -661,8 +661,49 @@ export default function PublicQuestionBankPage() {
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 >
                   <option value="newest">Mới nhất</option>
-                  <option value="most">Tải nhiều</option>
+                  <option value="most">Làm nhiều</option>
                   <option value="az">A → Z</option>
+                  <option value="views">Lượt xem</option>
+                  <option value="questions">Số câu hỏi</option>
+                  <option value="duration">Thời lượng</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Độ khó</label>
+                <div className="flex items-center gap-2">
+                  <input type="number" min={1} max={5} value={difficultyMin as any} onChange={(e)=> setDifficultyMin(e.target.value ? Number(e.target.value) : '')} placeholder="Min"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                  <span className="text-slate-500">-</span>
+                  <input type="number" min={1} max={5} value={difficultyMax as any} onChange={(e)=> setDifficultyMax(e.target.value ? Number(e.target.value) : '')} placeholder="Max"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Chương</label>
+                <input type="text" value={chapter} onChange={(e)=> setChapter(e.target.value)} placeholder="Ví dụ: Hình học không gian"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Tags</label>
+                <input type="text" value={tags} onChange={(e)=> setTags(e.target.value)} placeholder="vd: đạo hàm, lượng giác"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                <div className="mt-1 text-xs text-slate-500">Phân tách bằng dấu phẩy</div>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Thời lượng (phút)</label>
+                <div className="flex items-center gap-2">
+                  <input type="number" min={0} value={durationMin as any} onChange={(e)=> setDurationMin(e.target.value ? Number(e.target.value) : '')} placeholder="Từ"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                  <span className="text-slate-500">-</span>
+                  <input type="number" min={0} value={durationMax as any} onChange={(e)=> setDurationMax(e.target.value ? Number(e.target.value) : '')} placeholder="Đến"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Kích thước trang</label>
+                <select value={perPage} onChange={(e)=> setPerPage(Number(e.target.value))}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                  {[6,12,24,48].map(n => <option key={n} value={n}>{n} / trang</option>)}
                 </select>
               </div>
               <div className="flex items-end gap-2">
@@ -754,10 +795,20 @@ export default function PublicQuestionBankPage() {
             </div>
           )}
         </div>
-        {!loadingList && items.length > visibleCount && (
-          <div className="text-center mt-7">
-            <Button variant="outline" onClick={() => setVisibleCount(c => c + 10)}>Xem thêm</Button>
+        {meta ? (
+          <div className="mt-6 flex items-center justify-between">
+            <div className="text-sm text-slate-600">Trang {meta.current_page} / {meta.last_page} • Tổng {meta.total} đề</div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={()=> goToPage(Math.max(1, (meta?.current_page||1) - 1))} disabled={meta.current_page <= 1}>Trước</Button>
+              <Button variant="outline" onClick={()=> goToPage(Math.min(meta.last_page, meta.current_page + 1))} disabled={meta.current_page >= meta.last_page}>Sau</Button>
+            </div>
           </div>
+        ) : (
+          !loadingList && items.length > visibleCount && (
+            <div className="text-center mt-7">
+              <Button variant="outline" onClick={() => setVisibleCount(c => c + 10)}>Xem thêm</Button>
+            </div>
+          )
         )}
         
         {/* Top người thi (dữ liệu thật) */}

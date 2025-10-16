@@ -38,6 +38,20 @@ export default function PublicExamTakePage() {
   const [aiImage, setAiImage] = useState<File | null>(null)
   const [answers, setAnswers] = useState<Record<number, string | null>>({})
   const questionRefs = useRef<Record<number, HTMLDivElement | null>>({})
+  const [submissionId, setSubmissionId] = useState<number | null>(null)
+  const [reviewData, setReviewData] = useState<null | {
+    submission_id: number
+    score: number
+    num_correct: number
+    num_questions: number
+    details: Array<{ question_id: number; content: string; your_answer?: string | null; correct_answer?: string | null; is_correct: boolean; explanation?: string | null; chapter?: string | null; difficulty?: number | null; tags?: string[] }>
+    strengths: Array<{ topic: string; accuracy: number }>
+  }>(null)
+  const [showReview, setShowReview] = useState(false)
+  const [shareBusy, setShareBusy] = useState(false)
+  const [shareToken, setShareToken] = useState<string | null>(null)
+  const [reportOpen, setReportOpen] = useState(false)
+  const [reportForm, setReportForm] = useState<{ targetType: 'exam' | 'question'; targetId: number | '' ; reason: string; details: string; contact: string }>({ targetType: 'exam', targetId: 0 as any, reason: '', details: '', contact: '' })
 
   useEffect(() => {
     (async () => {
@@ -323,6 +337,102 @@ export default function PublicExamTakePage() {
           </div>
         </Card>
 
+        {/* Review Drawer */}
+        {showReview && reviewData && (
+          <div className="fixed inset-0 z-40">
+            <div className="absolute inset-0 bg-black/40" onClick={()=> setShowReview(false)} />
+            <div className="absolute right-0 top-0 h-full w-full max-w-3xl bg-white shadow-2xl border-l border-slate-200 flex flex-col">
+              <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-slate-500">Xem lại bài làm</div>
+                  <div className="font-semibold text-slate-900">Điểm: {reviewData.score} • Đúng {reviewData.num_correct}/{reviewData.num_questions}</div>
+                </div>
+                <button className="p-2 rounded hover:bg-slate-100" onClick={()=> setShowReview(false)}><X className="h-4 w-4" /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 grid gap-4">
+                <div className="rounded-lg border border-slate-200 p-3">
+                  <div className="text-sm font-medium mb-2">Điểm mạnh/yếu theo chủ đề</div>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    {reviewData.strengths.map((s, idx) => (
+                      <div key={idx} className="flex items-center justify-between rounded border border-slate-200 px-3 py-2 text-sm">
+                        <div className="text-slate-700">{s.topic}</div>
+                        <div className="font-semibold text-slate-900">{Math.round(s.accuracy * 100)}%</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {reviewData.details.map((d, idx) => (
+                  <div key={d.question_id} className="rounded-lg border border-slate-200 p-3">
+                    <div className="mb-2 text-sm text-slate-500">Câu {idx+1}</div>
+                    <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: renderMath(d.content) }} />
+                    <div className="mt-2 grid sm:grid-cols-2 gap-2 text-sm">
+                      <div className={`rounded px-3 py-2 border ${d.is_correct ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>Bạn chọn: {d.your_answer || '—'}</div>
+                      <div className="rounded px-3 py-2 border bg-slate-50 text-slate-700 border-slate-200">Đáp án đúng: {d.correct_answer || '—'}</div>
+                    </div>
+                    {(d.explanation || d.chapter || d.difficulty) && (
+                      <div className="mt-3 text-sm text-slate-700">
+                        {d.explanation && <div className="mb-1"><span className="font-medium">Giải thích:</span> {d.explanation}</div>}
+                        {d.chapter && <div className="mb-1"><span className="font-medium">Chương:</span> {d.chapter}</div>}
+                        {typeof d.difficulty === 'number' && <div><span className="font-medium">Độ khó:</span> {d.difficulty}</div>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Report Modal */}
+        {reportOpen && (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/30" onClick={()=> setReportOpen(false)}></div>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden">
+              <div className="p-4 border-b border-slate-200 font-semibold text-slate-900">Báo lỗi nội dung</div>
+              <div className="p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-sm text-slate-600">Đối tượng</label>
+                    <select value={reportForm.targetType} onChange={(e)=> setReportForm(f=> ({ ...f, targetType: e.target.value as any }))} className="w-full rounded border border-slate-300 px-3 py-2 text-sm">
+                      <option value="exam">Đề thi</option>
+                      <option value="question">Câu hỏi</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-slate-600">ID</label>
+                    <input type="number" value={reportForm.targetId as any} onChange={(e)=> setReportForm(f=> ({ ...f, targetId: Number(e.target.value)||0 }))} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-slate-600">Lý do</label>
+                  <input type="text" value={reportForm.reason} onChange={(e)=> setReportForm(f=> ({ ...f, reason: e.target.value }))} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Ví dụ: Sai đáp án, diễn đạt khó hiểu…" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-slate-600">Chi tiết</label>
+                  <textarea value={reportForm.details} onChange={(e)=> setReportForm(f=> ({ ...f, details: e.target.value }))} className="w-full rounded border border-slate-300 px-3 py-2 text-sm min-h-[80px]" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-slate-600">Liên hệ (email/điện thoại)</label>
+                  <input type="text" value={reportForm.contact} onChange={(e)=> setReportForm(f=> ({ ...f, contact: e.target.value }))} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={()=> setReportOpen(false)}>Hủy</Button>
+                  <Button onClick={async ()=>{
+                    try {
+                      if (!reportForm.targetId || !reportForm.reason) { alert('Vui lòng nhập ID và lý do'); return }
+                      const body = { target_type: reportForm.targetType, target_id: reportForm.targetId, reason: reportForm.reason, details: reportForm.details, contact: reportForm.contact }
+                      await api.post('/public/report', body)
+                      alert('Đã gửi báo lỗi. Cảm ơn bạn!')
+                      setReportOpen(false)
+                    } catch (e: any) {
+                      alert(e?.message || 'Gửi báo lỗi thất bại')
+                    }
+                  }}>Gửi</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Điều hướng câu hỏi bên phải */}
         <div className="fixed right-4 top-24 z-30 w-72">
           <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 shadow-lg">
@@ -366,7 +476,21 @@ export default function PublicExamTakePage() {
                       answers: Object.fromEntries(Object.entries(answers).filter(([_, v]) => !!v) as [string,string][]) ,
                     }
                     const { data } = await api.post(`/public/exams/${id}/submit`, payload)
-                    alert(`Đã nộp bài. Điểm: ${data?.score ?? 0}`)
+                    const sid = Number(data?.submission_id)
+                    setSubmissionId(Number.isFinite(sid) ? sid : null)
+                    // fetch review
+                    if (Number.isFinite(sid)) {
+                      try {
+                        const resp = await api.get(`/public/submissions/${sid}/review`)
+                        setReviewData(resp.data as any)
+                        setShowReview(true)
+                      } catch (e) {
+                        // fallback simple alert
+                        alert(`Đã nộp bài. Điểm: ${data?.score ?? 0}`)
+                      }
+                    } else {
+                      alert(`Đã nộp bài. Điểm: ${data?.score ?? 0}`)
+                    }
                   } catch (e: any) {
                     alert(e?.message || 'Nộp bài thất bại')
                   } finally {
@@ -379,6 +503,33 @@ export default function PublicExamTakePage() {
             </div>
           </div>
         </div>
+        {/* Post-submit actions */}
+        {submissionId ? (
+          <div className="mx-auto max-w-4xl mt-4 px-4">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => setShowReview(true)}>Xem lại bài làm</Button>
+              <Button variant="outline" disabled={shareBusy} onClick={async ()=>{
+                try {
+                  setShareBusy(true)
+                  const body: any = { target_type: 'submission', target_id: submissionId, max_views: 50 }
+                  const { data } = await api.post('/public/share', body)
+                  const token = String(data?.token || '')
+                  setShareToken(token)
+                  if (token) {
+                    const url = `${window.location.origin}/api/public/share/${token}`
+                    await navigator.clipboard.writeText(url)
+                    alert('Đã tạo và sao chép liên kết chia sẻ')
+                  }
+                } catch (e: any) {
+                  alert(e?.message || 'Tạo liên kết chia sẻ thất bại')
+                } finally {
+                  setShareBusy(false)
+                }
+              }}>Chia sẻ bài làm</Button>
+              <Button variant="outline" onClick={()=> { setReportOpen(true); setReportForm({ targetType: 'exam', targetId: Number(id), reason: '', details: '', contact: '' }) }}>Báo lỗi nội dung</Button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   )
