@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\AiChatController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\PublicExamController;
 use App\Http\Controllers\Api\PublicExamPdfController;
+use App\Http\Controllers\Api\PublicShareController;
+use App\Http\Controllers\Api\PublicReportController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ConversationController;
 use Illuminate\Broadcasting\BroadcastController;
@@ -31,6 +33,13 @@ Route::get('/public/leaderboard', [PublicExamController::class, 'leaderboard']);
 Route::get('/public/exam-pdfs', [PublicExamPdfController::class, 'index']);
 Route::get('/public/exam-pdfs/{id}/download', [PublicExamPdfController::class, 'download']);
 Route::get('/public/exam-pdfs/{id}/view', [PublicExamPdfController::class, 'view']);
+
+// Public utilities
+Route::get('/public/exams/random', [PublicExamController::class, 'random']);
+Route::get('/public/submissions/{id}/review', [PublicExamController::class, 'review']);
+Route::post('/public/share', [PublicShareController::class, 'create']);
+Route::get('/public/share/{token}', [PublicShareController::class, 'resolve']);
+Route::post('/public/report', [PublicReportController::class, 'store']);
 
 // (Removed /public2/* aliases)
 

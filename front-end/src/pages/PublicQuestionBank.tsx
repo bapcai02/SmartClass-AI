@@ -45,8 +45,17 @@ export default function PublicQuestionBankPage() {
   const [subjects, setSubjects] = useState<Array<{ id: number; name: string }>>([])
   const [grade, setGrade] = useState<number | ''>('')
   const [year, setYear] = useState<number | ''>('')
-  const [sortBy, setSortBy] = useState<'newest' | 'most' | 'az'>('newest')
-  const [visibleCount, setVisibleCount] = useState(6)
+  const [sortBy, setSortBy] = useState<'newest' | 'most' | 'az' | 'views' | 'questions' | 'duration'>('newest')
+  const [difficultyMin, setDifficultyMin] = useState<number | ''>('')
+  const [difficultyMax, setDifficultyMax] = useState<number | ''>('')
+  const [chapter, setChapter] = useState<string>('')
+  const [tags, setTags] = useState<string>('')
+  const [durationMin, setDurationMin] = useState<number | ''>('')
+  const [durationMax, setDurationMax] = useState<number | ''>('')
+  const [page, setPage] = useState<number>(1)
+  const [perPage, setPerPage] = useState<number>(12)
+  const [meta, setMeta] = useState<{ current_page: number; per_page: number; total: number; last_page: number } | null>(null)
+  const [visibleCount, setVisibleCount] = useState(6) // kept for backward-compatible section rendering
   const [loadingList, setLoadingList] = useState(false)
   const [quickView, setQuickView] = useState<PublicExam | null>(null)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
@@ -80,19 +89,20 @@ export default function PublicQuestionBankPage() {
     try {
       const { data } = await api.get('/public/question-bank', { params })
       let list = (data?.data as PublicExam[]) || []
+      const m = data?.meta as typeof meta | undefined
+      if (m && typeof m.current_page === 'number') {
+        setMeta(m)
+      } else {
+        setMeta(null)
+      }
       // Client-side year filter (simple heuristic: match year in title)
       if (year) {
         const re = new RegExp(String(year))
         list = list.filter(e => re.test(String(e.title || '')))
       }
-      // Sorting
+      // Client-side sort fallback for 'az'
       if (sortBy === 'az') {
         list = list.slice().sort((a,b)=> String(a.title||'').localeCompare(String(b.title||'')))
-      } else if (sortBy === 'most') {
-        list = list.slice().sort((a,b)=> (b.submissions?.length||0) - (a.submissions?.length||0))
-      } else {
-        // newest by start_time desc as fallback
-        list = list.slice().sort((a,b)=> new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
       }
       setItems(list)
     } finally {
@@ -101,12 +111,32 @@ export default function PublicQuestionBankPage() {
   }
 
   const handleSearch = () => {
-    load({ 
+    setPage(1)
+    const sortMap: Record<string, string | undefined> = {
+      newest: 'latest',
+      most: 'attempts',
+      views: 'views',
+      questions: 'questions',
+      duration: 'duration',
+      az: undefined, // handled client-side
+    }
+    load({
       search: searchTerm || undefined,
       subject_id: subjectId || undefined,
       grade: grade || undefined,
-      year: year || undefined,
-      sort: sortBy || undefined,
+      // advanced filters
+      difficulty_min: difficultyMin || undefined,
+      difficulty_max: difficultyMax || undefined,
+      chapter: chapter || undefined,
+      tag: undefined,
+      tags: tags ? tags : undefined,
+      duration_min: durationMin || undefined,
+      duration_max: durationMax || undefined,
+      // pagination & sorting
+      per_page: perPage || undefined,
+      page: 1,
+      sort: sortMap[sortBy] || undefined,
+      order: 'desc',
     })
   }
 
@@ -116,8 +146,45 @@ export default function PublicQuestionBankPage() {
     setGrade('')
     setYear('')
     setSortBy('newest')
+    setDifficultyMin('')
+    setDifficultyMax('')
+    setChapter('')
+    setTags('')
+    setDurationMin('')
+    setDurationMax('')
+    setPerPage(12)
+    setPage(1)
     setVisibleCount(6)
-    load({})
+    setMeta(null)
+    load({ per_page: 12, page: 1 })
+  }
+
+  // pagination change handler
+  const goToPage = (p: number) => {
+    const sortMap: Record<string, string | undefined> = {
+      newest: 'latest',
+      most: 'attempts',
+      views: 'views',
+      questions: 'questions',
+      duration: 'duration',
+      az: undefined,
+    }
+    setPage(p)
+    load({
+      search: searchTerm || undefined,
+      subject_id: subjectId || undefined,
+      grade: grade || undefined,
+      difficulty_min: difficultyMin || undefined,
+      difficulty_max: difficultyMax || undefined,
+      chapter: chapter || undefined,
+      tags: tags || undefined,
+      duration_min: durationMin || undefined,
+      duration_max: durationMax || undefined,
+      per_page: perPage || undefined,
+      page: p,
+      sort: sortMap[sortBy] || undefined,
+      order: 'desc',
+    })
   }
 
   async function sendChat() {

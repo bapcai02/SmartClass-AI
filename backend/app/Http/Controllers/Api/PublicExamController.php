@@ -19,7 +19,8 @@ class PublicExamController extends Controller
 
     public function index(Request $request)
     {
-        $query = PublicExam::with(['subject','clazz'])->withCount('questions')
+        $query = PublicExam::with(['subject','clazz'])
+            ->withCount('questions')
             ->when($request->filled('search'), function ($q) use ($request) {
                 $term = $request->get('search');
                 $q->where('title', 'like', "%{$term}%");
@@ -34,16 +35,71 @@ class PublicExamController extends Controller
                 $q->whereHas('clazz', function ($qq) use ($request) {
                     $qq->where('grade', (int)$request->get('grade'));
                 });
+            })
+            // Advanced filters via questions attributes
+            ->when($request->filled('difficulty_min') || $request->filled('difficulty_max'), function ($q) use ($request) {
+                $min = $request->integer('difficulty_min');
+                $max = $request->integer('difficulty_max');
+                $q->whereHas('questions', function ($qq) use ($min, $max) {
+                    if ($min !== null) { $qq->where('difficulty', '>=', $min); }
+                    if ($max !== null) { $qq->where('difficulty', '<=', $max); }
+                });
+            })
+            ->when($request->filled('chapter'), function ($q) use ($request) {
+                $chapter = $request->get('chapter');
+                $q->whereHas('questions', function ($qq) use ($chapter) {
+                    $qq->where('chapter', 'like', '%'.$chapter.'%');
+                });
+            })
+            ->when($request->filled('tag'), function ($q) use ($request) {
+                // single tag match
+                $tag = $request->get('tag');
+                $q->whereHas('questions', function ($qq) use ($tag) {
+                    $qq->whereJsonContains('tags', $tag);
+                });
+            })
+            ->when($request->filled('tags'), function ($q) use ($request) {
+                // multiple tags: require any match
+                $tags = array_filter(array_map('trim', explode(',', (string) $request->get('tags'))));
+                if (!empty($tags)) {
+                    $q->whereHas('questions', function ($qq) use ($tags) {
+                        foreach ($tags as $tg) {
+                            $qq->orWhereJsonContains('tags', $tg);
+                        }
+                    });
+                }
+            })
+            ->when($request->filled('duration_min') || $request->filled('duration_max'), function ($q) use ($request) {
+                $dmin = $request->integer('duration_min');
+                $dmax = $request->integer('duration_max');
+                if ($dmin !== null) { $q->where('duration_minutes', '>=', $dmin); }
+                if ($dmax !== null) { $q->where('duration_minutes', '<=', $dmax); }
             });
 
-        // Top by attempts if requested, else latest
-        if ($request->boolean('top', false)) {
-            $query->orderByDesc('attempts');
-        } else {
-            $query->orderByDesc('id');
+        // Sorting
+        $sort = $request->get('sort'); // latest|attempts|views|questions|duration
+        $order = strtolower((string) $request->get('order', 'desc')) === 'asc' ? 'asc' : 'desc';
+        if ($request->boolean('top', false) && !$sort) { // backward-compat
+            $sort = 'attempts';
+        }
+        switch ($sort) {
+            case 'attempts':
+                $query->orderBy('attempts', $order);
+                break;
+            case 'views':
+                $query->orderBy('views', $order);
+                break;
+            case 'questions':
+                $query->orderBy('questions_count', $order);
+                break;
+            case 'duration':
+                $query->orderBy('duration_minutes', $order);
+                break;
+            default:
+                $query->orderBy('id', 'desc');
         }
 
-        $data = $query->get()->map(function ($e) {
+        $mapExam = function ($e) {
             return [
                 'id' => $e->id,
                 'title' => $e->title,
@@ -54,8 +110,24 @@ class PublicExamController extends Controller
                 'subject' => $e->subject ? ['name' => $e->subject->name] : null,
                 'clazz' => $e->clazz ? ['name' => $e->clazz->name] : null,
             ];
-        });
+        };
 
+        $perPage = $request->integer('per_page');
+        if ($perPage && $perPage > 0) {
+            $paginator = $query->paginate($perPage);
+            $items = $paginator->getCollection()->map($mapExam)->values();
+            return response()->json([
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $paginator->currentPage(),
+                    'per_page' => $paginator->perPage(),
+                    'total' => $paginator->total(),
+                    'last_page' => $paginator->lastPage(),
+                ],
+            ]);
+        }
+
+        $data = $query->get()->map($mapExam);
         return response()->json(['data' => $data]);
     }
 
@@ -86,6 +158,90 @@ class PublicExamController extends Controller
             })->values(),
         ];
         return response()->json($payload);
+    }
+
+    public function random(Request $request)
+    {
+        $subjectId = $request->integer('subject_id');
+        $classId = $request->integer('class_id');
+        $num = max(1, (int) $request->integer('num', 20));
+        $duration = (int) $request->integer('duration_minutes', 60);
+
+        $exam = PublicExam::query()
+            ->when($subjectId, fn($q) => $q->where('public_subject_id', $subjectId))
+            ->when($classId, fn($q) => $q->where('public_class_id', $classId))
+            ->inRandomOrder()
+            ->first();
+        if (!$exam) return response()->json(['message' => 'No source exam found'], 404);
+
+        $questions = $exam->questions()->with('choices')->inRandomOrder()->limit($num)->get();
+        $payload = [
+            'title' => $exam->title,
+            'description' => $exam->description,
+            'duration_minutes' => $duration ?: (int)($exam->duration_minutes ?? 60),
+            'subject' => $exam->subject ? ['id' => $exam->subject->id, 'name' => $exam->subject->name] : null,
+            'clazz' => $exam->clazz ? ['id' => $exam->clazz->id, 'name' => $exam->clazz->name] : null,
+            'questions' => $questions->map(function ($q) {
+                return [
+                    'id' => $q->id,
+                    'content' => $q->content,
+                    'choices' => $q->choices->map(function ($c) {
+                        return [ 'id' => $c->id, 'label' => $c->label, 'content' => $c->content ];
+                    })->values(),
+                ];
+            })->values(),
+        ];
+        return response()->json($payload);
+    }
+
+    public function review(Request $request, $id)
+    {
+        $submission = PublicSubmission::findOrFail($id);
+        $exam = PublicExam::with('questions.choices')->findOrFail($submission->public_exam_id);
+        $answers = (array) ($submission->answers_json ?? []);
+
+        $details = [];
+        $numCorrect = 0;
+        $topicStats = [];
+        foreach ($exam->questions as $q) {
+            $correct = optional($q->choices->firstWhere('is_correct', true))->label;
+            $user = $answers[$q->id] ?? null;
+            $isCorrect = $user && $correct && strtoupper($user) === strtoupper($correct);
+            if ($isCorrect) $numCorrect++;
+
+            $details[] = [
+                'question_id' => $q->id,
+                'content' => $q->content,
+                'your_answer' => $user,
+                'correct_answer' => $correct,
+                'is_correct' => $isCorrect,
+                'explanation' => $q->explanation ?? null,
+                'chapter' => $q->chapter ?? null,
+                'difficulty' => $q->difficulty ?? null,
+                'tags' => $q->tags ?? [],
+            ];
+
+            $topicKey = $q->chapter ?: 'Khác';
+            $topicStats[$topicKey] = $topicStats[$topicKey] ?? ['correct' => 0, 'total' => 0];
+            $topicStats[$topicKey]['total'] += 1;
+            if ($isCorrect) $topicStats[$topicKey]['correct'] += 1;
+        }
+
+        $strengths = [];
+        foreach ($topicStats as $topic => $stat) {
+            $acc = $stat['total'] > 0 ? ($stat['correct'] / $stat['total']) : 0;
+            $strengths[] = [ 'topic' => $topic, 'accuracy' => round($acc, 2) ];
+        }
+        usort($strengths, function ($a, $b) { return $b['accuracy'] <=> $a['accuracy']; });
+
+        return response()->json([
+            'submission_id' => $submission->id,
+            'score' => $submission->score,
+            'num_correct' => $numCorrect,
+            'num_questions' => count($exam->questions),
+            'details' => $details,
+            'strengths' => $strengths,
+        ]);
     }
 
     public function submit(Request $request, $id)
